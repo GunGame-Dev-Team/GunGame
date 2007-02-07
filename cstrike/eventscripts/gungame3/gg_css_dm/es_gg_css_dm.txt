@@ -1,0 +1,355 @@
+// CSS Deathmatch 1.9.2
+// by Jake the Snake
+// modified for the Gun Game by cagemonkey
+
+block load
+{
+	// Init vars
+	es_xsetinfo dm_x 0
+	es_xsetinfo dm_y 0
+	es_xsetinfo dm_z 0
+	es_xsetinfo dm_x2 0
+	es_xsetinfo dm_y2 0
+	es_xsetinfo dm_z2 0
+	es_xsetinfo dm_howmanypoints 0
+	es_xsetinfo dm_whatpoint 0
+	es_xsetinfo dm_lastpoint 0
+	es_xsetinfo dm_point 0
+	es_xsetinfo dm_exists 0
+	es_xsetinfo dm_dead 0
+	es_xsetinfo dm_user 0
+	es_xsetinfo dm_user2 0
+	es_xsetinfo dm_user3 0
+	es_xsetinfo dm_userid 0
+	es_xsetinfo dm_arg 0
+	es_xsetinfo dm_argc 0
+	es_xsetinfo dm_tmp 0
+	es_xsetinfo dm_tmp2 0
+	es_xsetinfo dm_tmp3 0
+	es_xsetinfo dm_move_tmp 0
+	es_xsetinfo dm_players 0
+	es_xsetinfo dm_spawntime 2
+	es_xsetinfo dm_stuck 0
+	
+	// Set server var to notify DM is on
+	es_xsetinfo gg_dm_script 1
+	
+	// Save default roundtime & freezetime and set the new roundtime & freezetime
+	es_xsetinfo old_roundtime 0
+	es_xsetinfo old_freezetime 0
+	es_xcopy old_roundtime mp_roundtime
+	es_xcopy old_freezetime mp_freezetime
+	mp_roundtime 9
+	mp_freezetime 0
+	
+	es_xkeygroupdelete gg_css_dm
+	es_xkeygroupcreate gg_css_dm
+	es_xkeygroupdelete gg_spawnpoints
+	es_xkeygroupload gg_spawnpoints |gungame3/gg_css_dm
+	
+	// Internal commands
+	es_xregcmd dm_dead_cmd gungame3/gg_css_dm/dm_dead_block "Internal GG_CSS_DM command"
+	es_xregcmd dm_live_cmd gungame3/gg_css_dm/dm_live_block "Internal GG_CSS_DM command"
+	es_xregcmd dm_check gungame3/gg_css_dm/dm_check_block "Internal GG_CSS_DM command"
+	
+	// Rcon commands to add/delete spawnpoints to database
+	es_xregcmd dm_ghost gungame3/gg_css_dm/dm_ghost "Alter Lifestate to make it easier to add spawnpoints on a live server - Syntax: dm_ghost <userid>"
+	es_xregcmd dm_print gungame3/gg_css_dm/dm_print_spawn_block "Print spawnpoint database for current map - Syntax: dm_print [userid]"
+	es_xregcmd dm_add gungame3/gg_css_dm/dm_add_spawn_block "Adds a spawnpoint to the database - Syntax: dm_add <userid>"
+	es_xregcmd dm_del gungame3/gg_css_dm/dm_del_spawn_block "Deletes a spawnpoint from the database - Syntax: dm_del [all]"
+	
+	// Start the removeidle loop
+	es_xdoblock gungame3/gg_css_dm/remove_idle_loop
+}
+
+event player_spawn
+{
+	if (server_var(dm_started) == 1) do
+	{
+		if (event_var(es_userteam) > 1) do
+		{
+			es_exists dm_exists key gg_spawnpoints server_var(eventscripts_currentmap)
+			if (server_var(dm_exists) = 1) do
+			{
+				es_setplayerprop event_var(userid) CCSPlayer.baseclass.baseclass.baseclass.baseclass.baseclass.baseclass.m_CollisionGroup 2
+				es_xdoblock gungame3/gg_css_dm/randspawn
+			}
+		}
+		if (server_var(gg_dm_spawn_protect) > 0) do
+		{
+			es_setplayerprop event_var(userid) CCSPlayer.baseclass.m_iHealth 999
+			es_delayed server_var(gg_dm_spawn_protect) es_xsetplayerprop event_var(userid) CCSPlayer.baseclass.m_iHealth 100
+		}
+	}
+	
+	// Set stuck value in database for quesry in stuck script
+	es_keysetvalue gg_players event_var(userid) stuck 0
+}
+
+event round_start
+{
+	es_xdelayed 2 es_xsetinfo dm_started 1
+}
+
+event round_end
+{
+	es_xdelayed 2 es_xsetinfo dm_started 0
+}
+
+event es_map_start
+{
+	es_xsetinfo dm_started 0
+	es_xdelayed 2 mp_roundtime 9
+	es_xdelayed 2 mp_freezetime 0
+	es_xdelayed 10 es_xdoblock gungame3/gg_css_dm/remove_idle_loop
+}
+
+event player_team
+{
+	if (event_var(disconnect) == 0) do
+	{
+		if (server_var(dm_started) == 1) do
+		{
+			if (event_var(team) > 1) do
+			{
+				es_delayed 5 dm_dead_cmd event_var(userid)
+			}
+		}
+	}
+}
+
+event player_say
+{
+	if (event_var(text) == "!stuck") do
+	{
+		es_keygetvalue dm_stuck gg_players event_var(userid) stuck
+		if (server_var(dm_stuck) == 0) do
+		{
+			es_keysetvalue gg_players event_var(userid) stuck 1
+			es_getplayerlocation user_x user_y user_z event_var(userid)
+			es_xrand dm_x2 -200 200
+			es_xrand dm_y2 -200 200
+			es_format dm_tmp "%1,%2,170" server_var(dm_x2) server_var(dm_y2)
+			es_setplayerprop event_var(userid) "CCSPlayer.baseclass.localdata.m_vecBaseVelocity" server_var(dm_tmp)
+			es_delayed .5 dm_check event_var(userid)
+		}
+		else do
+		{
+			es_tell event_var(userid) #green You cannot use that command now!!
+		}
+	}
+}
+
+event player_death
+{
+	es_delayed server_var(dm_spawntime) est_spawn event_var(userid)
+}
+
+event weapon_fire
+{
+	if (server_var(gg_dm_spawn_protect) > 0) do
+	{
+		es_getplayerprop dm_tmp3 event_var(userid) "CCSPlayer.baseclass.m_iHealth"
+		if (server_var(dm_tmp3) > 100) do
+		{
+			es_setplayerprop event_var(userid) CCSPlayer.baseclass.m_iHealth 100
+		}
+	}
+}
+
+block remove_idle_loop
+{
+	est_DeleteRagDolls
+	es_xdelayed 1 est_RemoveIdle weapon
+	
+	// Throttle server by player count
+	es_xgetplayercount dm_players
+	if (server_var(dm_players) > 15) do
+	{
+		es_xsetinfo dm_spawntime 4
+	}
+	else do
+	{
+		if (server_var(dm_players) > 9) do
+		{
+			es_xsetinfo dm_spawntime 3
+		}
+		else do
+		{
+			if (server_var(dm_players) > 0) do
+			{
+				es_xsetinfo dm_spawntime 2
+			}
+		}
+	}
+	
+	es_xdelayed 20 es_xdoblock gungame3/gg_css_dm/remove_idle_loop
+	//es_msg #green *DEBUG MSG* remove_idle_loop executed
+}
+
+block dm_dead_block
+{
+	es_xgetargv dm_user 1
+	es_getplayerprop dm_dead server_var(dm_user) "CCSPlayer.baseclass.pl.deadflag"
+	if (server_var(dm_dead) == 1) then est_spawn server_var(dm_user)
+}
+
+block dm_live_block
+{
+	es_xgetargv dm_user2 1
+	es_setplayerprop server_var(dm_user2) CCSPlayer.baseclass.baseclass.baseclass.baseclass.baseclass.baseclass.m_CollisionGroup 5
+}
+
+block dm_check_block
+{
+	es_xgetargv dm_user3 1
+	es_getplayerlocation dm_x2 dm_y2 dm_z2 server_var(dm_user3)
+	if (server_var(dm_x2) == server_var(user_x)) do
+	{
+		if (server_var(dm_y2) == server_var(user_y)) do
+		{
+			es est_spawn server_var(dm_user3) 1
+		}
+	}
+	es_delayed 2 es_xkeysetvalue gg_players server_var(dm_user3) stuck 0
+}
+
+block randspawn
+{
+	es_keygetvalue dm_howmanypoints gg_spawnpoints server_var(eventscripts_currentmap) points
+	es_rand dm_whatpoint 0 server_var(dm_howmanypoints)
+	
+	if (server_var(dm_whatpoint) > 0) do
+	{
+		es_keygetvalue dm_point gg_spawnpoints server_var(eventscripts_currentmap) server_var(dm_whatpoint)
+		es_splitvectorstring dm_x dm_y dm_z server_var(dm_point)
+		es_setpos event_var(userid) server_var(dm_x) server_var(dm_y) server_var(dm_z)
+		es_delayed 3 dm_live_cmd event_var(userid)
+	}
+}
+
+block dm_add_spawn_block
+{
+	es_xsetinfo dm_tmp2 0
+	es_xgetargv dm_userid 1
+	if (server_var(dm_userid) == 0) do
+	{
+		echo ## dm_add_spawn: not enough arguments - Syntax: dm_add_spawn <userid>
+	}
+	else do
+	{
+		es_getplayerlocation dm_x2 dm_y2 dm_z2 server_var(dm_userid)
+		es_keygetvalue dm_tmp2 gg_spawnpoints server_var(eventscripts_currentmap) points
+		if (server_var(dm_tmp2) == 0) do
+		{
+			es_keycreate gg_spawnpoints server_var(eventscripts_currentmap)
+			es_keysetvalue gg_spawnpoints server_var(eventscripts_currentmap) points 0
+		}
+		es_xmath dm_tmp2 + 1
+		es_format dm_tmpkey_val "%1,%2,%3" server_var(dm_x2) server_var(dm_y2) server_var(dm_z2)
+		es_keysetvalue gg_spawnpoints server_var(eventscripts_currentmap) server_var(dm_tmp2) server_var(dm_tmpkey_val)
+		es_keysetvalue gg_spawnpoints server_var(eventscripts_currentmap) points server_var(dm_tmp2)
+		es_xmath dm_z2 + 50
+		es est_effect 11 server_var(dm_userid) 0 sprites/greenglow1.vmt server_var(dm_x2) server_var(dm_y2) server_var(dm_z2) 5 1 255
+		echo ## Spawnpoint added
+		es_xkeygroupsave gg_spawnpoints |gungame3/gg_css_dm
+	}
+}
+
+block dm_del_spawn_block
+{
+	es_xgetargv dm_arg 1
+	if (server_var(dm_arg) == "all") do
+	{
+		es_keydelete gg_spawnpoints server_var(eventscripts_currentmap)
+		echo #################################################################################
+		echo -
+		es echo - All spawnpoints for map server_var(eventscripts_currentmap) have been deleted!
+		echo -
+		echo #################################################################################
+		es_xkeygroupsave gg_spawnpoints |gungame3/gg_css_dm
+	}
+	else do
+	{
+		es_keygetvalue dm_tmp gg_spawnpoints server_var(eventscripts_currentmap) points
+		es_keysetvalue gg_spawnpoints server_var(eventscripts_currentmap) server_var(dm_tmp) "deleted"
+		es_xmath dm_tmp - 1
+		es_keysetvalue gg_spawnpoints server_var(eventscripts_currentmap) points server_var(dm_tmp)
+		es echo Spawnpoint server_var(dm_tmp) was deleted from server_var(eventscripts_currentmap)
+		es_xkeygroupsave gg_spawnpoints |gungame3/gg_css_dm
+	}
+}
+
+block dm_del_spawn
+{
+	es_keygetvalue dm_move_tmp gg_spawnpoints server_var(eventscripts_currentmap) server_var(dm_tmp2)
+	if (server_var(dm_move_tmp) != "deleted") do
+	{
+		es_keysetvalue gg_spawnpoints server_var(eventscripts_currentmap) server_var(dm_tmp) server_var(dm_move_tmp)
+		es_xmath dm_tmp + 1
+		es_xmath dm_tmp2 + 1
+		es_xdoblock gungame3/gg_css_dm/dm_del_spawn
+	}
+}
+
+block dm_print_spawn_block
+{
+	es_xgetargc dm_argc
+	es_xgetargv dm_arg 1
+	echo #################################################
+	es echo # Spawnpoint list for map server_var(eventscripts_currentmap)
+	es_foreachval dm_tmp_val in gg_spawnpoints server_var(eventscripts_currentmap) "es_xdoblock gungame3/gg_css_dm/dm_show_spawn"
+}
+
+block dm_show_spawn
+{
+	es_keygetvalue dm_tmp2 gg_spawnpoints server_var(eventscripts_currentmap) server_var(dm_tmp_val)
+	if (server_var(dm_argc) > 0) do
+	{
+		if (server_var(dm_tmp2) != "points") do
+		{
+			if (server_var(dm_tmp2) != "deleted") do
+			{
+				es_splitvectorstring dm_x2 dm_y2 dm_z2 server_var(dm_tmp2)
+				es_xmath dm_z2 + 50
+				es est_effect 11 server_var(dm_arg) 0 sprites/blueglow1.vmt server_var(dm_x2) server_var(dm_y2) server_var(dm_z2) 10 1 255
+			}
+		}
+	}
+	es echo # server_var(dm_tmp_val) server_var(dm_tmp2)
+}
+
+block dm_ghost
+{
+	es_xgetargc dm_argc
+	es_xgetargv dm_arg 1
+	if (server_var(dm_argc) > 0) do
+	{
+		es_getplayerprop dm_tmp server_var(dm_arg) "CBasePlayer.m_lifeState"
+		if (server_var(dm_tmp) == 1) do
+		{
+			es est_spawn server_var(dm_arg) 1
+		}
+		else do
+		{
+			es est_SetPlayerColor server_var(dm_arg) 255 255 255 0 1
+      es_setplayerprop server_var(dm_arg) CBasePlayer.m_lifeState 1
+      es_setplayerprop server_var(dm_arg) CCSPlayer.baseclass.baseclass.baseclass.baseclass.baseclass.baseclass.m_CollisionGroup 2
+      es est_StripPlayer server_var(dm_arg)
+		}
+	}
+	else do
+	{
+		echo ## dm_ghost: not enough arguments - Syntax: dm_ghost <userid>
+	}
+}
+
+block unload
+{
+	es mp_roundtime server_var(old_roundtime)
+	es mp_freezetime server_var(old_freezetime)
+	es_xkeygroupdelete gg_css_dm
+	es_xkeygroupsave gg_spawnpoints |gungame3/gg_css_dm
+	es_xkeygroupdelete gg_spawnpoints
+	es_xsetinfo gg_dm_script 0
+}
