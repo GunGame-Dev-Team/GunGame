@@ -1,6 +1,6 @@
 //***********************************************************//
 // Gun Game                                                  //
-// v3.3u                                                     //
+// v3.3v                                                     //
 //                                                           //
 // Thanks to the following people for helping contribute to  //
 //  making the Gun Game better for everyone.                 //
@@ -57,6 +57,12 @@ block config
 	//   Default weapon order:
 	//   "glock,usp,p228,deagle,fiveseven,elite,m3,xm1014,tmp,mac10,mp5navy,ump45,p90,galil,famas,ak47,scout,m4a1,sg552,aug,m249,hegrenade,knife"
 	es_xsetinfo gg_weapon_order "glock,usp,p228,deagle,fiveseven,elite,m3,xm1014,tmp,mac10,mp5navy,ump45,p90,galil,famas,ak47,scout,m4a1,sg552,aug,m249,hegrenade,knife"
+	
+	// Custom commands for Cage's GG server only:
+	//
+	//   This can be called from console or any script with the gg_setweapons command to change the weapon order.
+	//   Syntax: es gg_setweapons server_var(gg_reverse_order)
+	es_xsetinfo gg_reverse_order "m249,aug,sg552,m4a1,scout,ak47,famas,galil,p90,ump45,mp5navy,mac10,tmp,xm1014,m3,elite,fiveseven,deagle,p228,usp,glock,hegrenade,knife"
 	
 	
 	//************************************************************
@@ -119,16 +125,21 @@ block config
 	// EXTRAS
 	//********
 	//   Turn Knife Pro level stealing on/off
-	es_xsetinfo gg_knife_pro 0
+	es_xsetinfo gg_knife_pro 1
 	//
 	//   Turn Triple Level Bonus 0=off, 1=on
 	//   Turbo Mode automatically overrides the Triple Level Bonus to OFF
-	es_xsetinfo gg_triple_on 0
+	es_xsetinfo gg_triple_on 1
 	//
 	//   Turn Turbo Mode 0=off, 1=on
 	//   This gives you your next weapon immediately when you levelup
 	//   THIS OVERRIDES MAX LEVEL PER ROUND, AND TRIPLE LEVEL BONUS!!
-	es_xsetinfo gg_turbo 0
+	es_xsetinfo gg_turbo 1
+	//
+	//   Auto Give 0=off, 1=on
+	//   With Turbo Mode On, this will automatically give the player their next
+	//   weapon, or popup a window and they can get it when they want.
+	es_xsetinfo gg_auto_give 1
 	//
 	//   Knife Elite mode  0=off, 1=on
 	//   After a player levels up, they only get a knife until the next round.
@@ -138,7 +149,7 @@ block config
 	//   Multiple Kills mode  0=off, X=number of kills required
 	//   Set to number of kills required to level up.
 	//   This counts kills across rounds so you don't have to get them all in one round.
-	es_xsetinfo gg_multikill 0
+	es_xsetinfo gg_multikill 2
 	
 	
 	//************************************************************
@@ -148,7 +159,7 @@ block config
 	//   This loads as a plugin addon to the Gun Game
 	//   Recommended settings for deathmatch:
 	//   KnifePro on, Turbo on, KnifeElite off, Multikill set to 2 or 3, gg_nade_glock set to 1
-	es_xsetinfo gg_dm_script 0
+	es_xsetinfo gg_dm_script 1
 	//
 	//   Spawn protection time for Deathmatch
 	//   Set this to the amount of seconds you want spawn protection
@@ -158,7 +169,7 @@ block config
 	//  DISABLE MAP OBJECTIVES
 	//  Setting this to 1 will disable the objectives (bombing, rescuing hostages)
 	//  Note: This does not require the Deathmatch addon to be loaded.
-	es_xsetinfo gg_obj_remove 0
+	es_xsetinfo gg_obj_remove 1
 	
 
 	//************************************************************
@@ -178,13 +189,13 @@ block config
 	//   Additional weapons for players on nade level
 	//   1=on, 0=off
 	//   This gives a glock with 50 bullets
-	es_xsetinfo gg_nade_glock 0
+	es_xsetinfo gg_nade_glock 1
 	//   This gives a smokegrenade
 	es_xsetinfo gg_nade_smoke 0
 	//   This gives a flashbang
 	es_xsetinfo gg_nade_flash 0
 	//   This gives an extra nade to players if they get a kill with another weapon
-	es_xsetinfo gg_extra_nades 0
+	es_xsetinfo gg_extra_nades 1
 	
 
 	//************************************************************
@@ -229,7 +240,7 @@ block config
 	es_xsetinfo gg_sound_knife "gungame/knife_level.wav"
 	es_xsetinfo gg_sound_welcome "gungame/gungame2.wav"
 	//   Default warning sound is "ambient/misc/brass_bell_C.wav"
-	es_xsetinfo gg_sound_warning "ambient/misc/brass_bell_C.wav"
+	es_xsetinfo gg_sound_warning "gungame/smb_warning2.mp3"
 	//   Default winner sound is "music/HL2_song15.mp3"
 	es_xsetinfo gg_sound_winner "music/HL2_song15.mp3"
 	//
@@ -245,7 +256,6 @@ block config
 	//   This will override your gg_sound_winner setting above and play a random song from this list.
 	//   EACH FILE MUST BE LOCATED IN YOUR /cstrike/sound/gungame/ DIRECTORY!!
 	//   Put each song filename in this list seperated by commas, NO SPACES!!!
-	//   Here's an example:
 	es_xsetinfo gg_songlist "bombtrack.mp3,wakeup.mp3,stand_alone.mp3,matrixwin1.mp3,clickboom.mp3,dontstay.mp3,numb.mp3"
 	//
 
@@ -292,6 +302,7 @@ block load
 	es_xregcmd gg_setweapons gungame3/gg_set_weapon_order "Allows changes to the weapon order: gg_setweapons <weapon>,<weapon>,<etc>"
 	es_xregcmd gg_triple_cmd gungame3/gg_triple_finish "Internal Gun Game command"
 	es_xregcmd gg_start_round gungame3/main_reset_player "Internal Gun Game command"
+	es_xregcmd gg_turbo_equip gungame3/give_turbo_weapon "Internal Gun Game command"
 	
 	// Create weapon list
 	es_xsetinfo gg_tmp_weapon 0
@@ -308,7 +319,7 @@ block load
 	es_xmath gg_level_dynamic - 1
 
 	// Public cvar announcing server runs Gun Game
-	es_xsetinfo eventscripts_gg "v3.3u"
+	es_xsetinfo eventscripts_gg "v3.3v"
 	es_xmakepublic eventscripts_gg
 
 	// gg_winners open flag
@@ -432,6 +443,7 @@ block load
 	es_xsetinfo victim_lvl 0
 	es_xsetinfo _tmp 0
 	es_xsetinfo _tmp2 0
+	es_xsetinfo _tmp3 0
 	es_xsetinfo oldescape 0
 	es_xsetinfo user_id 0
 	es_xsetinfo steam_id 0
@@ -441,6 +453,7 @@ block load
 	es_xsetinfo tmp_d 0
 	es_xsetinfo tmp_e 0
 	es_xsetinfo gg_tmp 0
+	es_xsetinfo gg_equip 0
 	
 	//################################################################################
 	// Create popup menus for Score, Weapons and Top 10
@@ -1081,7 +1094,7 @@ block gg_set_weapon_order
 		es_xmsg #green Changing weapon order...
 		es_xmsg #green Restart in 3 seconds...
 		mp_restartgame 3
-		es_xdelayed 2.90 es_xforeachkey test in gg_players warmup_reset
+		es_xdelayed 2.95 es_xforeachkey test in gg_players warmup_reset
 	}
 	else do
 	{
@@ -1304,6 +1317,7 @@ event player_death
 							es_keysetvalue gg_players event_var(userid) kills 0
 							es_msg #green event_var(es_attackername) stole a level from event_var(es_username)
 							es_cexec event_var(userid) play server_var(gg_sound_leveldown)
+							es_cexec event_var(attacker) play server_var(gg_sound_levelsteal)
 
 								if (server_var(p_wpn) != "hegrenade") then es_xdoblock gungame3/gg_levelup
 							
@@ -1472,32 +1486,22 @@ block gg_levelup
 		{
 			es_xmath p_lvl + 1
 			es_keysetvalue gg_players event_var(attacker) level server_var(p_lvl)
-			//removes weapons
-			es_give event_var(attacker) player_weaponstrip
-			es_fire event_var(attacker) player_weaponstrip Strip 1
-			es_xdoblock gungame3/give_turbo_weapon
-			if (server_var(bomber) == event_var(attacker)) then es_xdelayed 1 es_xgive event_var(attacker) weapon_c4
+			//re-equips weapons
+			//es_xdoblock gungame3/give_turbo_weapon
+			if (server_var(gg_auto_give) == 1) do
+			{
+				es gg_turbo_equip event_var(attacker)
+			}
+			else do
+			{
+				es_keysetvalue gg_players event_var(attacker) turbo_equip 1
+				es_menu 0 event_var(attacker) "You have leveled up!\n \n->1 Press 1 to get your next weapon."
+			}
+				
+				
 				
 			// Update player name in gg_players database
 			es_keysetvalue gg_players event_var(attacker) name event_var(es_attackername)
-			
-			// Start a map vote if this is set in the cfg
-			if (server_var(gg_vote) == 1) do
-			{
-				if (server_var(p_lvl) == server_var(gg_level_dynamic)) do
-				{
-					ma_voterandom end 4
-					es_xsetinfo gg_vote 0
-				}
-			}
-			if (server_var(gg_vote) == 2) do
-			{
-				if (server_var(p_lvl) == server_var(gg_level_dynamic)) do
-				{
-					es_xdoblock gungame3/gg_voting/map_vote
-					es_xsetinfo gg_vote 0
-				}
-			}
 				
 			es_setinfo p_diff server_var(ldr_level)
 			es_math p_diff - server_var(p_lvl)
@@ -1518,11 +1522,7 @@ block gg_levelup
 			{
 				es_tell event_var(attacker) #lightgreen You are now server_var(p_diff) levels behind the leader
 			}
-			if (event_var(weapon) == "knife") do
-			{
-				es_cexec event_var(attacker) play server_var(gg_sound_levelsteal)
-			}
-			else do
+			if (event_var(weapon) != "knife") do
 			{
 				es_cexec event_var(attacker) play server_var(gg_sound_levelup)
 			}
@@ -1536,7 +1536,7 @@ block gg_levelup
 				es_xmath gg_star + 1
 			}
 			if (server_var(gg_star) == 3) do
-			{				
+			{
 				es_xmath p_lvl + 1
 				es_keysetvalue gg_players event_var(attacker) level server_var(p_lvl)
 				es_keysetvalue gg_players event_var(attacker) triple 3
@@ -1654,14 +1654,28 @@ block gg_levelup
 						es_tell event_var(attacker) #lightgreen You are now server_var(p_diff) levels behind the leader
 					}
 				}
-				if (event_var(weapon) == "knife") do
-				{
-					es_cexec event_var(attacker) play server_var(gg_sound_levelsteal)
-				}
-				else do
+
+				if (event_var(weapon) != "knife") do
 				{
 					es_cexec event_var(attacker) play server_var(gg_sound_levelup)
 				}
+			}
+		}
+		// Start a map vote if this is set in the cfg
+		if (server_var(gg_vote) == 1) do
+		{
+			if (server_var(p_lvl) == server_var(gg_level_dynamic)) do
+			{
+			ma_voterandom end 4
+			es_xsetinfo gg_vote 0
+			}
+		}
+		if (server_var(gg_vote) == 2) do
+		{
+			if (server_var(p_lvl) == server_var(gg_level_dynamic)) do
+			{
+				es_xdoblock gungame3/gg_voting/map_vote
+				es_xsetinfo gg_vote 0
 			}
 		}
 	}
@@ -2599,6 +2613,18 @@ event es_client_command
 	}
 	if (event_var(command) == "!score") then es popup send ScorePage1 event_var(userid)
 	if (event_var(command) == "!level") then es_xdoblock gungame3/gg_display_level
+	if (event_var(command) == "menuselect") do
+	{
+		if (event_var(commandstring) >= 0) do
+		{
+			es_keygetvalue gg_equip gg_players event_var(userid) turbo_equip
+			if (server_var(gg_equip) == 1) do
+			{
+				es_keysetvalue gg_players event_var(userid) turbo_equip 0
+				es gg_turbo_equip event_var(userid)
+			}
+		}
+	}
 }
 
 
@@ -2682,48 +2708,57 @@ block give_warmup_knife
 
 block give_turbo_weapon
 {
+	// Get player userid
+	es_xsetinfo _tmp3 0
+	es_xgetargv _tmp3 1
+	
+	// Strip weapons from player
+	es_give server_var(_tmp3) player_weaponstrip
+	es_fire server_var(_tmp3) player_weaponstrip Strip 1
+	if (server_var(bomber) == server_var(_tmp3)) then es_xdelayed 1 es_xgive server_var(_tmp3) weapon_c4
+			
 	// Level variables
 	es_xsetinfo p_lvl 0
 	es_xsetinfo p_wpn 0
 
 	// Get player's level and weapon from db
-	es_keygetvalue p_lvl gg_players event_var(attacker) level
+	es_keygetvalue p_lvl gg_players server_var(_tmp3) level
 	es_keygetvalue p_wpn gg_weapons server_var(p_lvl) weapon
 	
-	es_fire event_var(attacker) env_hudhint kill
-	es_give event_var(attacker) env_hudhint
+	es_fire server_var(_tmp3) env_hudhint kill
+	es_give server_var(_tmp3) env_hudhint
 	es_format tmp_menumsg "message You are now on level %1 (%2)" server_var(p_lvl) server_var(p_wpn)
-	es_fire event_var(attacker) env_hudhint AddOutput server_var(tmp_menumsg)
-	es_fire event_var(attacker) env_hudhint ShowHudHint
+	es_fire server_var(_tmp3) env_hudhint AddOutput server_var(tmp_menumsg)
+	es_fire server_var(_tmp3) env_hudhint ShowHudHint
 
 	es_format p_wpn "weapon_%1" server_var(p_wpn)
 	if (server_var(p_wpn) == "weapon_m3") do
 	{
-		es_delayed .05 es_xgive event_var(attacker) weapon_m3
+		es_delayed .05 es_xgive server_var(_tmp3) weapon_m3
 	}
 	else do
 	{
 		if (server_var(p_wpn) == "weapon_elite") do
 		{
-			es_delayed .05 es_xgive event_var(attacker) weapon_elite
+			es_delayed .05 es_xgive server_var(_tmp3) weapon_elite
 		}
 		else do
 		{
 			if (server_var(p_wpn) == "weapon_hegrenade") do
 			{
-				es_delayed .05 es_xgive event_var(attacker) weapon_hegrenade
+				es_delayed .05 es_xgive server_var(_tmp3) weapon_hegrenade
 				if (server_var(gg_nade_glock) == 1) do
 				{
-					es_delayed .05 es_xgive event_var(attacker) weapon_glock
-					es_delayed .1 es_xsetplayerprop event_var(attacker) CCSPlayer.baseclass.localdata.m_iAmmo.006 50
+					es_delayed .05 es_xgive server_var(_tmp3) weapon_glock
+					es_delayed .1 es_xsetplayerprop server_var(_tmp3) CCSPlayer.baseclass.localdata.m_iAmmo.006 50
 				}
 				if (server_var(gg_nade_flash) == 1) do
 				{
-					es_delayed .1 es_xgive event_var(attacker) weapon_flashbang
+					es_delayed .1 es_xgive server_var(_tmp3) weapon_flashbang
 				}
 				if (server_var(gg_nade_smoke) == 1) do
 				{
-					es_delayed .1 es_xgive event_var(attacker) weapon_smokegrenade
+					es_delayed .1 es_xgive server_var(_tmp3) weapon_smokegrenade
 				}
 				if (server_var(gg_ff_auto) == 1) do
 				{
@@ -2737,25 +2772,25 @@ block give_turbo_weapon
 			}
 			else do
 			{
-				es_soon es_xgive event_var(attacker) server_var(p_wpn)
+				es_soon es_xgive server_var(_tmp3) server_var(p_wpn)
 			}
 		}
 	}
-	if (server_var(p_wpn) != "weapon_knife") then es_xgive event_var(attacker) weapon_knife
+	if (server_var(p_wpn) != "weapon_knife") then es_xgive server_var(_tmp3) weapon_knife
 
 	// Give each CT a defuse kit
 	if (server_var(gg_dm_script) != 1) do
 	{
 		if (event_var(es_attackerteam) == 3) do
 		{
-			es_delayed .1 es_xsetplayerprop event_var(attacker) CCSPlayer.m_bHasDefuser 1
+			es_delayed .1 es_xsetplayerprop server_var(_tmp3) CCSPlayer.m_bHasDefuser 1
 		}
 	}
 
 	// give them the right ammo for their gun
 	es_keygetvalue gg_ammoname gg_ammo_props server_var(p_wpn)
 	es_keygetvalue gg_ammonum gg_ammo_count server_var(p_wpn)
-	es_delayed .1 es_xsetplayerprop event_var(attacker) server_var(gg_ammoname) server_var(gg_ammonum)
+	es_delayed .1 es_xsetplayerprop server_var(_tmp3) server_var(gg_ammoname) server_var(gg_ammonum)
 }
 
 
