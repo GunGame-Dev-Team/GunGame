@@ -1,6 +1,6 @@
 //***********************************************************//
 // Gun Game                                                  //
-// v3.3v                                                     //
+// v3.3u                                                    //
 //                                                           //
 // Thanks to the following people for helping contribute to  //
 //  making the Gun Game better for everyone.                 //
@@ -19,6 +19,14 @@ block config
 	// This is the only block you should ever edit
 	// UNLESS YOU KNOW WHAT YOU ARE DOING!!
 	// ###############################################
+	
+	//************************************************************
+	// ADMINS
+	//********
+	//   Add all admins for the Deathmatch admin commands here.
+	//   Separate each STEAM_ID with a comma, NO SPACES!!
+	es_xsetinfo gg_admins "STEAM_0:0:796294,STEAM_ID_LAN"
+	
 
 	//************************************************************
 	// WEAPON ORDER
@@ -57,12 +65,6 @@ block config
 	//   Default weapon order:
 	//   "glock,usp,p228,deagle,fiveseven,elite,m3,xm1014,tmp,mac10,mp5navy,ump45,p90,galil,famas,ak47,scout,m4a1,sg552,aug,m249,hegrenade,knife"
 	es_xsetinfo gg_weapon_order "glock,usp,p228,deagle,fiveseven,elite,m3,xm1014,tmp,mac10,mp5navy,ump45,p90,galil,famas,ak47,scout,m4a1,sg552,aug,m249,hegrenade,knife"
-	
-	// Custom commands for Cage's GG server only:
-	//
-	//   This can be called from console or any script with the gg_setweapons command to change the weapon order.
-	//   Syntax: es gg_setweapons server_var(gg_reverse_order)
-	es_xsetinfo gg_reverse_order "m249,aug,sg552,m4a1,scout,ak47,famas,galil,p90,ump45,mp5navy,mac10,tmp,xm1014,m3,elite,fiveseven,deagle,p228,usp,glock,hegrenade,knife"
 	
 	
 	//************************************************************
@@ -125,21 +127,16 @@ block config
 	// EXTRAS
 	//********
 	//   Turn Knife Pro level stealing on/off
-	es_xsetinfo gg_knife_pro 1
+	es_xsetinfo gg_knife_pro 0
 	//
 	//   Turn Triple Level Bonus 0=off, 1=on
 	//   Turbo Mode automatically overrides the Triple Level Bonus to OFF
-	es_xsetinfo gg_triple_on 1
+	es_xsetinfo gg_triple_on 0
 	//
 	//   Turn Turbo Mode 0=off, 1=on
 	//   This gives you your next weapon immediately when you levelup
 	//   THIS OVERRIDES MAX LEVEL PER ROUND, AND TRIPLE LEVEL BONUS!!
-	es_xsetinfo gg_turbo 1
-	//
-	//   Auto Give 0=off, 1=on
-	//   With Turbo Mode On, this will automatically give the player their next
-	//   weapon, or popup a window and they can get it when they want.
-	es_xsetinfo gg_auto_give 1
+	es_xsetinfo gg_turbo 0
 	//
 	//   Knife Elite mode  0=off, 1=on
 	//   After a player levels up, they only get a knife until the next round.
@@ -149,7 +146,7 @@ block config
 	//   Multiple Kills mode  0=off, X=number of kills required
 	//   Set to number of kills required to level up.
 	//   This counts kills across rounds so you don't have to get them all in one round.
-	es_xsetinfo gg_multikill 2
+	es_xsetinfo gg_multikill 0
 	
 	
 	//************************************************************
@@ -159,7 +156,7 @@ block config
 	//   This loads as a plugin addon to the Gun Game
 	//   Recommended settings for deathmatch:
 	//   KnifePro on, Turbo on, KnifeElite off, Multikill set to 2 or 3, gg_nade_glock set to 1
-	es_xsetinfo gg_dm_script 1
+	es_xsetinfo gg_dm_script 0
 	//
 	//   Spawn protection time for Deathmatch
 	//   Set this to the amount of seconds you want spawn protection
@@ -169,7 +166,7 @@ block config
 	//  DISABLE MAP OBJECTIVES
 	//  Setting this to 1 will disable the objectives (bombing, rescuing hostages)
 	//  Note: This does not require the Deathmatch addon to be loaded.
-	es_xsetinfo gg_obj_remove 1
+	es_xsetinfo gg_obj_remove 0
 	
 
 	//************************************************************
@@ -189,13 +186,13 @@ block config
 	//   Additional weapons for players on nade level
 	//   1=on, 0=off
 	//   This gives a glock with 50 bullets
-	es_xsetinfo gg_nade_glock 1
+	es_xsetinfo gg_nade_glock 0
 	//   This gives a smokegrenade
 	es_xsetinfo gg_nade_smoke 0
 	//   This gives a flashbang
 	es_xsetinfo gg_nade_flash 0
 	//   This gives an extra nade to players if they get a kill with another weapon
-	es_xsetinfo gg_extra_nades 1
+	es_xsetinfo gg_extra_nades 0
 	
 
 	//************************************************************
@@ -319,7 +316,7 @@ block load
 	es_xmath gg_level_dynamic - 1
 
 	// Public cvar announcing server runs Gun Game
-	es_xsetinfo eventscripts_gg "v3.3v"
+	es_xsetinfo eventscripts_gg "v3.3u"
 	es_xmakepublic eventscripts_gg
 
 	// gg_winners open flag
@@ -342,6 +339,12 @@ block load
 	es_xexists gg_exists keygroup lvl_db
 	if (server_var(gg_exists) == 1) then es_xkeygroupdelete lvl_db
 	es_xkeygroupcreate lvl_db
+	
+	// player pref database
+	es_xexists gg_exists keygroup gg_pref
+	if (server_var(gg_exists) == 1) then es_xkeygroupdelete gg_pref
+	es_xkeygroupcreate gg_pref
+	es_keygroupload gg_pref server_var(gg_dir)
 
 	// gg_players database
 	es_xexists gg_exists keygroup gg_players
@@ -454,6 +457,7 @@ block load
 	es_xsetinfo tmp_e 0
 	es_xsetinfo gg_tmp 0
 	es_xsetinfo gg_equip 0
+	es_xsetinfo gg_auto_give 0
 	
 	//################################################################################
 	// Create popup menus for Score, Weapons and Top 10
@@ -891,6 +895,21 @@ block player_setup
 				es_xdoblock gungame3/gg_handicap
 			}
 		}
+		
+		// Add player to gg_pref db
+		es_exists gg_exists key gg_pref server_var(p_steamid)
+		if (server_var(gg_exists) != 1) do
+		{
+			es_keycreate gg_pref server_var(p_steamid)
+			es_keysetvalue gg_pref server_var(p_steamid) auto_give 1
+			es_keysetvalue gg_players event_var(userid) auto_give 1
+		}
+		else do
+		{
+			es_keygetvalue gg_auto_give gg_pref server_var(p_steamid) auto_give
+			es_keysetvalue gg_players event_var(userid) auto_give server_var(gg_auto_give)
+		}
+		
 
 		// Remove player from lvl_db
 		es_keydelete lvl_db server_var(p_steamid)
@@ -960,6 +979,20 @@ block player_setup_in_progress
 		// add player to afk_db
 		es_keydelete afk_db server_var(key_x)
 		es_keycreate afk_db server_var(key_x)
+		
+		// Add player to gg_pref db or get gg_pref settings
+		es_exists gg_exists key gg_pref server_var(gg_tmp_s)
+		if (server_var(gg_exists) != 1) do
+		{
+			es_keycreate gg_pref server_var(gg_tmp_s)
+			es_keysetvalue gg_pref server_var(gg_tmp_s) auto_give 1
+			es_keysetvalue gg_players server_var(key_x) auto_give 1
+		}
+		else do
+		{
+			es_keygetvalue gg_auto_give gg_pref server_var(gg_tmp_s) auto_give
+			es_keysetvalue gg_players server_var(key_x) auto_give server_var(gg_auto_give)
+		}
 
 		// Execute handicap code
 		if (server_var(skip_handicap) == 0) do
@@ -1484,8 +1517,12 @@ block gg_levelup
 		
 		if (server_var(gg_turbo) == 1) do
 		{
+			// Disable auto_give menu function for victim
+			es_keysetvalue gg_players event_var(userid) turbo_equip 0
+			
 			es_xmath p_lvl + 1
 			es_keysetvalue gg_players event_var(attacker) level server_var(p_lvl)
+			es_keygetvalue gg_auto_give gg_players event_var(attacker) auto_give
 			//re-equips weapons
 			//es_xdoblock gungame3/give_turbo_weapon
 			if (server_var(gg_auto_give) == 1) do
@@ -1495,7 +1532,7 @@ block gg_levelup
 			else do
 			{
 				es_keysetvalue gg_players event_var(attacker) turbo_equip 1
-				es_menu 0 event_var(attacker) "You have leveled up!\n \n->1 Press 1 to get your next weapon."
+				es_menu 0 event_var(attacker) "You have leveled up!\n \n->1. Press 1 to get your next weapon.\n \n0. Exit"
 			}
 				
 				
@@ -1758,6 +1795,22 @@ event player_say
 		es popup send ScorePage1 event_var(userid)
 	}
 	if (event_var(text) == "!level") then es_xdoblock gungame3/gg_display_level
+	if (event_var(text) == "!auto") do
+	{
+		es_keygetvalue gg_auto_give gg_pref event_var(es_steamid) auto_give
+		if (server_var(gg_auto_give) == 0) do
+		{
+			es_keysetvalue gg_pref event_var(es_steamid) auto_give 1
+			es_keysetvalue gg_players event_var(userid) auto_give 1
+			es_tell event_var(userid) #multi #lightgreen Auto Give #default On
+		}
+		else do
+		{
+			es_keysetvalue gg_pref event_var(es_steamid) auto_give 0
+			es_keysetvalue gg_players event_var(userid) auto_give 0
+			es_tell event_var(userid) #multi #lightgreen Auto Give #default Off
+		}
+	}
 }
 
 
@@ -2008,7 +2061,7 @@ event weapon_fire
 	if (event_var(es_steamid) != "BOT") do
 	{
 		es_keysetvalue afk_db event_var(userid) x 1
-		es_keysetvalue afk_db event_var(userid) y 1
+		//es_keysetvalue afk_db event_var(userid) y 1
 	}
 }
 
@@ -2068,6 +2121,9 @@ block gg_winner
 	es_xsetinfo top10_list 0
 	es_xkeygetvalue top10_list gg_top10 10 wins
 	if (server_var(t_wins) >= server_var(top10_list)) then es_xdoblock gungame3/gg_execute_top10
+	
+	// Save gg_pref db
+	es_keygroupsave gg_pref server_var(gg_dir)
 }
 
 
@@ -2170,22 +2226,22 @@ block bot_spawn
 
 	// Equip player
 	es_format p_wpn "weapon_%1" server_var(p_wpn)
-	es_delayed .75 es_xgive event_var(userid) server_var(p_wpn)
-	es_delayed .75 es_xgive event_var(userid) item_assaultsuit
-	if (server_var(p_wpn) != "weapon_knife") then es_xdelayed .75 es_xgive event_var(userid) weapon_knife
+	es_delayed .5 es_xgive event_var(userid) server_var(p_wpn)
+	es_delayed .5 es_xgive event_var(userid) item_assaultsuit
+	if (server_var(p_wpn) != "weapon_knife") then es_xdelayed .5 es_xgive event_var(userid) weapon_knife
 	if (server_var(p_wpn) == "weapon_hegrenade") do
 	{
 		if (server_var(gg_nade_glock) == 1) do
 		{
-			es_delayed .75 es_xgive event_var(userid) weapon_glock
+			es_delayed .5 es_xgive event_var(userid) weapon_glock
 		}
 		if (server_var(gg_nade_flash) == 1) do
 		{
-			es_delayed .75 es_xgive event_var(userid) weapon_flashbang
+			es_delayed .5 es_xgive event_var(userid) weapon_flashbang
 		}
 		if (server_var(gg_nade_smoke) == 1) do
 		{
-			es_delayed .75 es_xgive event_var(userid) weapon_smokegrenade
+			es_delayed .5 es_xgive event_var(userid) weapon_smokegrenade
 		}
 	}
 
@@ -2467,6 +2523,8 @@ block gg_display_rules
         es_cexec event_var(userid) echo Say !score to see all player current scores.
         es_cexec event_var(userid) echo Say !top10 to see the top 10 winners on the server.
         es_cexec event_var(userid) echo Say !stuck if you get stuck to another player.
+        es_cexec event_var(userid) echo Say !auto to turn Auto Give on/off.
+        es_cexec event_var(userid) echo Say !give if you do not receive your weapon. (Deathmatch ONLY)
         es_cexec event_var(userid) echo -----------------------------
         es_cexec event_var(userid) echo -----------------------------
        
@@ -2547,8 +2605,12 @@ block gg_display_level
 
 block unload
 {
+	// Save gg_pref db
+	es_keygroupsave gg_pref server_var(gg_dir)
+	
 	// Delete all open databases
 	es_xkeygroupdelete gg_players
+	es_xkeygroupdelete gg_pref
 	es_xkeygroupdelete gg_winners
 	es_xkeygroupdelete gg_top10
 	es_xkeygroupdelete gg_weapons
@@ -2613,6 +2675,22 @@ event es_client_command
 	}
 	if (event_var(command) == "!score") then es popup send ScorePage1 event_var(userid)
 	if (event_var(command) == "!level") then es_xdoblock gungame3/gg_display_level
+	if (event_var(command) == "!auto") do
+	{
+		es_keygetvalue gg_auto_give gg_pref event_var(es_steamid) auto_give
+		if (server_var(gg_auto_give) == 0) do
+		{
+			es_keysetvalue gg_pref event_var(es_steamid) auto_give 1
+			es_keysetvalue gg_players event_var(userid) auto_give 1
+			es_tell event_var(userid) #multi #lightgreen Auto Give #default On
+		}
+		else do
+		{
+			es_keysetvalue gg_pref event_var(es_steamid) auto_give 0
+			es_keysetvalue gg_players event_var(userid) auto_give 0
+			es_tell event_var(userid) #multi #lightgreen Auto Give #default Off
+		}
+	}
 	if (event_var(command) == "menuselect") do
 	{
 		if (event_var(commandstring) >= 0) do
@@ -2799,7 +2877,7 @@ block main_reset_player
 	// Set tmp id
 	es_xgetargv user_id 1
 	//es uniqueid steam_id server_var(user_id) 1
-	es_keygetvalue steam_id gg_players event_var(userid) steamid
+	es_keygetvalue steam_id gg_players server_var(user_id) steamid
 	
 	// afk_db store spawn location
 	es_xsetinfo user_x 0
