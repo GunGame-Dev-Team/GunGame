@@ -1,4 +1,4 @@
-// GG CSS Deathmatch 2.0.01
+// GG CSS Deathmatch 2.0.1
 // based on Jake the Snake's CSS Deathmatch script
 // modified for the Gun Game by cagemonkey
 
@@ -30,6 +30,7 @@ block load
 	es_xsetinfo dm_spawntime 2
 	es_xsetinfo dm_stuck 0
 	es_xsetinfo dm_give_check 0
+	es_xsetinfo dm_last_map 0
 	
 	// Set server var to notify DM is on
 	es_xsetinfo gg_dm_script 1
@@ -102,6 +103,8 @@ event round_end
 
 event es_map_start
 {
+	if (server_var(dm_last_map) != 0) then es_xkeygroupdelete server_var(dm_last_map)
+	es_setinfo dm_last_map server_var(eventscripts_currentmap)
 	// Load database
 	es_keygroupload server_var(eventscripts_currentmap) |gungame3/gg_css_dm/spawnpoints
 	
@@ -477,7 +480,6 @@ block unload
 	es mp_roundtime server_var(old_roundtime)
 	es mp_freezetime server_var(old_freezetime)
 	es_xkeygroupdelete gg_css_dm
-	es_keygroupsave server_var(eventscripts_currentmap) |gungame3/gg_css_dm/spawnpoints
 	es_keygroupdelete server_var(eventscripts_currentmap)
 	es_xsetinfo gg_dm_script 0
 }

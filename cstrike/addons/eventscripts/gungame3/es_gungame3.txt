@@ -1,6 +1,6 @@
 //***********************************************************//
 // Gun Game                                                  //
-// v3.4                                                    //
+// v3.4.1                                                    //
 //                                                           //
 // Thanks to the following people for helping contribute to  //
 //  making the Gun Game better for everyone.                 //
@@ -316,7 +316,7 @@ block load
 	es_xmath gg_level_dynamic - 1
 
 	// Public cvar announcing server runs Gun Game
-	es_xsetinfo eventscripts_gg "v3.4"
+	es_xsetinfo eventscripts_gg "v3.4.1"
 	es_xmakepublic eventscripts_gg
 
 	// gg_winners open flag
@@ -2131,11 +2131,10 @@ block winner_reset
 {
 	if (server_var(gg_dm_script) == 1) do
 	{
-		es_xset dm_exists 0
+		es_xsetinfo dm_exists 0
 		es_exists dm_exists keygroup server_var(eventscripts_currentmap)
 		if (server_var(dm_exists) == 1) do
 		{
-			es_keygroupsave server_var(eventscripts_currentmap) |gungame3/gg_css_dm/spawnpoints
 			es_keygroupdelete server_var(eventscripts_currentmap)
 		}
 	}
