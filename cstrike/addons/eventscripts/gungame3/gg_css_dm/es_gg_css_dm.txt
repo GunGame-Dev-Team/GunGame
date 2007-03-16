@@ -1,4 +1,4 @@
-// GG CSS Deathmatch 2.0
+// GG CSS Deathmatch 2.0.01
 // based on Jake the Snake's CSS Deathmatch script
 // modified for the Gun Game by cagemonkey
 
@@ -72,8 +72,8 @@ event player_spawn
 		if (event_var(es_userteam) > 1) do
 		{
 			es_xset dm_exists 0
-			es_exists dm_exists keygroup server_var(eventscripts_currentmap)
-			if (server_var(dm_exists) = 1) do
+			es_exists dm_exists key server_var(eventscripts_currentmap) total
+			if (server_var(dm_exists) == 1) do
 			{
 				es_setplayerprop event_var(userid) CCSPlayer.baseclass.baseclass.baseclass.baseclass.baseclass.baseclass.m_CollisionGroup 2
 				es_xdoblock gungame3/gg_css_dm/randspawn
@@ -409,9 +409,9 @@ block dm_del_say
 		if (server_var(dm_arg) == "all") do
 		{
 			es_keygroupdelete server_var(eventscripts_currentmap)
-			es_tell server_var(dm_userid) #green ##########################################################
+			es_tell server_var(dm_userid) #green ###############################
 			es_tell server_var(dm_userid) #green - All spawnpoints for map server_var(eventscripts_currentmap) have been deleted!
-			es_tell server_var(dm_userid) #green ##########################################################
+			es_tell server_var(dm_userid) #green ###############################
 			es_keygroupsave server_var(eventscripts_currentmap) |gungame3/gg_css_dm/spawnpoints
 		}
 		else do
@@ -433,6 +433,8 @@ block dm_print_say
 	
 	if (server_var(dm_steam) in server_var(gg_admins)) do
 	{
+		es_keygetvalue dm_tmp2 server_var(eventscripts_currentmap) total total
+		es_tell server_var(dm_userid) #multi #default Total spawnpoints: #green server_var(dm_tmp2)
 		es_foreachval dm_tmp_val in server_var(eventscripts_currentmap) points "es_xdoblock gungame3/gg_css_dm/dm_show_spawn"
 	}
 }
@@ -445,10 +447,6 @@ block dm_show_spawn
 		es_splitvectorstring dm_x2 dm_y2 dm_z2 server_var(dm_tmp2)
 		es_xmath dm_z2 + 50
 		es est_effect 11 server_var(dm_userid) 0 sprites/blueglow1.vmt server_var(dm_x2) server_var(dm_y2) server_var(dm_z2) 10 1 255
-	}
-	else do
-	{
-		es_tell server_var(dm_userid) #multi Total spawnpoints: #green server_var(dm_tmp2)
 	}
 }
 
