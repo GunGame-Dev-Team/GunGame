@@ -1,16 +1,14 @@
 //***********************************************************//
 // Gun Game                                                  //
-// v3.4.1                                                    //
+// v3.4.3                                                    //
 //                                                           //
 // Thanks to the following people for helping contribute to  //
-//  making the Gun Game better for everyone.                 //
+//  making the Gun Game better for everyone:                 //
 //  Mattie, XE_Manup , HitThePipe, all the ES beta team,     //
 //  Awuh0, and everyone that has helped beta test the GG.    //
 //                                                           //
 // http://mattie.info/cs/                                    //
 // http://www.cagemonkey.org                                 //
-// http://www.4hm.net                                        //
-// http://cage.pastebin.ca                                   //
 //***********************************************************//
 
 block config
@@ -316,7 +314,7 @@ block load
 	es_xmath gg_level_dynamic - 1
 
 	// Public cvar announcing server runs Gun Game
-	es_xsetinfo eventscripts_gg "v3.4.1"
+	es_xsetinfo eventscripts_gg "v3.4.3"
 	es_xmakepublic eventscripts_gg
 
 	// gg_winners open flag
@@ -1338,19 +1336,65 @@ event player_death
 				
 				if (event_var(weapon) == "knife") do
 				{
-					if (server_var(gg_knife_pro) == 1) do
+					if (server_var(gg_knife_warmup) == 1) do
 					{
-						if (server_var(user_afk) == 0) do
+						if (server_var(gg_warmup_timer) < 2) do
 						{
-							es_xmath victim_lvl - 1
-							if (server_var(victim_lvl) > 0) do
+							if (server_var(gg_knife_pro) == 1) do
 							{
-								es_keysetvalue gg_players event_var(userid) level server_var(victim_lvl)
+								if (server_var(user_afk) == 0) do
+								{
+									es_xmath victim_lvl - 1
+									if (server_var(victim_lvl) > 0) do
+									{
+										es_keysetvalue gg_players event_var(userid) level server_var(victim_lvl)
+									}
+									es_keysetvalue gg_players event_var(userid) kills 0
+									es_msg #green event_var(es_attackername) stole a level from event_var(es_username)
+									es_cexec event_var(userid) play server_var(gg_sound_leveldown)
+									es_cexec event_var(attacker) play server_var(gg_sound_levelsteal)
+
+									if (server_var(p_wpn) != "hegrenade") then es_xdoblock gungame3/gg_levelup
+							
+									// Log level steal for hlstats users
+									es_xsetinfo _tmp 0
+									es_xsetinfo _tmp2 0
+									es_xsetinfo oldescape 0
+									es_xcopy oldescape eventscripts_escapechars
+									if (event_var(es_attackerteam) == 2) then es_xsetinfo _tmp "TERRORIST"
+									if (event_var(es_attackerteam) == 3) then es_xsetinfo _tmp "CT"
+									es_format _tmp2 "%1<%2><%3><%4>" event_var(es_attackername) event_var(attacker) event_var(es_attackersteamid) server_var(_tmp)
+									es_xsetinfo eventscripts_escapechars "; {}()':l"
+									es_logq server_var(_tmp2) triggered gg_levelsteal
+									es_xcopy eventscripts_escapechars oldescape
+
+									// Log level down for hlstats users
+									es_xcopy oldescape eventscripts_escapechars
+									if (event_var(es_userteam) == 2) then es_xsetinfo _tmp "TERRORIST"
+									if (event_var(es_userteam) == 3) then es_xsetinfo _tmp "CT"
+									es_format _tmp2 "%1<%2><%3><%4>" event_var(es_username) event_var(userid) event_var(es_steamid) server_var(_tmp)
+									es_xsetinfo eventscripts_escapechars "; {}()':l"
+									es_logq server_var(_tmp2) triggered gg_leveldown
+									es_xcopy eventscripts_escapechars oldescape
+								}
 							}
-							es_keysetvalue gg_players event_var(userid) kills 0
-							es_msg #green event_var(es_attackername) stole a level from event_var(es_username)
-							es_cexec event_var(userid) play server_var(gg_sound_leveldown)
-							es_cexec event_var(attacker) play server_var(gg_sound_levelsteal)
+						}
+					}
+					else do
+					{
+						if (server_var(gg_knife_pro) == 1) do
+						{
+							if (server_var(user_afk) == 0) do
+							{
+								es_xmath victim_lvl - 1
+								if (server_var(victim_lvl) > 0) do
+								{
+									es_keysetvalue gg_players event_var(userid) level server_var(victim_lvl)
+								}
+								es_keysetvalue gg_players event_var(userid) kills 0
+								es_msg #green event_var(es_attackername) stole a level from event_var(es_username)
+								es_cexec event_var(userid) play server_var(gg_sound_leveldown)
+								es_cexec event_var(attacker) play server_var(gg_sound_levelsteal)
 
 								if (server_var(p_wpn) != "hegrenade") then es_xdoblock gungame3/gg_levelup
 							
@@ -1374,7 +1418,7 @@ event player_death
 								es_xsetinfo eventscripts_escapechars "; {}()':l"
 								es_logq server_var(_tmp2) triggered gg_leveldown
 								es_xcopy eventscripts_escapechars oldescape
-
+							}
 						}
 					}
 				}
@@ -1517,25 +1561,49 @@ block gg_levelup
 		
 		if (server_var(gg_turbo) == 1) do
 		{
-			// Disable auto_give menu function for victim
-			es_keysetvalue gg_players event_var(userid) turbo_equip 0
-			
-			es_xmath p_lvl + 1
-			es_keysetvalue gg_players event_var(attacker) level server_var(p_lvl)
-			es_keygetvalue gg_auto_give gg_players event_var(attacker) auto_give
-			//re-equips weapons
-			//es_xdoblock gungame3/give_turbo_weapon
-			if (server_var(gg_auto_give) == 1) do
+			if (server_var(gg_knife_warmup) == 1) do
 			{
-				es gg_turbo_equip event_var(attacker)
+				if (server_var(gg_warmup_timer) < 2) do
+				{
+					// Disable auto_give menu function for victim
+					es_keysetvalue gg_players event_var(userid) turbo_equip 0
+			
+					es_xmath p_lvl + 1
+					es_keysetvalue gg_players event_var(attacker) level server_var(p_lvl)
+					es_keygetvalue gg_auto_give gg_players event_var(attacker) auto_give
+					//re-equips weapons
+					//es_xdoblock gungame3/give_turbo_weapon
+					if (server_var(gg_auto_give) == 1) do
+					{
+						es gg_turbo_equip event_var(attacker)
+					}
+					else do
+					{
+						es_keysetvalue gg_players event_var(attacker) turbo_equip 1
+						es_menu 0 event_var(attacker) "You have leveled up!\n \n->1. Press 1 to get your next weapon.\n \n0. Exit"
+					}
+				}
 			}
 			else do
 			{
-				es_keysetvalue gg_players event_var(attacker) turbo_equip 1
-				es_menu 0 event_var(attacker) "You have leveled up!\n \n->1. Press 1 to get your next weapon.\n \n0. Exit"
+				// Disable auto_give menu function for victim
+				es_keysetvalue gg_players event_var(userid) turbo_equip 0
+			
+				es_xmath p_lvl + 1
+				es_keysetvalue gg_players event_var(attacker) level server_var(p_lvl)
+				es_keygetvalue gg_auto_give gg_players event_var(attacker) auto_give
+				//re-equips weapons
+				//es_xdoblock gungame3/give_turbo_weapon
+				if (server_var(gg_auto_give) == 1) do
+				{
+					es gg_turbo_equip event_var(attacker)
+				}
+				else do
+				{
+					es_keysetvalue gg_players event_var(attacker) turbo_equip 1
+					es_menu 0 event_var(attacker) "You have leveled up!\n \n->1. Press 1 to get your next weapon.\n \n0. Exit"
+				}
 			}
-				
-				
 				
 			// Update player name in gg_players database
 			es_keysetvalue gg_players event_var(attacker) name event_var(es_attackername)
@@ -2533,7 +2601,7 @@ block gg_display_rules
         es_cexec event_var(userid) echo Say !top10 to see the top 10 winners on the server.
         es_cexec event_var(userid) echo Say !stuck if you get stuck to another player.
         es_cexec event_var(userid) echo Say !auto to turn Auto Give on/off.
-        es_cexec event_var(userid) echo Say !give if you do not receive your weapon. (Deathmatch ONLY)
+        es_cexec event_var(userid) echo Say 	 if you do not receive your weapon. (Deathmatch ONLY)
         es_cexec event_var(userid) echo -----------------------------
         es_cexec event_var(userid) echo -----------------------------
        
@@ -2747,9 +2815,9 @@ block give_player_weapon
 
 	// Equip player
 	es_format p_wpn "weapon_%1" server_var(p_wpn)
-	es_give server_var(user_id) server_var(p_wpn)
-	es_give server_var(user_id) item_assaultsuit
 	if (server_var(p_wpn) != "weapon_knife") then es_xgive server_var(user_id) weapon_knife
+	es_give server_var(user_id) item_assaultsuit
+	es_give server_var(user_id) server_var(p_wpn)
 	if (server_var(p_wpn) == "weapon_hegrenade") do
 	{
 		if (server_var(gg_nade_glock) == 1) do
@@ -2819,50 +2887,38 @@ block give_turbo_weapon
 	es_fire server_var(_tmp3) env_hudhint ShowHudHint
 
 	es_format p_wpn "weapon_%1" server_var(p_wpn)
-	if (server_var(p_wpn) == "weapon_m3") do
+
+	if (server_var(p_wpn) == "weapon_hegrenade") do
 	{
-		es_delayed .05 es_xgive server_var(_tmp3) weapon_m3
+		es_delayed .05 es_xgive server_var(_tmp3) weapon_hegrenade
+		if (server_var(gg_nade_glock) == 1) do
+		{
+			es_delayed .05 es_xgive server_var(_tmp3) weapon_glock
+			es_delayed .1 es_xsetplayerprop server_var(_tmp3) CCSPlayer.baseclass.localdata.m_iAmmo.006 50
+		}
+		if (server_var(gg_nade_flash) == 1) do
+		{
+			es_delayed .1 es_xgive server_var(_tmp3) weapon_flashbang
+		}
+		if (server_var(gg_nade_smoke) == 1) do
+		{
+			es_delayed .1 es_xgive server_var(_tmp3) weapon_smokegrenade
+		}
+		if (server_var(gg_ff_auto) == 1) do
+		{
+			if (server_var(mp_friendlyfire) == 0) do
+			{
+				mp_friendlyfire 1
+				es_xmsg #green Friendly Fire is ON!!!  Watch your fire!
+				es_cexec_all play server_var(gg_sound_warning)
+			}
+		}
 	}
 	else do
 	{
-		if (server_var(p_wpn) == "weapon_elite") do
-		{
-			es_delayed .05 es_xgive server_var(_tmp3) weapon_elite
-		}
-		else do
-		{
-			if (server_var(p_wpn) == "weapon_hegrenade") do
-			{
-				es_delayed .05 es_xgive server_var(_tmp3) weapon_hegrenade
-				if (server_var(gg_nade_glock) == 1) do
-				{
-					es_delayed .05 es_xgive server_var(_tmp3) weapon_glock
-					es_delayed .1 es_xsetplayerprop server_var(_tmp3) CCSPlayer.baseclass.localdata.m_iAmmo.006 50
-				}
-				if (server_var(gg_nade_flash) == 1) do
-				{
-					es_delayed .1 es_xgive server_var(_tmp3) weapon_flashbang
-				}
-				if (server_var(gg_nade_smoke) == 1) do
-				{
-					es_delayed .1 es_xgive server_var(_tmp3) weapon_smokegrenade
-				}
-				if (server_var(gg_ff_auto) == 1) do
-				{
-					if (server_var(mp_friendlyfire) == 0) do
-					{
-						mp_friendlyfire 1
-						es_xmsg #green Friendly Fire is ON!!!  Watch your fire!
-						es_cexec_all play server_var(gg_sound_warning)
-					}
-				}
-			}
-			else do
-			{
-				es_soon es_xgive server_var(_tmp3) server_var(p_wpn)
-			}
-		}
+		es_delayed .05 es_xgive server_var(_tmp3) server_var(p_wpn)
 	}
+
 	if (server_var(p_wpn) != "weapon_knife") then es_xgive server_var(_tmp3) weapon_knife
 
 	// Give each CT a defuse kit
