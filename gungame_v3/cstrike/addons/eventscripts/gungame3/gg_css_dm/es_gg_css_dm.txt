@@ -4,40 +4,43 @@
 
 block load
 {
+	// Load inrange if it's not already loaded
+	es_load inrange
+	
 	// Init vars
-	es_xset dm_x 0
-	es_xset dm_y 0
-	es_xset dm_z 0
-	es_xset dm_x2 0
-	es_xset dm_y2 0
-	es_xset dm_z2 0
-	es_xset dm_howmanypoints 0
-	es_xset dm_whatpoint 0
-	es_xset dm_lastpoint 0
-	es_xset dm_point 0
-	es_xset dm_dead 0
-	es_xset dm_user 0
-	es_xset dm_user2 0
-	es_xset dm_user3 0
-	es_xset dm_userid 0
-	es_xset dm_arg 0
-	es_xset dm_argc 0
-	es_xset dm_tmp 0
-	es_xset dm_tmp2 0
-	es_xset dm_tmp3 0
-	es_xset dm_move_tmp 0
-	es_xset dm_players 0
-	es_xset dm_spawntime 2
-	es_xset dm_stuck 0
-	es_xset dm_give_check 0
-	es_xset dm_last_map 0
+	es_xsetinfo dm_x 0
+	es_xsetinfo dm_y 0
+	es_xsetinfo dm_z 0
+	es_xsetinfo dm_x2 0
+	es_xsetinfo dm_y2 0
+	es_xsetinfo dm_z2 0
+	es_xsetinfo dm_howmanypoints 0
+	es_xsetinfo dm_whatpoint 0
+	es_xsetinfo dm_lastpoint 0
+	es_xsetinfo dm_point 0
+	es_xsetinfo dm_dead 0
+	es_xsetinfo dm_user 0
+	es_xsetinfo dm_user2 0
+	es_xsetinfo dm_user3 0
+	es_xsetinfo dm_userid 0
+	es_xsetinfo dm_arg 0
+	es_xsetinfo dm_argc 0
+	es_xsetinfo dm_tmp 0
+	es_xsetinfo dm_tmp2 0
+	es_xsetinfo dm_tmp3 0
+	es_xsetinfo dm_move_tmp 0
+	es_xsetinfo dm_players 0
+	es_xsetinfo dm_spawntime 2
+	es_xsetinfo dm_stuck 0
+	es_xsetinfo dm_give_check 0
+	es_xsetinfo dm_last_map 0
 	
 	// Set server var to notify DM is on
-	es_xset gg_dm_script 1
+	es_xsetinfo gg_dm_script 1
 	
 	// Save default roundtime & freezetime and set the new roundtime & freezetime
-	es_xset old_roundtime 0
-	es_xset old_freezetime 0
+	es_xsetinfo old_roundtime 0
+	es_xsetinfo old_freezetime 0
 	es_xcopy old_roundtime mp_roundtime
 	es_xcopy old_freezetime mp_freezetime
 	mp_roundtime 9
@@ -72,7 +75,7 @@ event player_spawn
 	{
 		if (event_var(es_userteam) > 1) do
 		{
-			es_xset dm_exists 0
+			es_xsetinfo dm_exists 0
 			es_exists dm_exists key server_var(eventscripts_currentmap) total
 			if (server_var(dm_exists) == 1) do
 			{
@@ -93,22 +96,22 @@ event player_spawn
 
 event round_start
 {
-	es_xdelayed 2 es_xset dm_started 1
+	es_xdelayed 2 es_xsetinfo dm_started 1
 }
 
 event round_end
 {
-	es_xdelayed 2 es_xset dm_started 0
+	es_xdelayed 2 es_xsetinfo dm_started 0
 }
 
 event es_map_start
 {
 	if (server_var(dm_last_map) != 0) then es_xkeygroupdelete server_var(dm_last_map)
-	es_set dm_last_map server_var(eventscripts_currentmap)
+	es_setinfo dm_last_map server_var(eventscripts_currentmap)
 	// Load database
 	es_keygroupload server_var(eventscripts_currentmap) |gungame3/gg_css_dm/spawnpoints
 	
-	es_xset dm_started 0
+	es_xsetinfo dm_started 0
 	es_xdelayed 10 es_xdoblock gungame3/gg_css_dm/remove_idle_loop
 	es_xdelayed 2 mp_roundtime 9
 	es_xdelayed 2 mp_freezetime 0
@@ -285,19 +288,19 @@ block remove_idle_loop
 	es_xgetplayercount dm_players
 	if (server_var(dm_players) > 15) do
 	{
-		es_xset dm_spawntime 4
+		es_xsetinfo dm_spawntime 4
 	}
 	else do
 	{
 		if (server_var(dm_players) > 9) do
 		{
-			es_xset dm_spawntime 3
+			es_xsetinfo dm_spawntime 3
 		}
 		else do
 		{
 			if (server_var(dm_players) > 0) do
 			{
-				es_xset dm_spawntime 2
+				es_xsetinfo dm_spawntime 2
 			}
 		}
 	}
@@ -331,9 +334,9 @@ block dm_health_block
 
 block rand_stuck
 {
-	es_xset dm_tmp 0
-	es_xset dm_x2 0
-	es_xset dm_y2 0
+	es_xsetinfo dm_tmp 0
+	es_xsetinfo dm_x2 0
+	es_xsetinfo dm_y2 0
 	es_xrand dm_x2 -200 200
 	es_xrand dm_y2 -200 200
 	inrange dm_tmp dm_x2 80 0
@@ -402,13 +405,13 @@ block randspawn
 
 block dm_add_say
 {
-	es_xset dm_tmp2 0
+	es_xsetinfo dm_tmp2 0
 	es_xgetcmduserid dm_userid
 	es_getplayersteamid dm_steam server_var(dm_userid)
 	
 	if (server_var(dm_steam) in server_var(gg_admins)) do
 	{
-		es_xset dm_exists 0
+		es_xsetinfo dm_exists 0
 		es_exists dm_exists keygroup server_var(eventscripts_currentmap)
 		if (server_var(dm_exists) == 0) then es_xkeygroupcreate server_var(eventscripts_currentmap)
 		es_getplayerlocation dm_x2 dm_y2 dm_z2 server_var(dm_userid)
@@ -510,5 +513,5 @@ block unload
 	es mp_freezetime server_var(old_freezetime)
 	es_xkeygroupdelete gg_css_dm
 	es_keygroupdelete server_var(eventscripts_currentmap)
-	es_xset gg_dm_script 0
+	es_xsetinfo gg_dm_script 0
 }
