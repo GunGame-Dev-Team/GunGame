@@ -1,4 +1,4 @@
-// GG CSS Deathmatch 2.0.02
+// GG CSS Deathmatch 2.0.03
 // based on Jake the Snake's CSS Deathmatch script
 // modified for the Gun Game by cagemonkey
 
@@ -452,10 +452,20 @@ block dm_del_say
 		else do
 		{
 			es_keygetvalue dm_tmp server_var(eventscripts_currentmap) total total
-			es_keysetvalue server_var(eventscripts_currentmap) points server_var(dm_tmp) "deleted"
-			es_xmath dm_tmp - 1
-			es_keysetvalue server_var(eventscripts_currentmap) total total server_var(dm_tmp)
-			es_tell server_var(dm_userid) #green Spawnpoint server_var(dm_tmp) was deleted from server_var(eventscripts_currentmap)
+			if (server_var(dm_tmp) > 1) do
+			{
+				es_xmath dm_tmp - 1
+				es_keysetvalue server_var(eventscripts_currentmap) points server_var(dm_tmp) "deleted"
+				es_keysetvalue server_var(eventscripts_currentmap) total total server_var(dm_tmp)
+				es_tell server_var(dm_userid) #green Spawnpoint server_var(dm_tmp) was deleted from server_var(eventscripts_currentmap)
+			}
+			else do
+			{
+				es_keygroupdelete server_var(eventscripts_currentmap)
+				es_tell server_var(dm_userid) #green ###############################
+				es_tell server_var(dm_userid) #green - All spawnpoints for map server_var(eventscripts_currentmap) have been deleted!
+				es_tell server_var(dm_userid) #green ###############################
+			}
 			es_xkeygroupsave server_var(eventscripts_currentmap) |gungame3/gg_css_dm/spawnpoints
 		}
 	}
