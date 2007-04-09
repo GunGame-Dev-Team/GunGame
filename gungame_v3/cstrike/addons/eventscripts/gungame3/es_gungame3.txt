@@ -2685,6 +2685,9 @@ block gg_display_level
 
 block unload
 {
+	// Turn off GG map presets
+	alias gg_map_setup ""
+	
 	// Save gg_pref db
 	es_keygroupsave gg_pref server_var(gg_dir)
 	
