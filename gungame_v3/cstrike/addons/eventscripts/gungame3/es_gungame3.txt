@@ -1,6 +1,6 @@
 //***********************************************************//
 // Gun Game                                                  //
-// v3.4.61                                                   //
+// v3.4.7                                                    //
 //                                                           //
 // Thanks to the following people for helping contribute to  //
 //  making the Gun Game better for everyone:                 //
@@ -23,11 +23,7 @@ block config
 	//********
 	//   Add all admins for the Deathmatch admin commands here.
 	//   Separate each STEAM_ID with a comma, NO SPACES!!
-	es_xsetinfo gg_admins "STEAM_0:0:796294,STEAM_ID_LAN"
-	// Available admin say commands:
-	// dm_add -- Adds a spawnpoint to the current map's database
-	// dm_del [all] -- Deletes the last added spawnpoint. Optional 'all' flag will delete the entire spawnpoint database for the current map.
-	// dm_print -- Prints to screen the total number of spawnpoints and produces a blue sprite at each spawnpoint on the map that is visible to the admin for 10 seconds.
+	es_xsetinfo gg_admins "STEAM_ID_LAN,STEAM_0:0:796294"
 	
 
 	//************************************************************
@@ -162,8 +158,13 @@ block config
 	//
 	//   Spawn protection time for Deathmatch
 	//   Set this to the amount of seconds you want spawn protection
-	//   0=off
-	es_xsetinfo gg_dm_spawn_protect 3
+	//   0=off, recommended not to exceed 4 seconds
+	es_xsetinfo gg_dm_spawn_protect 3.5
+	//
+	//   Spawn protection check for Deathmatch
+	//   Remove spawn protection if the player uses a weapon before the spawn protection has expired
+	//   *Note* THIS CAN CAUSE SERVER LAG IF IT IS ENABLED!
+	es_xsetinfo gg_dm_remove_protect 0
 	//
 	//  DISABLE MAP OBJECTIVES
 	//  Setting this to 1 will disable the objectives (bombing, rescuing hostages)
@@ -201,7 +202,7 @@ block config
 	// MAP VOTING & MAPCYCLE
 	//***********************
 	//   Used to start random votemap when someone reaches the next to last level 0=off, 1=Mani, 2=Eventscripts**
-	// **Note: The Eventscripts version can be used as a custom mapcycle also.
+	// **Note: The Eventscripts mapvote version is experimental and is not supported.
 	//
 	//   If you want to use your Mani plugin for end of map votes, set this to 1
 	//   If you want to use Eventscripts for end of map votes or mapcycle, set this to 2 and set the configs below.
@@ -269,7 +270,7 @@ block config
 block load
 {
 	// Load popup if it's not already loaded
-	es_load popup
+	es_xload popup
 	
 	// Load config
 	es_xdoblock gungame3/config
@@ -278,7 +279,7 @@ block load
 	es_xdoblock corelib/noisy_on
 	
 	// Deathmatch addon
-	if (server_var(gg_dm_script) == 1) then es_load gungame3/gg_css_dm
+	if (server_var(gg_dm_script) == 1) then es_xload gungame3/gg_css_dm
 	
 	// Eventscripts map voting and mapcycle
 	if (server_var(gg_vote_setting) == 2) then es_xload gungame3/gg_voting
@@ -318,7 +319,7 @@ block load
 	es_xmath gg_level_dynamic - 1
 
 	// Public cvar announcing server runs Gun Game
-	es_xsetinfo eventscripts_gg "v3.4.61"
+	es_xsetinfo eventscripts_gg "v3.4.7"
 	es_xmakepublic eventscripts_gg
 
 	// gg_winners open flag
@@ -1268,8 +1269,11 @@ event player_death
 	{
 		es_keygetvalue p_kills gg_players event_var(attacker) kills
 	}
-	es_keygetvalue p_lvl gg_players event_var(attacker) level
-	es_keygetvalue p_wpn gg_weapons server_var(p_lvl) weapon
+	if (event_var(attacker) != 0) do
+	{
+		es_keygetvalue p_lvl gg_players event_var(attacker) level
+		es_keygetvalue p_wpn gg_weapons server_var(p_lvl) weapon
+	}
 		
 	es_keygetvalue victim_lvl gg_players event_var(userid) level
 
@@ -2685,9 +2689,6 @@ block gg_display_level
 
 block unload
 {
-	// Turn off GG map presets
-	alias gg_map_setup ""
-	
 	// Save gg_pref db
 	es_keygroupsave gg_pref server_var(gg_dir)
 	
@@ -2709,7 +2710,7 @@ block unload
   es_xdoblock gungame3/unsendTop10Page
   
   // Unload subscripts
-  if (server_var(gg_dm_script) == 1) then es_unload gungame3/gg_css_dm
+  if (server_var(gg_dm_script) == 1) then es_xunload gungame3/gg_css_dm
   if (server_var(gg_vote_setting) == 2) then es_xunload gungame3/gg_voting
   if (server_var(gg_rand_song) == 1) then es_xunload gungame3/gg_songs
   
