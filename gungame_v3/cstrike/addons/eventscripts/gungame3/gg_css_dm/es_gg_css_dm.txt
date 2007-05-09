@@ -5,6 +5,7 @@
 block load
 {
 	// Load inrange script if not already loaded
+	// COMMENT THIS OUT IF YOU ARE USING EVENTSCRIPTS 1.5+
 	es_xload inrange
 	
 	// Init vars
@@ -14,6 +15,8 @@ block load
 	es_xsetinfo dm_x2 0
 	es_xsetinfo dm_y2 0
 	es_xsetinfo dm_z2 0
+	es_xsetinfo dm_x3 0
+	es_xsetinfo dm_y3 0
 	es_xsetinfo dm_howmanypoints 0
 	es_xsetinfo dm_whatpoint 0
 	es_xsetinfo dm_lastpoint 0
@@ -47,9 +50,9 @@ block load
 	mp_freezetime 0
 	
 	// Databases
-	es_xkeygroupdelete gg_css_dm
+	keygroupremove gg_css_dm
 	es_xkeygroupcreate gg_css_dm
-	es_keygroupdelete server_var(eventscripts_currentmap)
+	es keygroupremove server_var(eventscripts_currentmap)
 	es_keygroupload server_var(eventscripts_currentmap) |gungame3/gg_css_dm/spawnpoints
 	
 	// Internal commands
@@ -95,7 +98,7 @@ event player_spawn
 	}
 	
 	// Set stuck value in database for quesry in stuck script
-	es_keysetvalue gg_players event_var(userid) stuck 0
+	es_soon es_xkeysetvalue gg_players event_var(userid) stuck 0
 }
 
 event round_start
@@ -293,27 +296,18 @@ block remove_idle_loop
 	if (server_var(dm_players) > 15) do
 	{
 		es_xsetinfo dm_spawntime 4
-		
-		//Custom code for cage's server
-		es_xforcevalue mp_limitteams 2
 	}
 	else do
 	{
 		if (server_var(dm_players) > 9) do
 		{
 			es_xsetinfo dm_spawntime 3
-			
-			//Custom code for cage's server
-			es_xforcevalue mp_limitteams 1
 		}
 		else do
 		{
 			if (server_var(dm_players) > 0) do
 			{
 				es_xsetinfo dm_spawntime 2
-				
-				//Custom code for cage's server
-				es_xforcevalue mp_limitteams 1
 			}
 		}
 	}
@@ -349,8 +343,8 @@ block rand_stuck
 	es_xsetinfo dm_y2 0
 	es_xrand dm_x2 -200 200
 	es_xrand dm_y2 -200 200
-	inrange dm_tmp dm_x2 80 0
-	inrange dm_tmp dm_y2 80 0
+	es inrange dm_tmp server_var(dm_x2) 50 0
+	es inrange dm_tmp server_var(dm_y2) 50 0
 	if (server_var(dm_tmp) == 1) do
 	{
 		es_xdoblock gungame3/gg_css_dm/rand_stuck
@@ -359,19 +353,21 @@ block rand_stuck
 	{
 		es_format dm_tmp "%1,%2,170" server_var(dm_x2) server_var(dm_y2)
 		es_setplayerprop event_var(userid) "CCSPlayer.baseclass.localdata.m_vecBaseVelocity" server_var(dm_tmp)
-		es_delayed .7 dm_check_cmd event_var(userid)
+		es_delayed .6 dm_check_cmd event_var(userid) server_var(user_x) server_var(user_y)
 	}
 }
 
 block dm_check_block
 {
 	es_xgetargv dm_user3 1
+	es_xgetargv dm_x3 2
+	es_xgetargv dm_y3 3
 	es_getplayerlocation dm_x2 dm_y2 dm_z2 server_var(dm_user3)
-	es_mathparse dm_tmp2 "abs(dm_x2 - user_x)"
-	es_mathparse dm_tmp3 "abs(dm_y2 - user_y)"
-	if (server_var(dm_tmp2) <= 50) do
+	es_mathparse dm_tmp2 "abs(dm_x2 - dm_x3)"
+	es_mathparse dm_tmp3 "abs(dm_y2 - dm_y3)"
+	if (server_var(dm_tmp2) <= 40) do
 	{
-		if (server_var(dm_tmp3) <= 50) do
+		if (server_var(dm_tmp3) <= 40) do
 		{
 			es est_spawn server_var(dm_user3) 1
 		}

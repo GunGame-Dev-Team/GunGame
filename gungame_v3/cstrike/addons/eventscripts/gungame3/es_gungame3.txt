@@ -1,6 +1,6 @@
 //***********************************************************//
 // Gun Game                                                  //
-// v3.4.7                                                    //
+// v3.4.73                                                   //
 //                                                           //
 // Thanks to the following people for helping contribute to  //
 //  making the Gun Game better for everyone:                 //
@@ -23,7 +23,7 @@ block config
 	//********
 	//   Add all admins for the Deathmatch admin commands here.
 	//   Separate each STEAM_ID with a comma, NO SPACES!!
-	es_xsetinfo gg_admins "STEAM_ID_LAN,STEAM_0:0:796294"
+	es_xsetinfo gg_admins "STEAM_ID_LAN, STEAM_0:0:796294"
 	
 
 	//************************************************************
@@ -60,8 +60,6 @@ block config
 	//   Pick which ones you want and put them in order with level 1 being first in the list then level 2, level 3, etc.
 	//   You can repeat weapons if you like.
 	//   Separate each weapon with a comma ',' NO SPACES!!
-	//   Default weapon order:
-	//   "glock,usp,p228,deagle,fiveseven,elite,m3,xm1014,tmp,mac10,mp5navy,ump45,p90,galil,famas,ak47,scout,m4a1,sg552,aug,m249,hegrenade,knife"
 	es_xsetinfo gg_weapon_order "glock,usp,p228,deagle,fiveseven,elite,m3,xm1014,tmp,mac10,mp5navy,ump45,p90,galil,famas,ak47,scout,m4a1,sg552,aug,m249,hegrenade,knife"
 	
 	
@@ -202,7 +200,7 @@ block config
 	// MAP VOTING & MAPCYCLE
 	//***********************
 	//   Used to start random votemap when someone reaches the next to last level 0=off, 1=Mani, 2=Eventscripts**
-	// **Note: The Eventscripts mapvote version is experimental and is not supported.
+	// **Note: The Eventscripts version can be used as a custom mapcycle also.
 	//
 	//   If you want to use your Mani plugin for end of map votes, set this to 1
 	//   If you want to use Eventscripts for end of map votes or mapcycle, set this to 2 and set the configs below.
@@ -240,7 +238,7 @@ block config
 	es_xsetinfo gg_sound_knife "gungame/knife_level.wav"
 	es_xsetinfo gg_sound_welcome "gungame/gungame2.wav"
 	//   Default warning sound is "ambient/misc/brass_bell_C.wav"
-	es_xsetinfo gg_sound_warning "gungame/smb_warning2.mp3"
+	es_xsetinfo gg_sound_warning "ambient/misc/brass_bell_C.wav"
 	//   Default winner sound is "music/HL2_song15.mp3"
 	es_xsetinfo gg_sound_winner "music/HL2_song15.mp3"
 	//
@@ -252,7 +250,7 @@ block config
 	//
 	//   RANDOM WINNER SONG
 	//   0=off, 1=on
-	es_xsetinfo gg_rand_song 0
+	es_xsetinfo gg_rand_song 1
 	//   This will override your gg_sound_winner setting above and play a random song from this list.
 	//   EACH FILE MUST BE LOCATED IN YOUR /cstrike/sound/gungame/ DIRECTORY!!
 	//   Put each song filename in this list seperated by commas, NO SPACES!!!
@@ -319,7 +317,7 @@ block load
 	es_xmath gg_level_dynamic - 1
 
 	// Public cvar announcing server runs Gun Game
-	es_xsetinfo eventscripts_gg "v3.4.7"
+	es_xsetinfo eventscripts_gg "v3.4.73"
 	es_xmakepublic eventscripts_gg
 
 	// gg_winners open flag
@@ -334,29 +332,24 @@ block load
 	es_xsetinfo gg_one_winner 0
 
 	// afk database
-	es_xexists gg_exists keygroup afk_db
-	if (server_var(gg_exists) == 1) then es_xkeygroupdelete afk_db
+	keygroupremove afk_db
 	es_xkeygroupcreate afk_db
 
 	// level db for reconnecting players
-	es_xexists gg_exists keygroup lvl_db
-	if (server_var(gg_exists) == 1) then es_xkeygroupdelete lvl_db
+	keygroupremove lvl_db
 	es_xkeygroupcreate lvl_db
 	
 	// player pref database
-	es_xexists gg_exists keygroup gg_pref
-	if (server_var(gg_exists) == 1) then es_xkeygroupdelete gg_pref
+	keygroupremove gg_pref
 	es_xkeygroupcreate gg_pref
 	es_keygroupload gg_pref server_var(gg_dir)
 
 	// gg_players database
-	es_xexists gg_exists keygroup gg_players
-	if (server_var(gg_exists) == 1) then es_xkeygroupdelete gg_players
+	keygroupremove gg_players
 	es_xkeygroupcreate gg_players
 
 	// gg_top10 database
-	es_xexists gg_exists keygroup gg_top10
-	if (server_var(gg_exists) == 1) then es_xkeygroupdelete gg_top10
+	keygroupremove gg_top10
 	es_xkeygroupcreate gg_top10
 	es_keygroupload gg_top10 server_var(gg_dir)
 	es_xsetinfo top10_check 0
@@ -370,10 +363,8 @@ block load
 	es_xkeygroupdelete gg_player_list
 
 	// generate ammo clip info
-	es_xexists gg_exists keygroup gg_ammo_props
-	if (server_var(gg_exists) == 1) then es_xkeygroupdelete gg_ammo_props
-	es_xexists gg_exists keygroup gg_ammo_count
-	if (server_var(gg_exists) == 1) then es_xkeygroupdelete gg_ammo_count
+	keygroupremove gg_ammo_props
+	keygroupremove gg_ammo_count
 
 	es_xkeycreate gg_ammo_props
 	es_xkeycreate gg_ammo_count
@@ -1056,23 +1047,20 @@ event es_map_start
 	es_xsetinfo ldr_level 1
 	
 	// afk database
-	es_xexists gg_exists keygroup afk_db
-	if (server_var(gg_exists) == 1) then es_xkeygroupdelete afk_db
+	keygroupremove afk_db
 	es_xkeygroupcreate afk_db
 
 	// level db for reconnecting players
-	es_xexists gg_exists keygroup lvl_db
-	if (server_var(gg_exists) == 1) then es_xkeygroupdelete lvl_db
+	keygroupremove lvl_db
 	es_xkeygroupcreate lvl_db
 
 	// gg_players database
-	es_xexists gg_exists keygroup gg_players
-	if (server_var(gg_exists) == 1) then es_xkeygroupdelete gg_players
+	keygroupremove gg_players
 	es_xkeygroupcreate gg_players
 
 	// Warmup round code
 	alias warmup_countdown "es_xmath gg_warmup_timer - 1; if (server_var(gg_warmup_timer) == 1) then warmup_over; es_centermsg Warmup round: server_var(gg_warmup_timer) seconds left; if (server_var(gg_warmup_timer) > 1) then es_xdelayed 1 warmup_countdown"
-	alias warmup_over "es_xsetinfo dm_started 0; mp_restartgame 1; es_xdelayed .97 es_xforeachkey test in gg_players warmup_reset; es_xdelayed 1 es_xsetinfo ldr_level 1"
+	alias warmup_over "es_xsetinfo dm_started 0; mp_restartgame 1; es_xdelayed .99 es_xforeachkey test in gg_players warmup_reset; es_xdelayed 1 es_xsetinfo ldr_level 1"
 	alias warmup_reset "es_keysetvalue gg_players server_var(test) level 1"
 	if (server_var(gg_warmup_timer) > 0) then warmup_countdown
 }
@@ -1185,6 +1173,61 @@ event bomb_dropped
 {
 	// Reset bomber
 	es_xsetinfo bomber 0
+}
+
+
+event player_team
+{
+	if (server_var(gg_join_msg) == 1) do
+	{
+		// Join message
+		if (event_var(disconnect) != 1) do
+		{
+			es_xsetinfo gg_join_msg_do 0
+			es_keygetvalue gg_join_msg_do gg_players event_var(userid) join_msg
+			if (server_var(gg_join_msg_do) == 0) do
+			{
+				es_xsetinfo message_counter 0
+				// Welcome message
+				es_xsetinfo tmp_menumsg "This server is running the Gun Game\n_______________\n"
+				if (server_var(gg_knife_pro) == 1) do
+				{
+					es_xmath message_counter + 1
+					es_format tmp_menumsg "%1->%2. Knife Pro is ENABLED!!\n" server_var(tmp_menumsg) server_var(message_counter)
+				}
+				if (server_var(gg_turbo) == 1) do
+				{
+					es_xmath message_counter + 1
+					es_format tmp_menumsg "%1->%2. Turbo Mode is ENABLED!!\n" server_var(tmp_menumsg) server_var(message_counter)
+				}
+				if (server_var(gg_knife_elite) == 1) do
+				{
+					es_xmath message_counter + 1
+					es_format tmp_menumsg "%1->%2. Knife Elite Mode is ENABLED!!\n" server_var(tmp_menumsg) server_var(message_counter)
+				}
+				if (server_var(gg_multikill) > 1) do
+				{
+					es_xmath message_counter + 1
+					es_format tmp_menumsg "%1->%2. Multikill Mode is ENABLED!! %3 kills required\n" server_var(tmp_menumsg) server_var(message_counter) server_var(gg_multikill)
+				}
+				if (server_var(gg_dm_script) == 1) do
+				{
+					es_xmath message_counter + 1
+					es_format tmp_menumsg "%1->%2. Deathmatch Addon is ENABLED!!\n" server_var(tmp_menumsg) server_var(message_counter)
+					if (server_var(gg_dm_spawn_protect) > 0) do
+					{
+						es_format tmp_menumsg "%1 - Spawn protection: %2 seconds\n" server_var(tmp_menumsg) server_var(gg_dm_spawn_protect)
+					}
+				}
+				es_format tmp_menumsg "%1---------------\nType !rules for instructions on how to play and a list of commands\nType !level to get your level info and who is leading\nType !score to get a list of all players scores and winnings\n \n->0. Exit" server_var(tmp_menumsg)
+				es_menu 0 event_var(userid) server_var(tmp_menumsg)
+				es_keysetvalue gg_players event_var(userid) join_msg 1
+				
+				// Player join gungame sound
+				es_cexec event_var(userid) play server_var(gg_sound_welcome)
+			}
+		}
+	}
 }
 
 
@@ -1358,7 +1401,7 @@ event player_death
 										es_keysetvalue gg_players event_var(userid) level server_var(victim_lvl)
 									}
 									es_keysetvalue gg_players event_var(userid) kills 0
-									es_msg #green event_var(es_attackername) stole a level from event_var(es_username)
+									//es_msg #green event_var(es_attackername) stole a level from event_var(es_username)
 									es_cexec event_var(userid) play server_var(gg_sound_leveldown)
 									es_cexec event_var(attacker) play server_var(gg_sound_levelsteal)
 
@@ -1400,7 +1443,7 @@ event player_death
 									es_keysetvalue gg_players event_var(userid) level server_var(victim_lvl)
 								}
 								es_keysetvalue gg_players event_var(userid) kills 0
-								es_msg #green event_var(es_attackername) stole a level from event_var(es_username)
+								//es_msg #green event_var(es_attackername) stole a level from event_var(es_username)
 								es_cexec event_var(userid) play server_var(gg_sound_leveldown)
 								es_cexec event_var(attacker) play server_var(gg_sound_levelsteal)
 
@@ -1437,7 +1480,7 @@ event player_death
 			es_format tmp_menumsg "%1 was AFK\n Your kill did not count!!" event_var(es_username)
 			es_menu 5 event_var(attacker) server_var(tmp_menumsg)
 			es_keysetvalue afk_db event_var(userid) x 1
-			es_keysetvalue afk_db event_var(userid) y 1
+			//es_keysetvalue afk_db event_var(userid) y 1
 		}
 	}
 	if (server_var(suicide_protect) == 0) do
@@ -1633,7 +1676,7 @@ block gg_levelup
 			}
 			if (server_var(p_lvl) < server_var(ldr_level)) do
 			{
-				es_tell event_var(attacker) #lightgreen You are now server_var(p_diff) levels behind the leader
+				es_tell event_var(attacker) #multi #lightgreen[#greenGunGame#lightgreen] You are now #default server_var(p_diff) #lightgreen levels behind the leader
 			}
 			if (event_var(weapon) != "knife") do
 			{
@@ -1728,7 +1771,7 @@ block gg_levelup
 					}
 					if (server_var(p_lvl) < server_var(ldr_level)) do
 					{
-						es_tell event_var(attacker) #lightgreen You are now server_var(p_diff) levels behind the leader
+						es_tell event_var(attacker) #multi #lightgreen[#greenGunGame#lightgreen] You are now #default server_var(p_diff) #lightgreen levels behind the leader
 					}
 				}
 				if (server_var(gg_max_lvl) == 0) do
@@ -1764,7 +1807,7 @@ block gg_levelup
 					}
 					if (server_var(p_lvl) < server_var(ldr_level)) do
 					{
-						es_tell event_var(attacker) #lightgreen You are now server_var(p_diff) levels behind the leader
+						es_tell event_var(attacker) #multi #lightgreen[#greenGunGame#lightgreen] You are now #default server_var(p_diff) #lightgreen levels behind the leader
 					}
 				}
 
@@ -1905,10 +1948,10 @@ event player_disconnect
 		es_keygetvalue p_steamid gg_players event_var(userid) steamid
 		es_keycreate lvl_db server_var(p_steamid)
 		es_keysetvalue lvl_db server_var(p_steamid) level server_var(p_lvl)
-	}
+		
 		// Delete player from afk_db
 		es_keydelete afk_db event_var(userid)
-
+	}
 		// Delete player from gg_players
 		es_keydelete gg_players event_var(userid)
 }
@@ -2134,11 +2177,11 @@ event item_pickup
 event weapon_fire
 {
 	// Change player's location in afk_db to avoid exploit
-	if (event_var(es_steamid) != "BOT") do
-	{
+	//if (event_var(es_steamid) != "BOT") do
+	//{
 		es_keysetvalue afk_db event_var(userid) x 1
 		//es_keysetvalue afk_db event_var(userid) y 1
-	}
+	//}
 }
 
 
@@ -2608,7 +2651,7 @@ block gg_display_rules
         es_cexec event_var(userid) echo Say !top10 to see the top 10 winners on the server.
         es_cexec event_var(userid) echo Say !stuck if you get stuck to another player.
         es_cexec event_var(userid) echo Say !auto to turn Auto Give on/off.
-        es_cexec event_var(userid) echo Say 	 if you do not receive your weapon. (Deathmatch ONLY)
+        es_cexec event_var(userid) echo Say !give if you do not receive your weapon. (Deathmatch ONLY)
         es_cexec event_var(userid) echo -----------------------------
         es_cexec event_var(userid) echo -----------------------------
        
@@ -2804,21 +2847,7 @@ block give_player_weapon
 		es_keysetvalue gg_players server_var(user_id) level 1
 	}	
 	es_keygetvalue p_wpn gg_weapons server_var(p_lvl) weapon
-	es_keygetvalue p_kills gg_players server_var(user_id) kills
-
 	
-	// Round start message
-	es_tell server_var(user_id) #multi #lightgreen[#greenGunGame#lightgreen] You are on level#green server_var(p_lvl) #lightgreen :: #default server_var(p_wpn)
-	if (server_var(gg_multikill) > 1) do
-	{
-		if (server_var(p_wpn) != "hegrenade") do
-		{
-			if (server_var(p_wpn) != "knife") do
-			{
-				es_tell server_var(user_id) #multi #lightgreen[#greenGunGame#lightgreen] You need #green server_var(gg_multikill)#lightgreen kills to advance. #green Score: #lightgreen server_var(p_kills) / server_var(gg_multikill)
-			}
-		}
-	}
 
 	// Equip player
 	es_format p_wpn "weapon_%1" server_var(p_wpn)
@@ -2984,54 +3013,6 @@ block main_reset_player
 		{
 			es_xdoblock gungame3/gg_voting/map_vote
 			es_xsetinfo gg_vote 0
-		}
-	}
-	
-	// Join message
-	if (server_var(gg_join_msg) == 1) do
-	{
-		es_xsetinfo gg_join_msg_do 0
-		es_keygetvalue gg_join_msg_do gg_players server_var(user_id) join_msg
-		if (server_var(gg_join_msg_do) == 0) do
-		{
-			es_xsetinfo message_counter 0
-			// Welcome message
-			es_xsetinfo tmp_menumsg "This server is running the Gun Game\n_______________\n"
-			if (server_var(gg_knife_pro) == 1) do
-			{
-				es_xmath message_counter + 1
-				es_format tmp_menumsg "%1->%2. Knife Pro is ENABLED!!\n" server_var(tmp_menumsg) server_var(message_counter)
-			}
-			if (server_var(gg_turbo) == 1) do
-			{
-				es_xmath message_counter + 1
-				es_format tmp_menumsg "%1->%2. Turbo Mode is ENABLED!!\n" server_var(tmp_menumsg) server_var(message_counter)
-			}
-			if (server_var(gg_knife_elite) == 1) do
-			{
-				es_xmath message_counter + 1
-				es_format tmp_menumsg "%1->%2. Knife Elite Mode is ENABLED!!\n" server_var(tmp_menumsg) server_var(message_counter)
-			}
-			if (server_var(gg_multikill) > 1) do
-			{
-				es_xmath message_counter + 1
-				es_format tmp_menumsg "%1->%2. Multikill Mode is ENABLED!! %3 kills required\n" server_var(tmp_menumsg) server_var(message_counter) server_var(gg_multikill)
-			}
-			if (server_var(gg_dm_script) == 1) do
-			{
-				es_xmath message_counter + 1
-				es_format tmp_menumsg "%1->%2. Deathmatch Addon is ENABLED!!\n" server_var(tmp_menumsg) server_var(message_counter)
-				if (server_var(gg_dm_spawn_protect) > 0) do
-				{
-					es_format tmp_menumsg "%1 - Spawn protection: %2 seconds\n" server_var(tmp_menumsg) server_var(gg_dm_spawn_protect)
-				}
-			}
-			es_format tmp_menumsg "%1---------------\nType !rules for instructions on how to play and a list of commands\nType !level to get your level info and who is leading\nType !score to get a list of all players scores and winnings in your console\n \n->0. Exit" server_var(tmp_menumsg)
-			es_menu 0 server_var(user_id) server_var(tmp_menumsg)
-			es_keysetvalue gg_players server_var(user_id) join_msg 1
-			
-			// Player join gungame sound
-			es_cexec server_var(user_id) play server_var(gg_sound_welcome)
 		}
 	}
 }
