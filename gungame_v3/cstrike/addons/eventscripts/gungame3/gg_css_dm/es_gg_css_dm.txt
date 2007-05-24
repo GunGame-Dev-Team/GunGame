@@ -4,10 +4,6 @@
 
 block load
 {
-	// Load inrange script if not already loaded
-	// COMMENT THIS OUT IF YOU ARE USING EVENTSCRIPTS 1.5+
-	es_xload inrange
-	
 	// Init vars
 	es_xsetinfo dm_x 0
 	es_xsetinfo dm_y 0

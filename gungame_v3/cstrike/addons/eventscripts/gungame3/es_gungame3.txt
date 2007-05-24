@@ -17,6 +17,12 @@ block config
 	// This is the only block you should ever edit
 	// UNLESS YOU KNOW WHAT YOU ARE DOING!!
 	// ###############################################
+
+
+	// Load inrange script if not already loaded
+	// COMMENT THIS OUT IF YOU ARE USING EVENTSCRIPTS 1.5+
+	es_xload inrange
+
 	
 	//************************************************************
 	// ADMINS
