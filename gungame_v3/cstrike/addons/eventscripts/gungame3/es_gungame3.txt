@@ -1,6 +1,6 @@
 //***********************************************************//
 // Gun Game                                                  //
-// v3.4.73                                                   //
+// v3.4.74                                                   //
 //                                                           //
 // Thanks to the following people for helping contribute to  //
 //  making the Gun Game better for everyone:                 //
@@ -23,7 +23,7 @@ block config
 	//********
 	//   Add all admins for the Deathmatch admin commands here.
 	//   Separate each STEAM_ID with a comma, NO SPACES!!
-	es_xsetinfo gg_admins "STEAM_ID_LAN, STEAM_0:0:796294"
+	es_xsetinfo gg_admins "STEAM_0:0:796294,STEAM_0:1:10369733,STEAM_0:1:10609526,STEAM_0:0:10232081,STEAM_0:0:4808221,STEAM_0:0:203858,STEAM_0:0:5610062"
 	
 
 	//************************************************************
@@ -60,6 +60,8 @@ block config
 	//   Pick which ones you want and put them in order with level 1 being first in the list then level 2, level 3, etc.
 	//   You can repeat weapons if you like.
 	//   Separate each weapon with a comma ',' NO SPACES!!
+	//   Default weapon order:
+	//   "glock,usp,p228,deagle,fiveseven,elite,m3,xm1014,tmp,mac10,mp5navy,ump45,p90,galil,famas,ak47,scout,m4a1,sg552,aug,m249,hegrenade,knife"
 	es_xsetinfo gg_weapon_order "glock,usp,p228,deagle,fiveseven,elite,m3,xm1014,tmp,mac10,mp5navy,ump45,p90,galil,famas,ak47,scout,m4a1,sg552,aug,m249,hegrenade,knife"
 	
 	
@@ -238,7 +240,7 @@ block config
 	es_xsetinfo gg_sound_knife "gungame/knife_level.wav"
 	es_xsetinfo gg_sound_welcome "gungame/gungame2.wav"
 	//   Default warning sound is "ambient/misc/brass_bell_C.wav"
-	es_xsetinfo gg_sound_warning "ambient/misc/brass_bell_C.wav"
+	es_xsetinfo gg_sound_warning "gungame/smb_warning2.mp3"
 	//   Default winner sound is "music/HL2_song15.mp3"
 	es_xsetinfo gg_sound_winner "music/HL2_song15.mp3"
 	//
@@ -313,7 +315,7 @@ block load
 	if (server_var(gg_levels) > 0) then es_xdoblock gungame3/create_weapon_list
 
 	// Dynamic level total - 1
-	es_setinfo gg_level_dynamic server_var(gg_levels)
+	es_set gg_level_dynamic server_var(gg_levels)
 	es_xmath gg_level_dynamic - 1
 
 	// Public cvar announcing server runs Gun Game
@@ -1095,7 +1097,7 @@ block gg_set_weapon_order
 		}
 		else do
 		{
-			es_setinfo gg_weapon_order server_var(gg_tmp_weapon_order)
+			es_set gg_weapon_order server_var(gg_tmp_weapon_order)
 		}
 	
 		// Create weapon list
@@ -1109,7 +1111,7 @@ block gg_set_weapon_order
 		if (server_var(gg_levels) > 0) then es_xdoblock gungame3/create_weapon_list
 
 		// Dynamic level total - 1
-		es_setinfo gg_level_dynamic server_var(gg_levels)
+		es_set gg_level_dynamic server_var(gg_levels)
 		es_xmath gg_level_dynamic - 1
 	
 		es_log [GunGame] Weapon order reset to: server_var(gg_weapon_order)
@@ -1157,7 +1159,7 @@ event bomb_pickup
 	if (server_var(gg_obj_remove) != 1) do
 	{
 		// Set bomber
-		es_setinfo bomber event_var(userid)
+		es_set bomber event_var(userid)
 	}
 }
 
@@ -1556,14 +1558,14 @@ block gg_levelup
 						es_msg #multi #green event_var(es_attackername) #lightgreen won!
 					}
 				}
-				es_setinfo winner_name event_var(es_attackername)
+				es_set winner_name event_var(es_attackername)
 				if (server_var(sv_lan) == 1) do
 				{
-					es_setinfo winner_steam event_var(es_attackername)
+					es_set winner_steam event_var(es_attackername)
 				}
 				else do
 				{
-					es_setinfo winner_steam event_var(es_attackersteamid)
+					es_set winner_steam event_var(es_attackersteamid)
 				}
 				es_xdoblock gungame3/gg_winner
 		
@@ -1659,11 +1661,11 @@ block gg_levelup
 			// Update player name in gg_players database
 			es_keysetvalue gg_players event_var(attacker) name event_var(es_attackername)
 				
-			es_setinfo p_diff server_var(ldr_level)
+			es_set p_diff server_var(ldr_level)
 			es_math p_diff - server_var(p_lvl)
 			if (server_var(p_lvl) > server_var(ldr_level)) do
 			{
-				es_setinfo ldr_level server_var(p_lvl)
+				es_set ldr_level server_var(p_lvl)
 				es_keygetvalue ldr_name gg_players event_var(attacker) name
 				es_msg #multi #green event_var(es_attackername)#lightgreen is leading on level #green server_var(p_lvl)
 			}
@@ -1728,7 +1730,7 @@ block gg_levelup
 				es_xcopy oldescape eventscripts_escapechars
 				if (event_var(es_attackerteam) == 2) then es_xsetinfo _tmp "TERRORIST"
 				if (event_var(es_attackerteam) == 3) then es_xsetinfo _tmp "CT"
-				es_format _tmp2 "%1<%2><%3><%4>" event_var(es_username) event_var(userid) event_var(es_steamid) server_var(_tmp)
+				es_format _tmp2 "%1<%2><%3><%4>" event_var(es_attackername) event_var(attacker) event_var(es_attackersteamid) server_var(_tmp)
 				es_xsetinfo eventscripts_escapechars "; {}()':l"
 				es_logq server_var(_tmp2) triggered gg_triplelevel
 				es_xcopy eventscripts_escapechars oldescape
@@ -1754,11 +1756,11 @@ block gg_levelup
 					// Update player name in gg_players database
 					es_keysetvalue gg_players event_var(attacker) name event_var(es_attackername)
 				
-					es_setinfo p_diff server_var(ldr_level)
+					es_set p_diff server_var(ldr_level)
 					es_math p_diff - server_var(p_lvl)
 					if (server_var(p_lvl) > server_var(ldr_level)) do
 					{
-						es_setinfo ldr_level server_var(p_lvl)
+						es_set ldr_level server_var(p_lvl)
 						es_keygetvalue ldr_name gg_players event_var(attacker) name
 						es_msg #multi #green event_var(es_attackername)#lightgreen is leading on level #green server_var(p_lvl)
 					}
@@ -1790,11 +1792,11 @@ block gg_levelup
 					// Update player name in gg_players database
 					es_keysetvalue gg_players event_var(attacker) name event_var(es_attackername)
 				
-					es_setinfo p_diff server_var(ldr_level)
+					es_set p_diff server_var(ldr_level)
 					es_math p_diff - server_var(p_lvl)
 					if (server_var(p_lvl) > server_var(ldr_level)) do
 					{
-						es_setinfo ldr_level server_var(p_lvl)
+						es_set ldr_level server_var(p_lvl)
 						es_keygetvalue ldr_name gg_players event_var(attacker) name
 						es_msg #multi #green event_var(es_attackername)#lightgreen is leading on level #green server_var(p_lvl)
 					}
@@ -2665,7 +2667,7 @@ block gg_display_level
         es_keygetvalue p_wpn gg_weapons server_var(p_lvl) weapon
         es_keygetvalue p_wins gg_players event_var(userid) wins
         es_keygetvalue p_kills gg_players event_var(userid) kills
-        es_setinfo p_lvlsbehind server_var(ldr_level)
+        es_set p_lvlsbehind server_var(ldr_level)
         es_math p_lvlsbehind - server_var(p_lvl)
         if (server_var(ldr_level) != 0) do
         {
