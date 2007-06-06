@@ -325,7 +325,7 @@ block load
 	es_xmath gg_level_dynamic - 1
 
 	// Public cvar announcing server runs Gun Game
-	es_xsetinfo eventscripts_gg "v3.4.73"
+	es_xsetinfo eventscripts_gg "v3.4.74"
 	es_xmakepublic eventscripts_gg
 
 	// gg_winners open flag
