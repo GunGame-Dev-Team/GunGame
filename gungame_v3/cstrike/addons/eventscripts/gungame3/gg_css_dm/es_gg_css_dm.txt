@@ -1,9 +1,17 @@
-// GG CSS Deathmatch 2.0.04
+// GG CSS Deathmatch 2.0.05
 // based on Jake the Snake's CSS Deathmatch script
 // modified for the Gun Game by cagemonkey
 
 block load
 {
+	// Load inrange script if not already loaded
+	es_xsetinfo dm_exists 0
+	es_xexists dm_exists command inrange
+	if (server_var(dm_exists) == 0) do
+	{
+		es_xload inrange
+	}
+	
 	// Init vars
 	es_xsetinfo dm_x 0
 	es_xsetinfo dm_y 0
@@ -52,11 +60,36 @@ block load
 	es_keygroupload server_var(eventscripts_currentmap) |gungame3/gg_css_dm/spawnpoints
 	
 	// Internal commands
-	es_xregcmd dm_dead_cmd gungame3/gg_css_dm/dm_dead_block "Internal GG_CSS_DM command"
-	es_xregcmd dm_live_cmd gungame3/gg_css_dm/dm_live_block "Internal GG_CSS_DM command"
-	es_xregcmd dm_check_cmd gungame3/gg_css_dm/dm_check_block "Internal GG_CSS_DM command"
-	es_xregcmd dm_give_cmd gungame3/gg_css_dm/dm_give_block "Internal GG_CSS_DM command"
-	es_xregcmd dm_health_cmd gungame3/gg_css_dm/dm_health_block "Internal GG_CSS_DM command"
+	es_xsetinfo dm_exists 0
+	es_xexists dm_exists command dm_dead_cmd
+	if (server_var(dm_exists) == 0) do
+	{
+		es_xregcmd dm_dead_cmd gungame3/gg_css_dm/dm_dead_block "Internal GG_CSS_DM command"
+	}
+	es_xsetinfo dm_exists 0
+	es_xexists dm_exists command dm_live_cmd
+	if (server_var(dm_exists) == 0) do
+	{
+		es_xregcmd dm_live_cmd gungame3/gg_css_dm/dm_live_block "Internal GG_CSS_DM command"
+	}
+	es_xsetinfo dm_exists 0
+	es_xexists dm_exists command dm_check_cmd
+	if (server_var(dm_exists) == 0) do
+	{
+		es_xregcmd dm_check_cmd gungame3/gg_css_dm/dm_check_block "Internal GG_CSS_DM command"
+	}
+	es_xsetinfo dm_exists 0
+	es_xexists dm_exists command dm_give_cmd
+	if (server_var(dm_exists) == 0) do
+	{
+		es_xregcmd dm_give_cmd gungame3/gg_css_dm/dm_give_block "Internal GG_CSS_DM command"
+	}
+	es_xsetinfo dm_exists 0
+	es_xexists dm_exists command dm_health_cmd
+	if (server_var(dm_exists) == 0) do
+	{
+		es_xregcmd dm_health_cmd gungame3/gg_css_dm/dm_health_block "Internal GG_CSS_DM command"
+	}
 	
 	// Client say commands
 	es_xregsaycmd dm_ghost gungame3/gg_css_dm/dm_ghost_say "Alter Lifestate to make it easier to add spawnpoints on a live server"
@@ -93,7 +126,7 @@ event player_spawn
 		}
 	}
 	
-	// Set stuck value in database for quesry in stuck script
+	// Set stuck value in database for query in stuck script
 	es_soon es_xkeysetvalue gg_players event_var(userid) stuck 0
 }
 
@@ -292,18 +325,27 @@ block remove_idle_loop
 	if (server_var(dm_players) > 15) do
 	{
 		es_xsetinfo dm_spawntime 4
+		
+		//Custom code for cage's server
+		es_xforcevalue mp_limitteams 2
 	}
 	else do
 	{
 		if (server_var(dm_players) > 9) do
 		{
 			es_xsetinfo dm_spawntime 3
+			
+			//Custom code for cage's server
+			es_xforcevalue mp_limitteams 1
 		}
 		else do
 		{
 			if (server_var(dm_players) > 0) do
 			{
 				es_xsetinfo dm_spawntime 2
+				
+				//Custom code for cage's server
+				es_xforcevalue mp_limitteams 1
 			}
 		}
 	}
@@ -515,4 +557,9 @@ block unload
 	es_xkeygroupdelete gg_css_dm
 	es_keygroupdelete server_var(eventscripts_currentmap)
 	es_xsetinfo gg_dm_script 0
+	
+	es_xunregsaycmd dm_ghost
+	es_xunregsaycmd dm_print
+	es_xunregsaycmd dm_add
+	es_xunregsaycmd dm_del
 }

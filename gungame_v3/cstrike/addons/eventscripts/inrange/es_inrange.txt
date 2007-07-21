@@ -59,9 +59,9 @@ block inrange
 	}
 	else do
 	{
-		echo [InRange] -- Incorrect syntax.
-		echo Syntax: inrange <var> <value1> <range> <value2>
-		echo <var> stores the results of the test between <value1> and <value2>
-		echo 0=false, 1=true
+		es_dbgmsg 0 [InRange] -- Incorrect syntax.
+		es_dbgmsg 0 Syntax: inrange <var> <value1> <range> <value2>
+		es_dbgmsg 0 <var> stores the results of the test between <value1> and <value2>
+		es_dbgmsg 0 0=false, 1=true
 	}
 }

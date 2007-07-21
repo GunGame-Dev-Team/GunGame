@@ -1,6 +1,6 @@
 //***********************************************************//
 // Gun Game                                                  //
-// v3.4.75                                                   //
+// v3.4.79                                                   //
 //                                                           //
 // Thanks to the following people for helping contribute to  //
 //  making the Gun Game better for everyone:                 //
@@ -17,14 +17,13 @@ block config
 	// This is the only block you should ever edit
 	// UNLESS YOU KNOW WHAT YOU ARE DOING!!
 	// ###############################################
-
 	
 	//************************************************************
 	// ADMINS
 	//********
 	//   Add all admins for the Deathmatch admin commands here.
 	//   Separate each STEAM_ID with a comma, NO SPACES!!
-	es_xsetinfo gg_admins "STEAM_0:0:796294,STEAM_ID_LAN"
+	es_xsetinfo gg_admins "STEAM_ID_LAN,STEAM_0:0:796294"
 	
 
 	//************************************************************
@@ -160,7 +159,7 @@ block config
 	//   Spawn protection time for Deathmatch
 	//   Set this to the amount of seconds you want spawn protection
 	//   0=off, recommended not to exceed 4 seconds
-	es_xsetinfo gg_dm_spawn_protect 3.5
+	es_xsetinfo gg_dm_spawn_protect 2.5
 	//
 	//   Spawn protection check for Deathmatch
 	//   Remove spawn protection if the player uses a weapon before the spawn protection has expired
@@ -271,14 +270,7 @@ block config
 block load
 {
 	// Load popup if it's not already loaded
-	es_xsetinfo gg_exists 0
-	es_xexists gg_exists command popup
-	if (server_var(gg_exists) == 0) then es_xload popup
-
-	// Load inrange script if not already loaded
-	es_xsetinfo gg_exists 0
-	es_xexists gg_exists command inrange
-	if (server_var(gg_exists) == 0) then es_xload inrange
+	es_xload popup
 	
 	// Load config
 	es_xdoblock gungame3/config
@@ -305,12 +297,42 @@ block load
 	es_xsetinfo gg_dir "|gungame3"
 	
 	// Create console commands
-	es_xregcmd gg_setlevel gungame3/gg_set_level "Allows admin to change player level: gg_setlevel <partial name> <level>"
-	es_xregcmd gg_reset gungame3/gg_reset_scores "Resets all player records for the Gun Game and restarts the current map"
-	es_xregcmd gg_setweapons gungame3/gg_set_weapon_order "Allows changes to the weapon order: gg_setweapons <weapon>,<weapon>,<etc>"
-	es_xregcmd gg_triple_cmd gungame3/gg_triple_finish "Internal Gun Game command"
-	es_xregcmd gg_start_round gungame3/main_reset_player "Internal Gun Game command"
-	es_xregcmd gg_turbo_equip gungame3/give_turbo_weapon "Internal Gun Game command"
+	es_xsetinfo gg_exists 0
+	es_xexists gg_exists command gg_setlevel
+	if (server_var(gg_exists) == 0) do
+	{
+		es_xregcmd gg_setlevel gungame3/gg_set_level "Allows admin to change player level: gg_setlevel <partial name> <level>"
+	}
+	es_xsetinfo gg_exists 0
+	es_xexists gg_exists command gg_reset
+	if (server_var(gg_exists) == 0) do
+	{
+		es_xregcmd gg_reset gungame3/gg_reset_scores "Resets all player records for the Gun Game and restarts the current map"
+	}
+	es_xsetinfo gg_exists 0
+	es_xexists gg_exists command gg_setweapons
+	if (server_var(gg_exists) == 0) do
+	{
+		es_xregcmd gg_setweapons gungame3/gg_set_weapon_order "Allows changes to the weapon order: gg_setweapons <weapon>,<weapon>,<etc>"
+	}
+	es_xsetinfo gg_exists 0
+	es_xexists gg_exists command gg_triple_cmd
+	if (server_var(gg_exists) == 0) do
+	{
+		es_xregcmd gg_triple_cmd gungame3/gg_triple_finish "Internal Gun Game command"
+	}
+	es_xsetinfo gg_exists 0
+	es_xexists gg_exists command gg_start_round
+	if (server_var(gg_exists) == 0) do
+	{
+		es_xregcmd gg_start_round gungame3/main_reset_player "Internal Gun Game command"
+	}
+	es_xsetinfo gg_exists 0
+	es_xexists gg_exists command gg_turbo_equip
+	if (server_var(gg_exists) == 0) do
+	{
+		es_xregcmd gg_turbo_equip gungame3/give_turbo_weapon "Internal Gun Game command"
+	}
 	
 	// Create weapon list
 	es_xsetinfo gg_tmp_weapon 0
@@ -323,11 +345,11 @@ block load
 	if (server_var(gg_levels) > 0) then es_xdoblock gungame3/create_weapon_list
 
 	// Dynamic level total - 1
-	es_set gg_level_dynamic server_var(gg_levels)
+	es_setinfo gg_level_dynamic server_var(gg_levels)
 	es_xmath gg_level_dynamic - 1
 
 	// Public cvar announcing server runs Gun Game
-	es_xsetinfo eventscripts_gg "v3.4.75"
+	es_xsetinfo eventscripts_gg "v3.4.79"
 	es_xmakepublic eventscripts_gg
 
 	// gg_winners open flag
@@ -851,14 +873,7 @@ block player_setup
 		es_keysetvalue gg_players event_var(userid) afk 0
 
 		// Bring over user wins from gg_winners
-		if (server_var(sv_lan) == 1) do
-		{
-			es_keygetvalue s_wins gg_winners event_var(es_username) wins
-		}
-		else do
-		{
-			es_keygetvalue s_wins gg_winners event_var(es_steamid) wins
-		}
+		es_keygetvalue s_wins gg_winners server_var(p_steamid) wins
 		es_keysetvalue gg_players event_var(userid) wins server_var(s_wins)
 
 		// Save and close gg_winners
@@ -956,14 +971,7 @@ block player_setup_in_progress
 		es_keysetvalue gg_players server_var(key_x) afk 0
 
 		// Bring over user wins from gg_winners
-		if (server_var(sv_lan) == 1) do
-		{
-			es_keygetvalue s_wins gg_winners server_var(gg_tmp_n) wins
-		}
-		else do
-		{
-			es_keygetvalue s_wins gg_winners server_var(gg_tmp_s) wins
-		}
+		es_keygetvalue s_wins gg_winners server_var(gg_tmp_s) wins
 		es_keysetvalue gg_players server_var(key_x) wins server_var(s_wins)
 
 		// Save and close gg_winners
@@ -1014,33 +1022,33 @@ event es_map_start
 	// Load sounds into downloadables
 	es_xsetinfo gg_tmp_sound 0
 	es_format gg_tmp_sound "sound/%1" server_var(gg_sound_welcome)
-	es_stringtable downloadables server_var(gg_tmp_sound)
+	es downloadable server_var(gg_tmp_sound)
 	es_format gg_tmp_sound "sound/%1" server_var(gg_sound_knife)
-	es_stringtable downloadables server_var(gg_tmp_sound)
+	es downloadable server_var(gg_tmp_sound)
 	es_format gg_tmp_sound "sound/%1" server_var(gg_sound_nade)
-	es_stringtable downloadables server_var(gg_tmp_sound)
+	es downloadable server_var(gg_tmp_sound)
 	es_format gg_tmp_sound "sound/%1" server_var(gg_sound_levelup)
-	es_stringtable downloadables server_var(gg_tmp_sound)
+	es downloadable server_var(gg_tmp_sound)
 	es_format gg_tmp_sound "sound/%1" server_var(gg_sound_leveldown)
-	es_stringtable downloadables server_var(gg_tmp_sound)
+	es downloadable server_var(gg_tmp_sound)
 	es_format gg_tmp_sound "sound/%1" server_var(gg_sound_levelsteal)
-	es_stringtable downloadables server_var(gg_tmp_sound)
+	es downloadable server_var(gg_tmp_sound)
 	es_format gg_tmp_sound "sound/%1" server_var(gg_sound_triple)
-	es_stringtable downloadables server_var(gg_tmp_sound)
+	es downloadable server_var(gg_tmp_sound)
 	es_format gg_tmp_sound "sound/%1" server_var(gg_sound_warning)
-	es_stringtable downloadables server_var(gg_tmp_sound)
+	es downloadable server_var(gg_tmp_sound)
 	if (server_var(gg_rand_song) == 0) do
 	{
 		if (server_var(gg_sound_winner) != "music/HL2_song15.mp3") do
 		{
 			es_format gg_tmp_sound "sound/%1" server_var(gg_sound_winner)
-			es_stringtable downloadables server_var(gg_tmp_sound)
+			es downloadable server_var(gg_tmp_sound)
 		}
 	}
 	if (server_var(gg_sound_kill) != "common/stuck1.wav") do
 	{
 		es_format gg_tmp_sound "sound/%1" server_var(gg_sound_kill)
-		es_stringtable downloadables server_var(gg_tmp_sound)
+		es downloadable server_var(gg_tmp_sound)
 	}
 	
 	// Warmup timer
@@ -1105,7 +1113,7 @@ block gg_set_weapon_order
 		}
 		else do
 		{
-			es_set gg_weapon_order server_var(gg_tmp_weapon_order)
+			es_setinfo gg_weapon_order server_var(gg_tmp_weapon_order)
 		}
 	
 		// Create weapon list
@@ -1119,7 +1127,7 @@ block gg_set_weapon_order
 		if (server_var(gg_levels) > 0) then es_xdoblock gungame3/create_weapon_list
 
 		// Dynamic level total - 1
-		es_set gg_level_dynamic server_var(gg_levels)
+		es_setinfo gg_level_dynamic server_var(gg_levels)
 		es_xmath gg_level_dynamic - 1
 	
 		es_log [GunGame] Weapon order reset to: server_var(gg_weapon_order)
@@ -1167,7 +1175,7 @@ event bomb_pickup
 	if (server_var(gg_obj_remove) != 1) do
 	{
 		// Set bomber
-		es_set bomber event_var(userid)
+		es_setinfo bomber event_var(userid)
 	}
 }
 
@@ -1566,15 +1574,9 @@ block gg_levelup
 						es_msg #multi #green event_var(es_attackername) #lightgreen won!
 					}
 				}
-				es_set winner_name event_var(es_attackername)
-				if (server_var(sv_lan) == 1) do
-				{
-					es_set winner_steam event_var(es_attackername)
-				}
-				else do
-				{
-					es_set winner_steam event_var(es_attackersteamid)
-				}
+				es_setinfo winner_name event_var(es_attackername)
+				es uniqueid p_steamid event_var(es_attackersteamid) 1
+				es_setinfo winner_steam server_var(p_steamid)
 				es_xdoblock gungame3/gg_winner
 		
 				// End map
@@ -1669,11 +1671,11 @@ block gg_levelup
 			// Update player name in gg_players database
 			es_keysetvalue gg_players event_var(attacker) name event_var(es_attackername)
 				
-			es_set p_diff server_var(ldr_level)
+			es_setinfo p_diff server_var(ldr_level)
 			es_math p_diff - server_var(p_lvl)
 			if (server_var(p_lvl) > server_var(ldr_level)) do
 			{
-				es_set ldr_level server_var(p_lvl)
+				es_setinfo ldr_level server_var(p_lvl)
 				es_keygetvalue ldr_name gg_players event_var(attacker) name
 				es_msg #multi #green event_var(es_attackername)#lightgreen is leading on level #green server_var(p_lvl)
 			}
@@ -1764,11 +1766,11 @@ block gg_levelup
 					// Update player name in gg_players database
 					es_keysetvalue gg_players event_var(attacker) name event_var(es_attackername)
 				
-					es_set p_diff server_var(ldr_level)
+					es_setinfo p_diff server_var(ldr_level)
 					es_math p_diff - server_var(p_lvl)
 					if (server_var(p_lvl) > server_var(ldr_level)) do
 					{
-						es_set ldr_level server_var(p_lvl)
+						es_setinfo ldr_level server_var(p_lvl)
 						es_keygetvalue ldr_name gg_players event_var(attacker) name
 						es_msg #multi #green event_var(es_attackername)#lightgreen is leading on level #green server_var(p_lvl)
 					}
@@ -1800,11 +1802,11 @@ block gg_levelup
 					// Update player name in gg_players database
 					es_keysetvalue gg_players event_var(attacker) name event_var(es_attackername)
 				
-					es_set p_diff server_var(ldr_level)
+					es_setinfo p_diff server_var(ldr_level)
 					es_math p_diff - server_var(p_lvl)
 					if (server_var(p_lvl) > server_var(ldr_level)) do
 					{
-						es_set ldr_level server_var(p_lvl)
+						es_setinfo ldr_level server_var(p_lvl)
 						es_keygetvalue ldr_name gg_players event_var(attacker) name
 						es_msg #multi #green event_var(es_attackername)#lightgreen is leading on level #green server_var(p_lvl)
 					}
@@ -1926,16 +1928,17 @@ event player_say
 	if (event_var(text) == "!level") then es_xdoblock gungame3/gg_display_level
 	if (event_var(text) == "!auto") do
 	{
-		es_keygetvalue gg_auto_give gg_pref event_var(es_steamid) auto_give
+		es uniqueid p_steamid event_var(es_steamid) 1
+		es_keygetvalue gg_auto_give gg_pref server_var(p_steamid) auto_give
 		if (server_var(gg_auto_give) == 0) do
 		{
-			es_keysetvalue gg_pref event_var(es_steamid) auto_give 1
+			es_keysetvalue gg_pref server_var(p_steamid) auto_give 1
 			es_keysetvalue gg_players event_var(userid) auto_give 1
 			es_tell event_var(userid) #multi #lightgreen Auto Give #default On
 		}
 		else do
 		{
-			es_keysetvalue gg_pref event_var(es_steamid) auto_give 0
+			es_keysetvalue gg_pref server_var(p_steamid) auto_give 0
 			es_keysetvalue gg_players event_var(userid) auto_give 0
 			es_tell event_var(userid) #multi #lightgreen Auto Give #default Off
 		}
@@ -2173,29 +2176,10 @@ event item_pickup
 			{
 				if (event_var(item) != "c4") do
 				{
-					if (event_var(item) != "defuser") do
-					{
-						if (event_var(item) != "assaultsuit") do
-						{
-							if (event_var(item) != "kevlar") do
-							{
-								es_give event_var(userid) player_weaponstrip
-								es_fire event_var(userid) player_weaponstrip Strip 1
-								if (server_var(bomber) = event_var(userid)) then es_xdelayed .2 es_xgive event_var(userid) weapon_c4
-								es_delayed .3 es_xgive event_var(userid) weapon_knife
-								es_delayed .3 es_xgive event_var(userid) item_assaultsuit
-								// Give CT a defuse kit
-								if (server_var(gg_dm_script) != 1) do
-								{
-									es_getplayerteam gg_tmp server_var(user_id)
-									if (server_var(gg_tmp) == 3) do
-									{
-										es_soon es_xsetplayerprop server_var(user_id) CCSPlayer.m_bHasDefuser 1
-									}
-								}
-							}
-						}
-					}
+					es_give event_var(userid) player_weaponstrip
+					es_fire event_var(userid) player_weaponstrip Strip 1
+					es_delayed .3 es_xgive event_var(userid) weapon_knife
+					if (server_var(bomber) = event_var(userid)) then es_xdelayed .5 es_xgive event_var(userid) weapon_c4 
 				}
 			}
 		}
@@ -2242,14 +2226,15 @@ block gg_winner
 	}
 	else do
 	{
-		es_keygetvalue t_wins gg_winners event_var(es_attackersteamid) wins
+		es uniqueid p_steamid event_var(es_attackersteamid) 1
+		es_keygetvalue t_wins gg_winners server_var(p_steamid) wins
 		if (server_var(t_wins) == 0) do
 		{
-			es_keycreate gg_winners event_var(es_attackersteamid)
+			es_keycreate gg_winners server_var(p_steamid)
 		}
 		es_xmath t_wins + 1
-		es_keysetvalue gg_winners event_var(es_attackersteamid) name event_var(es_attackername)
-		es_keysetvalue gg_winners event_var(es_attackersteamid) wins server_var(t_wins)
+		es_keysetvalue gg_winners server_var(p_steamid) name event_var(es_attackername)
+		es_keysetvalue gg_winners server_var(p_steamid) wins server_var(t_wins)
 	}
 	es_keysetvalue gg_players event_var(attacker) wins server_var(t_wins)
 
@@ -2277,9 +2262,9 @@ block gg_winner
 
 block endround
 {
-	refcount increment sv_cheats 1
+	sv_cheats 1
 	endround
-	refcount decrement sv_cheats 1
+	sv_cheats 0
 }
 
 
@@ -2313,7 +2298,7 @@ block gg_handicap
 		{
 			es_xsetinfo p_1337 0
 			es_xsetinfo tmp_1337 0
-			alias get_1337_steam "es_keygetvalue tmp_1337 gg_top10 server_var(plyr_1337) steam; if (event_var(es_steamid) == server_var(tmp_1337)) then es_xsetinfo p_1337 1"
+			alias get_1337_steam "es uniqueid p_steamid event_var(es_steamid) 1; es_keygetvalue tmp_1337 gg_top10 server_var(plyr_1337) steam; if (server_var(p_steamid) == server_var(tmp_1337)) then es_xsetinfo p_1337 1"
 			es_xforeachkey plyr_1337 in gg_top10 get_1337_steam
 
 			if (server_var(p_1337) == 0) do
@@ -2694,7 +2679,7 @@ block gg_display_level
         es_keygetvalue p_wpn gg_weapons server_var(p_lvl) weapon
         es_keygetvalue p_wins gg_players event_var(userid) wins
         es_keygetvalue p_kills gg_players event_var(userid) kills
-        es_set p_lvlsbehind server_var(ldr_level)
+        es_setinfo p_lvlsbehind server_var(ldr_level)
         es_math p_lvlsbehind - server_var(p_lvl)
         if (server_var(ldr_level) != 0) do
         {
@@ -2833,16 +2818,17 @@ event es_client_command
 	if (event_var(command) == "!level") then es_xdoblock gungame3/gg_display_level
 	if (event_var(command) == "!auto") do
 	{
-		es_keygetvalue gg_auto_give gg_pref event_var(es_steamid) auto_give
+		es uniqueid p_steamid event_var(es_steamid) 1
+		es_keygetvalue gg_auto_give gg_pref server_var(p_steamid) auto_give
 		if (server_var(gg_auto_give) == 0) do
 		{
-			es_keysetvalue gg_pref event_var(es_steamid) auto_give 1
+			es_keysetvalue gg_pref server_var(p_steamid) auto_give 1
 			es_keysetvalue gg_players event_var(userid) auto_give 1
 			es_tell event_var(userid) #multi #lightgreen Auto Give #default On
 		}
 		else do
 		{
-			es_keysetvalue gg_pref event_var(es_steamid) auto_give 0
+			es_keysetvalue gg_pref server_var(p_steamid) auto_give 0
 			es_keysetvalue gg_players event_var(userid) auto_give 0
 			es_tell event_var(userid) #multi #lightgreen Auto Give #default Off
 		}

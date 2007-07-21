@@ -17,7 +17,7 @@ event es_map_start
 	es_token gg_tmp_sound server_var(gg_songlist) server_var(gg_tmp) ,
 	es_format gg_sound_winner "gungame/%1" server_var(gg_tmp_sound)
 	es_format gg_tmp_sound "sound/%1" server_var(gg_sound_winner)
-	es_stringtable downloadables server_var(gg_tmp_sound)
+	es downloadable server_var(gg_tmp_sound)
 }
 
 block unload
