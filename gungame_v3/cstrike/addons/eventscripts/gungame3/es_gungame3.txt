@@ -1,6 +1,6 @@
 //***********************************************************//
 // Gun Game                                                  //
-// v3.4.79                                                   //
+// v3.4.81                                                   //
 //                                                           //
 // Thanks to the following people for helping contribute to  //
 //  making the Gun Game better for everyone:                 //
@@ -349,7 +349,7 @@ block load
 	es_xmath gg_level_dynamic - 1
 
 	// Public cvar announcing server runs Gun Game
-	es_xsetinfo eventscripts_gg "v3.4.79"
+	es_xsetinfo eventscripts_gg "3.4.81"
 	es_xmakepublic eventscripts_gg
 
 	// gg_winners open flag

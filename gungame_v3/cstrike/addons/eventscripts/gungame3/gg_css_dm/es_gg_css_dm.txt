@@ -30,6 +30,7 @@ block load
 	es_xsetinfo dm_user2 0
 	es_xsetinfo dm_user3 0
 	es_xsetinfo dm_userid 0
+	es_xsetinfo dm_steam 0
 	es_xsetinfo dm_arg 0
 	es_xsetinfo dm_argc 0
 	es_xsetinfo dm_tmp 0
@@ -382,7 +383,7 @@ block rand_stuck
 	es_xrand dm_x2 -200 200
 	es_xrand dm_y2 -200 200
 	es inrange dm_tmp server_var(dm_x2) 50 0
-	es inrange dm_tmp server_var(dm_y2) 50 0
+	if (server_var(dm_tmp) == 0) then inrange dm_tmp server_var(dm_y2) 50 0
 	if (server_var(dm_tmp) == 1) do
 	{
 		es_xdoblock gungame3/gg_css_dm/rand_stuck
