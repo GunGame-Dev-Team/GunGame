@@ -159,7 +159,7 @@ event gg_levelup
 				vote delete gg_mapvote
 				vote create gg_mapvote "gungame4/addons/gg_voting/vote_result" "gungame4/addons/gg_voting/vote_submit"
 				vote setquestion gg_mapvote "Choose the next map"
-				es_xformatqv gg_query "SELECT mapname FROM vote ORDER BY RANDOM() LIMIT %1" gg_vote_options
+				es_xformatqv gg_query "SELECT mapname FROM vote WHERE mapname != '%1' ORDER BY RANDOM() LIMIT %2" eventscripts_currentmap gg_vote_options
 				es_sql query gg_live gg_tmp_keygroup server_var(gg_query)
 				es_xforeachkey gg_tmp_key in gg_tmp_keygroup "es_xdoblock gungame4/addons/gg_voting/get_maps"
 				es_xsoon es_xkeygroupdelete gg_tmp_keygroup
