@@ -1,0 +1,15 @@
+// GunGame4 Auto Reload
+// Example Addon
+//
+
+block load
+{
+	// Init vars
+	es_xset reload_tmp 0
+}
+
+event player_death
+{
+	es_format reload_tmp "weapon_%1" event_var(weapon)
+	es playerset clip event_var(attacker) server_var(reload_tmp) 30
+}
