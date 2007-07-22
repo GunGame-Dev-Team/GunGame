@@ -10,10 +10,10 @@ block load
 	//es_xload gungame4/addons/custom/gg_awp_bullet
 	
 	// Gives players the option to buy levels
-	es_xload gungame4/addons/custom/gg_buy_level
+	//es_xload gungame4/addons/custom/gg_buy_level
 	
 	// Auto reload when players get a kill
-	es_xload gungame4/addons/custom/gg_reload
+	//es_xload gungame4/addons/custom/gg_reload
 }
 
 block unload
@@ -24,8 +24,8 @@ block unload
 	//es_xunload gungame4/addons/custom/gg_awp_bullet
 	
 	// Gives players the option to buy levels
-	es_xunload gungame4/addons/custom/gg_buy_level
+	//es_xunload gungame4/addons/custom/gg_buy_level
 	
 	// Auto reload when players get a kill
-	es_xunload gungame4/addons/custom/gg_reload
+	//es_xunload gungame4/addons/custom/gg_reload
 }
