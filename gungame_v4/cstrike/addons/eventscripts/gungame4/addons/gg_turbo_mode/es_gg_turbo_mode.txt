@@ -22,8 +22,8 @@ block unload
 
 event gg_levelup
 {
-	es_getplayerprop gg_tmp event_var(userid) "CBasePlayer.m_lifeState"
-	if (server_var(gg_tmp) != 1) do
+	es_getplayerprop gg_tmp event_var(userid) "CCSPlayer.baseclass.pl.deadflag"
+	ifx false(gg_tmp) do
 	{
 		es_give event_var(userid) player_weaponstrip
 		es_fire event_var(userid) player_weaponstrip Strip 1

@@ -96,7 +96,7 @@ event player_death
 	// If players do not receive a reward for killing players, stop here
 	ifx true(buy_kill_reward) do
 	{
-		// Do not reward players for kill sduring warmup round
+		// Do not reward players for kill during warmup round
 		ifx false(gg_warmup_started) do
 		{
 			// If the player died because of world or suicide, we do not need to continue further
