@@ -1,4 +1,4 @@
-// GunGame v4.0.64
+// GunGame v4.0.65
 // (c)2007 by GunGame Coding Team (cagemonkey,XE_Manup)
 //
 // We would like to thank the following individuals in no particular order:
@@ -52,7 +52,7 @@ block load
 	//##########################################################################
 
 	//SET CURRENT VERSION
-	es_xset eventscripts_gg "4.0.64"
+	es_xset eventscripts_gg "4.0.65"
 	es_xmakepublic eventscripts_gg
 	
 	//LOADING ANNOUNCEMENT
@@ -779,7 +779,7 @@ block strip_weapons
 event round_end
 {
 	// Set live round status
-	es_xdelayed 2 es_xset gg_live_round 0
+	es_xset gg_live_round 0
 	
 	// Round end code
 	es_xset gg_bomber 0
@@ -1112,16 +1112,17 @@ event player_death
 		es_xformatqv gg_query "SELECT is_afk FROM gg_players WHERE userid = '%1'" gg_userid
 		es_sql queryvalue gg_live gg_user_afk server_var(gg_query)
 		
-		// Setup for Multi Kill mode
-		if (server_var(gg_multikill) > 1) do
-		{
-			es_xformatqv gg_query "SELECT kills FROM gg_players WHERE userid = '%1'" gg_attackerid
-			es_sql queryvalue gg_live gg_p_kills server_var(gg_query)
-		}
-		
 		// Get attacker level and weapon name
 		if (event_var(attacker) != 0) do
 		{
+			// Setup for Multi Kill mode
+			if (server_var(gg_multikill) > 1) do
+			{
+				es_xformatqv gg_query "SELECT kills FROM gg_players WHERE userid = '%1'" gg_attackerid
+				es_sql queryvalue gg_live gg_p_kills server_var(gg_query)
+			}
+			
+			// Get attacker level and weapon
 			es_xformatqv gg_query "SELECT level FROM gg_players WHERE userid = '%1'" gg_attackerid
 			es_sql queryvalue gg_live gg_attacker_lvl server_var(gg_query)
 			es_xformatqv gg_query "SELECT weapon FROM gg_weapons WHERE level = '%1'" gg_attacker_lvl
@@ -1269,23 +1270,26 @@ event player_death
 			// Player killed by world
 			ifx true(gg_suicide_punish) do
 			{
-				// Suicide code here
-				es_xformatqv gg_query "SELECT level FROM gg_players WHERE userid = '%1'" gg_userid
-				es_sql queryvalue gg_live gg_user_lvl server_var(gg_query)
+				ifx true(gg_live_round) do
+				{
+					// Suicide code here
+					es_xformatqv gg_query "SELECT level FROM gg_players WHERE userid = '%1'" gg_userid
+					es_sql queryvalue gg_live gg_user_lvl server_var(gg_query)
 				
-				// Initialize event gg_leveldown
-				es_xevent initialize gg_leveldown
-				es_event setint gg_leveldown userid event_var(userid)
-				es_event setint gg_leveldown attacker event_var(attacker)
-				es_event setstring gg_leveldown steamid event_var(es_steamid)
-				es_event setint gg_leveldown old_level server_var(gg_user_lvl)
-				es_math gg_user_lvl - server_var(gg_suicide_punish)
-				if (server_var(gg_user_lvl) <= 0) then es_xset gg_user_lvl 1
-				es_event setint gg_leveldown new_level server_var(gg_user_lvl)
-				es_event setint gg_leveldown team event_var(es_userteam)
-				es_event setstring gg_leveldown name event_var(es_username)
-				es_event setstring gg_leveldown attackername event_var(es_attackername)
-				es_xevent fire gg_leveldown
+					// Initialize event gg_leveldown
+					es_xevent initialize gg_leveldown
+					es_event setint gg_leveldown userid event_var(userid)
+					es_event setint gg_leveldown attacker event_var(attacker)
+					es_event setstring gg_leveldown steamid event_var(es_steamid)
+					es_event setint gg_leveldown old_level server_var(gg_user_lvl)
+					es_math gg_user_lvl - server_var(gg_suicide_punish)
+					if (server_var(gg_user_lvl) <= 0) then es_xset gg_user_lvl 1
+					es_event setint gg_leveldown new_level server_var(gg_user_lvl)
+					es_event setint gg_leveldown team event_var(es_userteam)
+					es_event setstring gg_leveldown name event_var(es_username)
+					es_event setstring gg_leveldown attackername event_var(es_attackername)
+					es_xevent fire gg_leveldown
+				}
 			}
 		}
 	}
