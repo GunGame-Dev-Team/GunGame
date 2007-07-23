@@ -210,8 +210,5 @@ block unload
 	es_xunregsaycmd !buylevel
 	
 	// Remove announcement
-	ifx true(buy_announce) do
-	{
-		crontab del buylevel
-	}
+	crontab del buylevel
 }

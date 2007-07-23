@@ -23,7 +23,10 @@ event player_death
 		}
 		else do
 		{
-			es playerset clip event_var(attacker) server_var(reload_tmp) 30
+			if (event_var(weapon) != "m249") do
+			{
+				es playerset clip event_var(attacker) server_var(reload_tmp) 30
+			}
 		}
 	}
 }
