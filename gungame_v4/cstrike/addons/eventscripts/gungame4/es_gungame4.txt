@@ -1,4 +1,4 @@
-// GunGame v4.0.70
+// GunGame v4.0.71
 // (c)2007 by GunGame Coding Team (cagemonkey,XE_Manup)
 //
 // We would like to thank the following individuals in no particular order:
@@ -52,7 +52,7 @@ block load
 	//##########################################################################
 
 	//SET CURRENT VERSION
-	es_xset eventscripts_gg "4.0.70"
+	es_xset eventscripts_gg "4.0.71"
 	es_xmakepublic eventscripts_gg
 	
 	//LOADING ANNOUNCEMENT
@@ -717,7 +717,7 @@ event map_end
 		// If GG is loaded via map.cfg file, unload now
 		if (server_var(gg_loaded) == 2) do
 		{
-			es_xunload gungame4
+			es_xdelayed 3 es_xunload gungame4
 		}
 	}
 }
