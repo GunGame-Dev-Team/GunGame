@@ -145,7 +145,7 @@ event player_spawn
 				}
 				else do
 				{
-					es_xlog [GunGame] Not enough custom spawnpoints for map, using default map spawns
+					es_xdbgmsg 1 [GunGame] Not enough custom spawnpoints for map, using default map spawns
 				}
 			}
 			ifx true(gg_dm_spawn_protect) do

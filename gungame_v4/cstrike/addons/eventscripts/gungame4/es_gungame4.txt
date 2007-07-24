@@ -1,4 +1,4 @@
-// GunGame v4.0.69
+// GunGame v4.0.70
 // (c)2007 by GunGame Coding Team (cagemonkey,XE_Manup)
 //
 // We would like to thank the following individuals in no particular order:
@@ -52,7 +52,7 @@ block load
 	//##########################################################################
 
 	//SET CURRENT VERSION
-	es_xset eventscripts_gg "4.0.69"
+	es_xset eventscripts_gg "4.0.70"
 	es_xmakepublic eventscripts_gg
 	
 	//LOADING ANNOUNCEMENT
@@ -1471,66 +1471,69 @@ event gg_win
 	// Winner Display
 	ifx true(gg_winner_display) do
 	{
-		es_xcreateplayerlist gg_tmp_playerlist
-		es_xforeachkey gg_userid in gg_tmp_playerlist "es_xdoblock gungame4/winner_database"
-		es_xkeygroupdelete gg_tmp_playerlist
-		es_xsql query gg_live gg4wins "SELECT userid,name,level,kills,deaths,wins,rank FROM gg_players ORDER BY level DESC, name"
+		if (server_var(gg_winner_display) == 2) do
+		{
+			es_xcreateplayerlist gg_tmp_playerlist
+			es_xforeachkey gg_userid in gg_tmp_playerlist "es_xdoblock gungame4/winner_database"
+			es_xkeygroupdelete gg_tmp_playerlist
+			es_xsql query gg_live gg4wins "SELECT userid,name,level,kills,deaths,wins,rank FROM gg_players ORDER BY level DESC, name"
 		
-		// Get zero key info
-		es_xkeycreate gg4wins "0"
-		es_keysetvalue gg4wins "0" winner event_var(name)
-		es uniqueid gg_steamid event_var(userid) 1
-		es_xformatqv gg_query "SELECT wins FROM gg_players WHERE steamid = '%1'" gg_steamid
-		es_sql queryvalue gg_database gg_wins server_var(gg_query)
-		es_keysetvalue gg4wins "0" winnerwins server_var(gg_wins)
-		es_set gg_userid event_var(userid)
-		es_xformatqv gg_query "SELECT rank FROM gg_players WHERE userid = '%1'" gg_userid
-		es_sql queryvalue gg_live gg_tmp server_var(gg_query)
-		es_keysetvalue gg4wins "0" winnerrank server_var(gg_tmp)
-		es_getplayername gg_tmp event_var(loser)
-		es_keysetvalue gg4wins "0" loser server_var(gg_tmp)
-		es_xsql queryvalue gg_database gg_tmp "SELECT COUNT(*) FROM gg_players"
-		es_keysetvalue gg4wins "0" totals server_var(gg_tmp)
+			// Get zero key info
+			es_xkeycreate gg4wins "0"
+			es_keysetvalue gg4wins "0" winner event_var(name)
+			es uniqueid gg_steamid event_var(userid) 1
+			es_xformatqv gg_query "SELECT wins FROM gg_players WHERE steamid = '%1'" gg_steamid
+			es_sql queryvalue gg_database gg_wins server_var(gg_query)
+			es_keysetvalue gg4wins "0" winnerwins server_var(gg_wins)
+			es_set gg_userid event_var(userid)
+			es_xformatqv gg_query "SELECT rank FROM gg_players WHERE userid = '%1'" gg_userid
+			es_sql queryvalue gg_live gg_tmp server_var(gg_query)
+			es_keysetvalue gg4wins "0" winnerrank server_var(gg_tmp)
+			es_getplayername gg_tmp event_var(loser)
+			es_keysetvalue gg4wins "0" loser server_var(gg_tmp)
+			es_xsql queryvalue gg_database gg_tmp "SELECT COUNT(*) FROM gg_players"
+			es_keysetvalue gg4wins "0" totals server_var(gg_tmp)
 		
-		// Store database and send motd
-		es_xkeygroupsave gg4wins |gungame4/addons/web_data
-		es_xkeygroupdelete gg4wins
-		es_xrand gg_tmp 0 1000
-		es_xformatv gg_tmp_url "%1?%2" gg_winner_url gg_tmp
-		es_xdelayed 1 foreach player gg_userid #human "es usermsg motd server_var(gg_userid) 2 Winner server_var(gg_tmp_url)"
-	}
-	else do
-	{
-		es uniqueid gg_steamid event_var(userid) 1
-		es_xformatqv gg_query "SELECT wins FROM gg_players WHERE steamid = '%1'" gg_steamid
-		es_sql queryvalue gg_database gg_wins server_var(gg_query)
-		es_set gg_userid event_var(userid)
-		es_xformatqv gg_query "SELECT rank FROM gg_players WHERE userid = '%1'" gg_userid
-		es_sql queryvalue gg_live gg_tmp3 server_var(gg_query)
-		es_xsql queryvalue gg_database gg_tmp4 "SELECT COUNT(*) FROM gg_players"
-		es_set gg_username event_var(name)
-		es_regex matchformat gg_username "s/%/%25/g" server_var(gg_username) "%1"
-		es_regex matchformat gg_username "s/&/%26/g" server_var(gg_username) "%1"
-		es_regex matchformat gg_username "s/'/%27/g" server_var(gg_username) "%1"
-		es_regex matchformat gg_username "s/+/%2B/g" server_var(gg_username) "%1"
-		es_regex matchformat gg_username "s///%2F/g" server_var(gg_username) "%1"
-		es_regex matchformat gg_username "s/</%3C/g" server_var(gg_username) "%1"
-		es_regex matchformat gg_username "s/?/%3F/g" server_var(gg_username) "%1"
-		es_regex matchformat gg_username "s/`/%60/g" server_var(gg_username) "%1"
-		es_regex matchformat gg_username "s/|/%7C/g" server_var(gg_username) "%1"
+			// Store database and send motd
+			es_xkeygroupsave gg4wins |gungame4/addons/web_data
+			es_xkeygroupdelete gg4wins
+			es_xrand gg_tmp 0 1000
+			es_xformatv gg_tmp_url "%1?%2" gg_winner_url gg_tmp
+			es_xdelayed 1 foreach player gg_userid #human "es usermsg motd server_var(gg_userid) 2 Winner server_var(gg_tmp_url)"
+		}
+		else do
+		{
+			es uniqueid gg_steamid event_var(userid) 1
+			es_xformatqv gg_query "SELECT wins FROM gg_players WHERE steamid = '%1'" gg_steamid
+			es_sql queryvalue gg_database gg_wins server_var(gg_query)
+			es_set gg_userid event_var(userid)
+			es_xformatqv gg_query "SELECT rank FROM gg_players WHERE userid = '%1'" gg_userid
+			es_sql queryvalue gg_live gg_tmp3 server_var(gg_query)
+			es_xsql queryvalue gg_database gg_tmp4 "SELECT COUNT(*) FROM gg_players"
+			es_set gg_username event_var(name)
+			es_regex matchformat gg_username "s/%/%25/g" server_var(gg_username) "%1"
+			es_regex matchformat gg_username "s/&/%26/g" server_var(gg_username) "%1"
+			es_regex matchformat gg_username "s/'/%27/g" server_var(gg_username) "%1"
+			es_regex matchformat gg_username "s/+/%2B/g" server_var(gg_username) "%1"
+			es_regex matchformat gg_username "s///%2F/g" server_var(gg_username) "%1"
+			es_regex matchformat gg_username "s/</%3C/g" server_var(gg_username) "%1"
+			es_regex matchformat gg_username "s/?/%3F/g" server_var(gg_username) "%1"
+			es_regex matchformat gg_username "s/`/%60/g" server_var(gg_username) "%1"
+			es_regex matchformat gg_username "s/|/%7C/g" server_var(gg_username) "%1"
 		
-		es_getplayername gg_tmp event_var(loser)
-		es_regex matchformat gg_tmp "s/%/%25/g" server_var(gg_tmp) "%1"
-		es_regex matchformat gg_tmp "s/&/%26/g" server_var(gg_tmp) "%1"
-		es_regex matchformat gg_tmp "s/'/%27/g" server_var(gg_tmp) "%1"
-		es_regex matchformat gg_tmp "s/+/%2B/g" server_var(gg_tmp) "%1"
-		es_regex matchformat gg_tmp "s///%2F/g" server_var(gg_tmp) "%1"
-		es_regex matchformat gg_tmp "s/</%3C/g" server_var(gg_tmp) "%1"
-		es_regex matchformat gg_tmp "s/?/%3F/g" server_var(gg_tmp) "%1"
-		es_regex matchformat gg_tmp "s/`/%60/g" server_var(gg_tmp) "%1"
-		es_regex matchformat gg_tmp "s/|/%7C/g" server_var(gg_tmp) "%1"
-		es_xformatv gg_tmp_url "www.cagemonkey.org/ggwin.php?winner=%1&loser=%2&wins=%3&rank=%4&total=%5" gg_username gg_tmp gg_wins gg_tmp3 gg_tmp4
-		es_xdelayed 1 foreach player gg_userid #human "es usermsg motd server_var(gg_userid) 2 Winner server_var(gg_tmp_url)"
+			es_getplayername gg_tmp event_var(loser)
+			es_regex matchformat gg_tmp "s/%/%25/g" server_var(gg_tmp) "%1"
+			es_regex matchformat gg_tmp "s/&/%26/g" server_var(gg_tmp) "%1"
+			es_regex matchformat gg_tmp "s/'/%27/g" server_var(gg_tmp) "%1"
+			es_regex matchformat gg_tmp "s/+/%2B/g" server_var(gg_tmp) "%1"
+			es_regex matchformat gg_tmp "s///%2F/g" server_var(gg_tmp) "%1"
+			es_regex matchformat gg_tmp "s/</%3C/g" server_var(gg_tmp) "%1"
+			es_regex matchformat gg_tmp "s/?/%3F/g" server_var(gg_tmp) "%1"
+			es_regex matchformat gg_tmp "s/`/%60/g" server_var(gg_tmp) "%1"
+			es_regex matchformat gg_tmp "s/|/%7C/g" server_var(gg_tmp) "%1"
+			es_xformatv gg_tmp_url "%1?winner=%2&loser=%3&wins=%4&rank=%5&total=%6" gg_winner_url gg_username gg_tmp gg_wins gg_tmp3 gg_tmp4
+			es_xdelayed 1 foreach player gg_userid #human "es usermsg motd server_var(gg_userid) 2 Winner server_var(gg_tmp_url)"
+		}
 	}
 }
 
