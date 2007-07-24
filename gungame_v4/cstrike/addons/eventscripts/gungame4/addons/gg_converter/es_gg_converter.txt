@@ -11,6 +11,12 @@ block load
 	{
 		es_xload gungame4
 	}
+	es_xset gg_exists 0
+	es_xexists gg_exists script gungame4/addons/gg_deathmatch
+	ifx false(gg_exists) do
+	{
+		es_xload gungame4/addons/gg_deathmatch
+	}
 	
 	// init vars
 	es_xset tmp1 0
