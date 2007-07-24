@@ -1,0 +1,234 @@
+block load
+{
+  // variables used by usermsg
+  es_xset _usermsg_argc 0
+  es_xset _usermsg_arg1 0
+  es_xset _usermsg_arg2 0
+  es_xset _usermsg_arg3 0
+  es_xset _usermsg_arg4 0
+  es_xset _usermsg_arg5 0
+  es_xset _usermsg_arg6 0
+  es_xset _usermsg_arg7 0
+  es_xset _usermsg_arg8 0
+  es_xset _usermsg_format 0
+  // check to see if usermsg exists
+  es_xexists _exists command usermsg
+  ifx false(_exists) do
+  {
+    es_xregcmd usermsg corelib/usermsglib/usermsg
+  }
+}
+
+block usermsg
+{
+  es_xgetargv _usermsg_arg1 1
+  es_xformatv _usermsg_format "corelib/usermsglib/%1" _usermsg_arg1
+  es_exists _exists block server_var(_usermsg_format)
+  ifx true(_exists) do
+  {
+    es_doblock server_var(_usermsg_format)
+  }
+  else do
+  {
+    es_xdbgmsg 0 usermsg: Invalid subcommand, type 'usermsg list' to see different types
+  }
+}
+
+block fade
+{
+  es_xgetargc _usermsg_argc
+  if (server_var(_usermsg_argc) >= 10) do
+  {
+    es_xgetargv _usermsg_arg1 2
+    es_exists _exists userid server_var(_usermsg_arg1)
+    ifx true(_exists) do
+    {
+      es_xgetargv _usermsg_arg2 3
+      es_xgetargv _usermsg_arg3 4
+      es_xgetargv _usermsg_arg4 5
+      es_xgetargv _usermsg_arg5 6
+      es_xgetargv _usermsg_arg6 7
+      es_xgetargv _usermsg_arg7 8
+      es_xgetargv _usermsg_arg8 9
+      es_xusermsg create fade Fade
+      es_usermsg write short fade server_var(_usermsg_arg3)
+      es_usermsg write short fade server_var(_usermsg_arg4)
+      es_usermsg write short fade server_var(_usermsg_arg2)
+      es_usermsg write byte fade server_var(_usermsg_arg5)
+      es_usermsg write byte fade server_var(_usermsg_arg6)
+      es_usermsg write byte fade server_var(_usermsg_arg7)
+      es_usermsg write byte fade server_var(_usermsg_arg8)
+      es_usermsg send fade server_var(_usermsg_arg1)
+      es_xusermsg delete fade
+    }
+    else do
+    {
+      es_dbgmsg 0 usermsg fade: Invalid userid provided: server_var(_usermsg_arg1)
+    }
+  }
+  else do
+  {
+    es_xdbgmsg 0 usermsg fade: Syntax: fade <userid> <0 = no fade, 1 = fade out, 2 = fade out> <time to fade (in frames)> <time faded (in frames)> <red> <blue> <green> <alpha>
+  }
+}
+
+block shake
+{
+  es_xgetargc _usermsg_argc
+  if (server_var(_usermsg_argc) >= 4) do
+  {
+    es_xgetargv _usermsg_arg1 2
+    es_exists _exists userid server_var(_usermsg_arg1)
+    ifx true(_exists) do
+    {
+      es_xgetargv _usermsg_arg2 3
+      es_xgetargv _usermsg_arg3 4
+      es_xusermsg create shake Shake
+      es_xusermsg write byte shake 0
+      es_usermsg write float shake server_var(_usermsg_arg2)
+      es_xusermsg write float shake 1
+      es_usermsg write float shake server_var(_usermsg_arg3)
+      es_usermsg send shake server_var(_usermsg_arg1)
+      es_xusermsg delete shake
+    }
+    else do
+    {
+      es_dbgmsg 0 usermsg shake: Invalid userid provided: server_var(_usermsg_arg1)
+    }
+  }
+  else do
+  {
+    es_xdbgmsg 0 usermsg shake: Syntax: shake <userid> <magnitude> <time>
+  }
+}
+
+block motd
+{
+  es_xgetargc _usermsg_argc
+  if (server_var(_usermsg_argc) >= 6) do
+  {
+    es_xgetargv _usermsg_arg1 2
+    es_exists _exists userid server_var(_usermsg_arg1)
+    ifx true(_exists) do
+    {
+      es_xgetargv _usermsg_arg2 3
+      es_xgetargv _usermsg_arg3 4
+      es_xgetargv _usermsg_arg4 5
+      es_xusermsg create motd VGUIMenu
+      es_xusermsg write string motd "info"
+      es_xusermsg write byte motd 1
+      es_xusermsg write byte motd 3
+      es_xusermsg write string motd "title"
+      es_usermsg write string motd server_var(_usermsg_arg3)
+      es_xusermsg write string motd "type"
+      es_usermsg write string motd server_var(_usermsg_arg2)
+      es_xusermsg write string motd "msg"
+      es_usermsg write string motd server_var(_usermsg_arg4)
+      es_usermsg send motd server_var(_usermsg_arg1)
+      es_xusermsg delete motd
+    }
+    else do
+    {
+      es_dbgmsg 0 usermsg motd: Invalid userid provided: server_var(_usermsg_arg1)
+    }
+  }
+  else do
+  {
+    es_xdbgmsg 0 usermsg motd: Syntax: motd <userid> <0 = text, 2 = url> <title> <msg>
+  }
+}
+
+block hudhint
+{
+  es_xgetargc _usermsg_argc
+  if (server_var(_usermsg_argc) >= 4) do
+  {
+    es_xgetargv _usermsg_arg1 2
+    es_exists _exists userid server_var(_usermsg_arg1)
+    ifx true(_exists) do
+    {
+      es_xgetargv _usermsg_arg2 3
+      es_xusermsg create hudhint HintText
+      es_xusermsg write short hudhint -1
+      es_usermsg write string hudhint server_var(_usermsg_arg2)
+      es_usermsg send hudhint server_var(_usermsg_arg1)
+      es_xusermsg delete hudhint
+    }
+    else do
+    {
+      es_dbgmsg 0 usermsg hudhint: Invalid userid provided: server_var(_usermsg_arg1)
+    }
+  }
+  else do
+  {
+    es_xdbgmsg 0 usermsg hudhint: Syntax: hudhint <userid> <msg>
+  }
+}
+
+block centermsg
+{
+  es_xgetargc _usermsg_argc
+  if (server_var(_usermsg_argc) >= 4) do
+  {
+    es_xgetargv _usermsg_arg1 2
+    es_exists _exists userid server_var(_usermsg_arg1)
+    ifx true(_exists) do
+    {
+      es_xgetargv _usermsg_arg2 3
+      es_xusermsg create centermsg TextMsg
+      es_xusermsg write byte centermsg 4
+      es_usermsg write string centermsg server_var(_usermsg_arg2)
+      es_usermsg send centermsg server_var(_usermsg_arg1)
+      es_xusermsg delete centermsg
+    }
+    else do
+    {
+      es_dbgmsg 0 usermsg centermsg: Invalid userid provided: server_var(_usermsg_arg1)
+    }
+  }
+  else do
+  {
+    es_xdbgmsg 0 usermsg centermsg: Syntax: centermsg <userid> <msg>
+  }
+}
+
+block echo
+{
+  es_xgetargc _usermsg_argc
+  if (server_var(_usermsg_argc) >= 4) do
+  {
+    es_xgetargv _usermsg_arg1 2
+    es_exists _exists userid server_var(_usermsg_arg1)
+    ifx true(_exists) do
+    {
+      es_xgetargv _usermsg_arg2 3
+      es_xusermsg create echomsg TextMsg
+      es_xusermsg write byte echomsg 2
+      es_usermsg write string echomsg server_var(_usermsg_arg2)
+      es_usermsg send echomsg server_var(_usermsg_arg1)
+      es_xusermsg delete echomsg
+    }
+    else do
+    {
+      es_dbgmsg 0 usermsg centermsg: Invalid userid provided: server_var(_usermsg_arg1)
+    }
+  }
+  else do
+  {
+    es_xdbgmsg 0 usermsg centermsg: Syntax: echo <userid> <msg>
+  }
+}
+
+block list
+{
+  echo Usermsg Subcommands:
+  echo ----
+  echo fade
+  echo shake
+  echo motd
+  echo hudhint
+  echo centermsg
+  echo echo
+  echo ----
+  echo Type 'usermsg <subcommand>' for syntax
+}

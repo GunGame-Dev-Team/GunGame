@@ -1,5 +1,5 @@
-// keymenu v0.6.6 by XE_ManUp
-//   modified by [NATO]Hunter (setvar,getvar,backmenu,getmenuname)
+// keymenu v0.6.7 by XE_ManUp
+//   modified by [NATO]Hunter (setvar,getvar,backmenu,getmenuname,update)
 
 block load
 {
@@ -31,13 +31,14 @@ block load
   es_xset _keymenu_currentpage 0
   es_xset _keymenu_pagecount 0
   es_xset _keymenu_insertquery 0
+  es_xset _keymenu_addlinestring 0
   
   // keymenu sort vars
   es_xset _keymenu_argc 0
   es_xset _keymenu_argv 0
   es_xset _keymenu_args 0
   es_xset _keymenu_format 0
-  es_xset _keymenu_validargs "create,send,delete,getpages,exists,changeblock,setvar,getvar,backmenu,getmenuname"
+  es_xset _keymenu_validargs "create,send,delete,getpages,exists,changeblock,setvar,getvar,backmenu,getmenuname,update"
 
   // keymenu create vars
   es_xset _keymenu_query 0
@@ -58,8 +59,6 @@ block load
   es_xset _keymenu_othermenu 0
   es_xset _keymenu_intern_var 0
   es_xset _keymenu_intern_value 0
-
-  libmanager register keymenu "0.6.4"
 }
 
 block unload
@@ -70,8 +69,6 @@ block unload
   es_xsql close _keymenu_database
   es_xkeygroupdelete _keymenu_delete
   es_xkeygroupdelete _keymenu_created_menus
-
-  libmanager unregister keymenu
 }
 
 block keymenu_sort
@@ -188,9 +185,22 @@ block create
               es_xgetargv _keymenu_scriptblock 4
               es_keycreate _keymenu_created_menus server_var(_keymenu_menuname)
               es_keysetvalue _keymenu_created_menus server_var(_keymenu_menuname) _backmenu 0
+              es_keysetvalue _keymenu_created_menus server_var(_keymenu_menuname) _keygroup server_var(_keymenu_keygroup)
+              es_keysetvalue _keymenu_created_menus server_var(_keymenu_menuname) _scriptblock server_var(_keymenu_scriptblock)
+              es_keysetvalue _keymenu_created_menus server_var(_keymenu_menuname) _returnvar server_var(_keymenu_returnvar)
+              es_keysetvalue _keymenu_created_menus server_var(_keymenu_menuname) _titletext server_var(_keymenu_titletext)
+              es_keysetvalue _keymenu_created_menus server_var(_keymenu_menuname) _menudisplay server_var(_keymenu_menudisplay)
+              es_keysetvalue _keymenu_created_menus server_var(_keymenu_menuname) _menureturn server_var(_keymenu_menureturn)
               if (server_var(_keymenu_menudisplay) = "key") do
               {
-                es_foreachkey _keymenu_tempkey in server_var(_keymenu_keygroup) "es_xdoblock keymenu/sql_insert_key"
+                if (server_var(_keymenu_menureturn) = "key") do
+                {
+                  es_foreachkey _keymenu_tempkey in server_var(_keymenu_keygroup) "es_xdoblock keymenu/sql_insert_key"
+                }
+                else do
+                {
+                  es_foreachkey _keymenu_tempkey in server_var(_keymenu_keygroup) "es_xdoblock keymenu/sql_insert_ikey"
+                }
                 es_xformatqv _keymenu_query "SELECT COUNT(display) FROM _keymenu_list WHERE keymenu='%1'" _keymenu_menuname
                 es_sql queryvalue _keymenu_database _keymenu_pagecount server_var(_keymenu_query)
                 ifx true(_keymenu_pagecount) do
@@ -217,7 +227,14 @@ block create
               }
               else do
               {
-                es_foreachkey _keymenu_tempkey in server_var(_keymenu_keygroup) "es_xdoblock keymenu/sql_insert_keyvalue"
+                if (server_var(_keymenu_menureturn) = "key") do
+                {
+                  es_foreachkey _keymenu_tempkey in server_var(_keymenu_keygroup) "es_xdoblock keymenu/sql_insert_keyvalue"
+                }
+                else do
+                {
+                  es_foreachkey _keymenu_tempkey in server_var(_keymenu_keygroup) "es_xdoblock keymenu/sql_insert_ikeyvalue"
+                }
                 es_xformatqv _keymenu_query "SELECT COUNT(display) FROM _keymenu_list WHERE keymenu='%1'" _keymenu_menuname
                 es_sql queryvalue _keymenu_database _keymenu_pagecount server_var(_keymenu_query)
                 ifx true(_keymenu_pagecount) do
@@ -293,37 +310,34 @@ block create
 
 block sql_insert_key
 {
-  if (server_var(_keymenu_menureturn) = key) do
-  {
-    es_xformatqv _keymenu_query "INSERT INTO _keymenu_list (keymenu,display,return) VALUES('%1','%2','%2')" _keymenu_menuname _keymenu_tempkey
-    es_sql query _keymenu_database server_var(_keymenu_query)
-  }
-  else do
-  {
-    es_keygetvalue _keymenu_stored_return server_var(_keymenu_keygroup) server_var(_keymenu_tempkey) server_var(_keymenu_menureturn)
-    es_xformatqv _keymenu_query "INSERT INTO _keymenu_list (keymenu,display,return) VALUES('%1','%2','%3')" _keymenu_menuname _keymenu_tempkey _keymenu_stored_return
-    es_sql query _keymenu_database server_var(_keymenu_query)
-  }
+  es_xformatqv _keymenu_query "INSERT INTO _keymenu_list (keymenu,display,return) VALUES('%1','%2','%2')" _keymenu_menuname _keymenu_tempkey
+  es_sql query _keymenu_database server_var(_keymenu_query)
 }
 
 block sql_insert_keyvalue
 {
   es_keygetvalue _keymenu_stored_display server_var(_keymenu_keygroup) server_var(_keymenu_tempkey) server_var(_keymenu_menudisplay)
-  if (server_var(_keymenu_menureturn) = key) do
-  {
-    es_xformatqv _keymenu_query "INSERT INTO _keymenu_list (keymenu,display,return) VALUES('%1','%2','%3')" _keymenu_menuname _keymenu_stored_display _keymenu_tempkey
-    es_sql query _keymenu_database server_var(_keymenu_query)
-  }
-  else do
-  {
-    //es_keygetvalue _keymenu_stored_display server_var(_keymenu_keygroup) server_var(_keymenu_tempkey) server_var(_keymenu_menureturn)
-    es_xformatqv _keymenu_query "INSERT INTO _keymenu_list (keymenu,display,return) VALUES('%1','%2','%2')" _keymenu_menuname _keymenu_stored_display
-    es_sql query _keymenu_database server_var(_keymenu_query)
-  }
+  es_xformatqv _keymenu_query "INSERT INTO _keymenu_list (keymenu,display,return) VALUES('%1','%2','%3')" _keymenu_menuname _keymenu_stored_display _keymenu_tempkey
+  es_sql query _keymenu_database server_var(_keymenu_query)
+}
+
+block sql_insert_ikey
+{
+  es_keygetvalue _keymenu_stored_return server_var(_keymenu_keygroup) server_var(_keymenu_tempkey) server_var(_keymenu_menureturn)
+  es_xformatqv _keymenu_query "INSERT INTO _keymenu_list (keymenu,display,return) VALUES('%1','%2','%3')" _keymenu_menuname _keymenu_tempkey _keymenu_stored_return
+  es_sql query _keymenu_database server_var(_keymenu_query)
+}
+
+block sql_insert_ikeyvalue
+{
+  es_keygetvalue _keymenu_stored_display server_var(_keymenu_keygroup) server_var(_keymenu_tempkey) server_var(_keymenu_menudisplay)
+  es_xformatqv _keymenu_query "INSERT INTO _keymenu_list (keymenu,display,return) VALUES('%1','%2','%2')" _keymenu_menuname _keymenu_stored_display
+  es_sql query _keymenu_database server_var(_keymenu_query)
 }
 
 block build_menu
 {
+  es_xset _keymenu_addlinestring 0
   es_xset _keymenu_keycount 0
   es_xmath _keymenu_currentpage + 1
   es_xformatv _keymenu_format "%1%2" _keymenu_menuname _keymenu_currentpage
@@ -344,18 +358,14 @@ block build_menu
     es popup menuselectfb server_var(_keymenu_format) server_var(_keymenu_scriptblock)
     if ("\n" notin server_var(_keymenu_titletext)) do
     {
-      es_xformatv _keymenu_menuline_format "%1:      %2/%3" _keymenu_titletext _keymenu_currentpage _keymenu_pagecount
-      es popup addline server_var(_keymenu_format) server_var(_keymenu_menuline_format)
+      es_xformatv _keymenu_addlinestring "%1:      %2/%3\n-----------------------------" _keymenu_titletext _keymenu_currentpage _keymenu_pagecount
     }
     else do
     {
       es_token _keymenu_titletext_orig server_var(_keymenu_titletext) 1 \n
       es_token _keymenu_titletext_desc server_var(_keymenu_titletext) 2 \n
-      es_xformatv _keymenu_menuline_format "%1:      %2/%3" _keymenu_titletext_orig _keymenu_currentpage _keymenu_pagecount
-      es popup addline server_var(_keymenu_format) server_var(_keymenu_menuline_format)
-      es popup addline server_var(_keymenu_format) server_var(_keymenu_titletext_desc)
+      es_xformatv _keymenu_addlinestring "%1:      %2/%3\n%4\n-----------------------------" _keymenu_titletext_orig _keymenu_currentpage _keymenu_pagecount _keymenu_titletext_desc
     }
-    es popup addline server_var(_keymenu_format) "-----------------------------"
     es_xforeachkey _keymenu_tmp in _keymenu_menubuild "es_xdoblock keymenu/add_to_popup"
     es_xkeygroupdelete _keymenu_menubuild
     if (server_var(_keymenu_currentpage) = server_var(_keymenu_pagecount)) do
@@ -364,15 +374,13 @@ block build_menu
       {
         es_xmathparse _keymenu_blanklines "8-_keymenu_keycount"
         es_xset _keymenu_keycount 0
-        es_xset _keymenu_menuline_format " "
-        while "server_var(_keymenu_keycount) < server_var(_keymenu_blanklines)" "es_xmath _keymenu_keycount + 1;es popup addline server_var(_keymenu_format) server_var(_keymenu_menuline_format)"
+        while "server_var(_keymenu_keycount) < server_var(_keymenu_blanklines)" "es_xmath _keymenu_keycount + 1;es_xformatv _keymenu_addlinestring %1\n%2 _keymenu_addlinestring _keymenu_space"
       }
     }
-    es popup addline server_var(_keymenu_format) "-----------------------------"
     if (server_var(_keymenu_pagecount) > 1) do
     {
-      es popup addline server_var(_keymenu_format) "->9. More"
-      es popup addline server_var(_keymenu_format) "0. Cancel"
+      es_xformatv _keymenu_addlinestring "%1\n-----------------------------\n->9. More\n0. Cancel" _keymenu_addlinestring
+      es popup addline server_var(_keymenu_format) server_var(_keymenu_addlinestring)
       es_xmathparse _keymenu_nextmenu_number "_keymenu_currentpage+1"
       es_xformatv _keymenu_submenu_format "%1%2" _keymenu_menuname _keymenu_nextmenu_number
       es popup submenu server_var(_keymenu_format) 9 server_var(_keymenu_submenu_format)
@@ -381,7 +389,8 @@ block build_menu
     }
     else do
     {
-      es popup addline server_var(_keymenu_format) "0. Cancel"
+      es_xformatv _keymenu_addlinestring "%1\n-----------------------------\n0. Cancel" _keymenu_addlinestring
+      es popup addline server_var(_keymenu_format) server_var(_keymenu_addlinestring)
       es popup select server_var(_keymenu_format) 10 "keymenu/menu_close"
     }
   }
@@ -402,18 +411,14 @@ block build_menu
     es popup menuselectfb server_var(_keymenu_format) server_var(_keymenu_scriptblock)
     if ("\n" notin server_var(_keymenu_titletext)) do
     {
-      es_xformatv _keymenu_menuline_format "%1:      %2/%3" _keymenu_titletext _keymenu_currentpage _keymenu_pagecount
-      es popup addline server_var(_keymenu_format) server_var(_keymenu_menuline_format)
+      es_xformatv _keymenu_addlinestring "%1:      %2/%3\n-----------------------------" _keymenu_titletext _keymenu_currentpage _keymenu_pagecount
     }
     else do
     {
       es_token _keymenu_titletext_orig server_var(_keymenu_titletext) 1 \n
       es_token _keymenu_titletext_desc server_var(_keymenu_titletext) 2 \n
-      es_xformatv _keymenu_menuline_format "%1:      %2/%3" _keymenu_titletext_orig _keymenu_currentpage _keymenu_pagecount
-      es popup addline server_var(_keymenu_format) server_var(_keymenu_menuline_format)
-      es popup addline server_var(_keymenu_format) server_var(_keymenu_titletext_desc)
+      es_xformatv _keymenu_addlinestring "%1:      %2/%3\n%4\n-----------------------------" _keymenu_titletext_orig _keymenu_currentpage _keymenu_pagecount _keymenu_titletext_desc
     }
-    es popup addline server_var(_keymenu_format) "-----------------------------"
     es_xforeachkey _keymenu_tmp in _keymenu_menubuild "es_xdoblock keymenu/add_to_popup"
     es_xkeygroupdelete _keymenu_menubuild
     if (server_var(_keymenu_currentpage) = server_var(_keymenu_pagecount)) do
@@ -422,12 +427,10 @@ block build_menu
       {
         es_xmathparse _keymenu_blanklines "7-_keymenu_keycount"
         es_xset _keymenu_keycount 0
-        es_xset _keymenu_menuline_format " "
-        while "server_var(_keymenu_keycount) <= server_var(_keymenu_blanklines)" "es_xmath _keymenu_keycount + 1;es popup addline server_var(_keymenu_format) server_var(_keymenu_menuline_format)"
+        while "server_var(_keymenu_keycount) <= server_var(_keymenu_blanklines)" "es_xmath _keymenu_keycount + 1;es_xformatv _keymenu_addlinestring %1\n%2 _keymenu_addlinestring _keymenu_space"
       }
-      es popup addline server_var(_keymenu_format) "-----------------------------"
-      es popup addline server_var(_keymenu_format) "->8. Back"
-      es popup addline server_var(_keymenu_format) "0. Cancel"
+      es_xformatv _keymenu_addlinestring "%1\n-----------------------------\n->8. Back\n0. Cancel" _keymenu_addlinestring
+      es popup addline server_var(_keymenu_format) server_var(_keymenu_addlinestring)
       es_xmathparse _keymenu_nextmenu_number "_keymenu_currentpage-1"
       es_xformatv _keymenu_submenu_format "%1%2" _keymenu_menuname _keymenu_nextmenu_number
       es popup submenu server_var(_keymenu_format) 8 server_var(_keymenu_submenu_format)
@@ -437,10 +440,8 @@ block build_menu
     }
     else do
     {
-      es popup addline server_var(_keymenu_format) "-----------------------------"
-      es popup addline server_var(_keymenu_format) "->8. Back"
-      es popup addline server_var(_keymenu_format) "->9. More"
-      es popup addline server_var(_keymenu_format) "0. Cancel"
+      es_xformatv _keymenu_addlinestring "%1\n-----------------------------\n->8. Back\n->9. More\n0. Cancel" _keymenu_addlinestring
+      es popup addline server_var(_keymenu_format) server_var(_keymenu_addlinestring)
       es_xmathparse _keymenu_nextmenu_number "_keymenu_currentpage-1"
       es_xformatv _keymenu_submenu_format "%1%2" _keymenu_menuname _keymenu_nextmenu_number
       es popup submenu server_var(_keymenu_format) 8 server_var(_keymenu_submenu_format)
@@ -459,10 +460,8 @@ block add_to_popup
   es_xmath _keymenu_keycount + 1
   es_keygetvalue _keymenu_stored_display _keymenu_menubuild server_var(_keymenu_tmp) display
   es_keygetvalue _keymenu_stored_return _keymenu_menubuild server_var(_keymenu_tmp) return
-  es_xformatv _keymenu_menuline_format "->%1. %2" _keymenu_tmp _keymenu_stored_display
-  es popup addline server_var(_keymenu_format) server_var(_keymenu_menuline_format)
+  es_xformatv _keymenu_addlinestring "%1\n->%2. %3" _keymenu_addlinestring _keymenu_tmp _keymenu_stored_display
   es popup menuvalue server_var(_keymenu_format) server_var(_keymenu_returnvar) server_var(_keymenu_tmp) server_var(_keymenu_stored_return)
-  //es popup select server_var(_keymenu_format) server_var(_keymenu_tmp) server_var(_keymenu_scriptblock)
 }
 
 // keymenu delete <menu name>
@@ -830,6 +829,113 @@ block getmenuname
   else do
   {
     es_xdbgmsg keymenu: keymenu getmenuname <var> <popup-name>
+  }
+}
+
+//keymenu update <menu name> [keygroup]
+block update
+{
+  if (server_var(_keymenu_argc) >= 3) do
+  {
+    // ############### START KEYMENU/POPUP SETUP ###############
+    // Check to see if the "keymenu/popup" exists. If not, allow it to be created.
+    es_xgetargv _keymenu_menuname 2
+    es_exists _keymenu_exists key _keymenu_created_menus server_var(_keymenu_menuname)
+    ifx true(_keymenu_exists) do
+    {
+      // Get the old keymenu setup
+      es_xgetargv _keymenu_keygroup 3
+      ifx false(_keymenu_keygroup) do
+      {
+        es_keygetvalue _keymenu_keygroup _keymenu_created_menus server_var(_keymenu_menuname) _keygroup
+      }
+      es_keygetvalue _keymenu_scriptblock _keymenu_created_menus server_var(_keymenu_menuname) _scriptblock
+      es_keygetvalue _keymenu_returnvar _keymenu_created_menus server_var(_keymenu_menuname) _returnvar
+      es_keygetvalue _keymenu_titletext _keymenu_created_menus server_var(_keymenu_menuname) _titletext
+      es_keygetvalue _keymenu_menudisplay _keymenu_created_menus server_var(_keymenu_menuname) _menudisplay
+      es_keygetvalue _keymenu_menureturn _keymenu_created_menus server_var(_keymenu_menuname) _menureturn
+      es_xformatqv _keymenu_query "DELETE FROM _keymenu_list WHERE keymenu='%1'" _keymenu_menuname
+      es_sql query _keymenu_database server_var(_keymenu_query)
+      if (server_var(_keymenu_menudisplay) = "key") do
+      {
+        if (server_var(_keymenu_menureturn) = "key") do
+        {
+          es_foreachkey _keymenu_tempkey in server_var(_keymenu_keygroup) "es_xdoblock keymenu/sql_insert_key"
+        }
+        else do
+        {
+          es_foreachkey _keymenu_tempkey in server_var(_keymenu_keygroup) "es_xdoblock keymenu/sql_insert_ikey"
+        }
+        es_xformatqv _keymenu_query "SELECT COUNT(display) FROM _keymenu_list WHERE keymenu='%1'" _keymenu_menuname
+        es_sql queryvalue _keymenu_database _keymenu_pagecount server_var(_keymenu_query)
+        ifx true(_keymenu_pagecount) do
+        {
+          if (server_var(_keymenu_pagecount) < 9) do
+          {
+            es_xset _keymenu_pagecount 1
+          }
+          else do
+          {
+            es_xmathparse _keymenu_pagecount "rint(((_keymenu_pagecount-8)/7)+1.4)"
+          }
+          es_xset _keymenu_insertquery 0
+          es_xset _keymenu_currentpage 0
+          es_xset _keymenu_limit 0
+          while "server_var(_keymenu_currentpage) < server_var(_keymenu_pagecount)" "es_xdoblock keymenu/build_menu"
+          es_sql query _keymenu_database server_var(_keymenu_insertquery)
+        }
+        else do
+        {
+          es_xformatv _keymenu_format "keymenu: No keys or keyvalues found in %1" _keymenu_keygroup
+          es_xdbgmsgv 0 _keymenu_format
+        }
+      }
+      else do
+      {
+        if (server_var(_keymenu_menureturn) = "key") do
+        {
+          es_foreachkey _keymenu_tempkey in server_var(_keymenu_keygroup) "es_xdoblock keymenu/sql_insert_keyvalue"
+        }
+        else do
+        {
+          es_foreachkey _keymenu_tempkey in server_var(_keymenu_keygroup) "es_xdoblock keymenu/sql_insert_ikeyvalue"
+        }
+        es_xformatqv _keymenu_query "SELECT COUNT(display) FROM _keymenu_list WHERE keymenu='%1'" _keymenu_menuname
+        es_sql queryvalue _keymenu_database _keymenu_pagecount server_var(_keymenu_query)
+        ifx true(_keymenu_pagecount) do
+        {
+          if (server_var(_keymenu_pagecount) < 9) do
+          {
+            es_xset _keymenu_pagecount 1
+          }
+          else do
+          {
+            es_xmathparse _keymenu_pagecount "rint(((_keymenu_pagecount-8)/7)+1.4)"
+          }
+          es_xset _keymenu_insertquery 0
+          es_xset _keymenu_currentpage 0
+          es_xset _keymenu_limit 0
+          while "server_var(_keymenu_currentpage) < server_var(_keymenu_pagecount)" "es_xdoblock keymenu/build_menu"
+          es_sql query _keymenu_database server_var(_keymenu_insertquery)
+        }
+        else do
+        {
+          es_xformatv _keymenu_format "keymenu: No keys or keyvalues found in %1" _keymenu_keygroup
+          es_xdbgmsgv 0 _keymenu_format
+        }
+      }
+    }
+    else do
+    {
+      es_xformatv _keymenu_format "keymenu: Keymenu does not exists: %1" _keymenu_menuname
+      es_xdbgmsgv 0 _keymenu_format
+    }
+    // ############### END KEYMENU/POPUP SETUP ###############
+  }
+  else do
+  {
+    // If there are not enough arguments for keymenu, give error message and halt keymenu creation
+    es_xdbgmsg 0 keymenu: keymenu update <menu name> [keygroup]
   }
 }
 
