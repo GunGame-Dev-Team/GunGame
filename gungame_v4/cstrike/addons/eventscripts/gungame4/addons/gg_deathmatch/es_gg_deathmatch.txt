@@ -190,6 +190,8 @@ event weapon_fire
 	{
 		es est_god event_var(userid) 0
 		es est_SetPlayerColor event_var(userid) 255 255 255 255 1
+		es_format gg_query "UPDATE gg_players SET is_afk = '0' WHERE userid = '%1'" event_var(userid)
+		es_sql query gg_live server_var(gg_query)
 	}
 }
 
