@@ -43,6 +43,7 @@ block load
 	es_xset gg_dm_tmp2 0
 	es_xset gg_dm_tmp3 0
 	es_xset gg_dm_tmp4 0
+	es_xset gg_health 0
 	
 	// Init commands
 	es_xset gg_exists 0
@@ -259,13 +260,21 @@ block gg_dm_reset_player
 block stuck_cmd
 {
 	es_xgetcmduserid gg_userid
-	es_xformatqv gg_query "SELECT give FROM gg_players WHERE userid = '%1'" gg_userid
-	es_sql queryvalue gg_live gg_tmp server_var(gg_query)
-	ifx false(gg_tmp) do
+	es gg_getweapon gg_weapon server_var(gg_userid)
+	if (server_var(gg_weapon) != "hegrenade") do
 	{
-		es_xformatqv gg_query "UPDATE gg_players SET give = 1 WHERE userid = '%1'" gg_userid
-		es_sql query gg_live server_var(gg_query)
-		es_xdoblock gungame4/addons/gg_deathmatch/rand_stuck
+		es_xformatqv gg_query "SELECT give FROM gg_players WHERE userid = '%1'" gg_userid
+		es_sql queryvalue gg_live gg_tmp server_var(gg_query)
+		ifx false(gg_tmp) do
+		{
+			es_xformatqv gg_query "UPDATE gg_players SET give = 1 WHERE userid = '%1'" gg_userid
+			es_sql query gg_live server_var(gg_query)
+			es_xdoblock gungame4/addons/gg_deathmatch/rand_stuck
+		}
+		else do
+		{
+			es_tell server_var(gg_userid) #green You cannot use that command now!!
+		}
 	}
 	else do
 	{
@@ -307,7 +316,9 @@ block gg_check_block
 	{
 		if (server_var(gg_dm_tmp4) <= 40) do
 		{
+			es playerget health gg_health server_var(gg_userid)
 			es est_spawn server_var(gg_userid) 1
+			es_delayed .25 playerset health server_var(gg_userid) server_var(gg_health)
 		}
 	}
 	es_delayed 2 gg_reset_cmd server_var(gg_userid)
