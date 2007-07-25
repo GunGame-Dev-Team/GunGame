@@ -189,6 +189,7 @@ event weapon_fire
 	ifx true(gg_dm_remove_protect) do
 	{
 		es est_god event_var(userid) 0
+		es est_SetPlayerColor event_var(userid) 255 255 255 255 1
 	}
 }
 
