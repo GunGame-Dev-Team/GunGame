@@ -220,7 +220,7 @@ event round_end
 	
 			//Fire game_end
 			es_xgetplayercount eme_players
-			if (server_var(eme_players) == 0) do
+			ifx false(eme_players) do
 			{
 				es_xcreatebot eme_userid Endmap
 			}
@@ -243,15 +243,18 @@ event round_end
 block frag_check
 {
 	es score get eme_user_score server_var(eme_userid)
-	if (server_var(eme_user_score) >= server_var(mp_fraglimit)) do
+	ifx true(eme_user_score) do
 	{
-		ifx false(eme_check) do
+		if (server_var(eme_user_score) >= server_var(mp_fraglimit)) do
 		{
-			//Trigger map_end
-			es_xevent initialize map_end
-			es_xevent setint map_end reason 2   // Frag limit
-			es_xevent fire map_end
-			es_xset eme_check 1
+			ifx false(eme_check) do
+			{
+				//Trigger map_end
+				es_xevent initialize map_end
+				es_xevent setint map_end reason 2   // Frag limit
+				es_xevent fire map_end
+				es_xset eme_check 1
+			}
 		}
 	}
 }
@@ -263,7 +266,7 @@ block end_map
 	es_xset eme_arg2 0
 	
 	es_xgetargs eme_args
-	if (server_var(eme_args) != 0) do
+	ifx true(eme_args) do
 	{
 		es_xgetargv eme_arg1 1
 		es_xgetargv eme_arg2 2
@@ -272,7 +275,7 @@ block end_map
 		{
 			ifx false(eme_check) do
 			{
-				if (server_var(eme_arg2) != 0) do
+				ifx true(eme_arg2) do
 				{
 					es eventscripts_nextmapoverride server_var(eme_arg2)
 				}
@@ -285,7 +288,7 @@ block end_map
 	
 				//Fire game_end
 				es_xgetplayercount eme_players
-				if (server_var(eme_players) == 0) do
+				ifx false(eme_players) do
 				{
 					es_xcreatebot eme_userid Endmap
 				}
@@ -320,29 +323,29 @@ block end_map
 						es_xevent initialize map_end
 						es_xevent setint map_end reason 5   // Commanded
 						es_xevent fire map_end
-  					es_xset eme_check 1
+  						es_xset eme_check 1
   
  	 					//Fire game_end
-  					es_xgetplayercount eme_players
-  					if (server_var(eme_players) == 0) do
-  					{
-	  					es_xcreatebot eme_userid Endmap
-  					}
-  					else do
-  					{
-	  					es_xgetuserid eme_userid
-  					}
-  					es_give server_var(eme_userid) game_end
-  					es_fire server_var(eme_userid) game_end EndGame
-  					es_xmathparse eme_tmp "mp_chattime + 3"
+  						es_xgetplayercount eme_players
+  						ifx false(eme_players) do
+  						{
+		  					es_xcreatebot eme_userid Endmap
+  						}
+  						else do
+  						{
+		  					es_xgetuserid eme_userid
+  						}
+  						es_give server_var(eme_userid) game_end
+  						es_fire server_var(eme_userid) game_end EndGame
+  						es_xmathparse eme_tmp "mp_chattime + 3"
 						es_delay server_var(eme_tmp) changelevel de_dust
+  					}
+  				}
+  				else do
+  				{
+	  				es_xset eme_roundend 1
   				}
   			}
-  			else do
-  			{
-  				es_xset eme_roundend 1
-  			}
-  		}
 		}
 	}
 	else do
@@ -353,7 +356,7 @@ block end_map
 
 event map_end
 {
-	es_log Map has ended for reason code event_var(reason)
+	es_dbgmsg 1 Map has ended for reason code event_var(reason)
 }
 
 block unload

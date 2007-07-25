@@ -29,8 +29,6 @@ event player_death
 						
 						ifx true(gg_knife_pro_limit) do
 						{
-							es_xformatqv gg_query "SELECT level FROM gg_players WHERE userid = '%1'" gg_attackerid
-							es_sql queryvalue gg_live gg_attacker_lvl server_var(gg_query)
 							if (server_var(gg_victim_lvl) > 1) do
 							{
 								es_xmathparse gg_tmp "gg_attacker_lvl - gg_victim_lvl"
