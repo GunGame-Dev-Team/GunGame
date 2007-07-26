@@ -1,4 +1,4 @@
-// GunGame v4.0.75
+// GunGame v4.0.76
 // (c)2007 by GunGame Coding Team (cagemonkey,XE_Manup)
 //
 // We would like to thank the following individuals in no particular order:
@@ -52,7 +52,7 @@ block load
 	//##########################################################################
 
 	//SET CURRENT VERSION
-	es_xset eventscripts_gg "4.0.75"
+	es_xset eventscripts_gg "4.0.76"
 	es_xmakepublic eventscripts_gg
 	
 	//LOADING ANNOUNCEMENT
@@ -788,6 +788,12 @@ block strip_weapons
 	es_token gg_killweapon server_var(gg_stripweapons) server_var(gg_tempcount) ,
 	es_xformatv gg_command "%1 %2 kill" gg_userid gg_killweapon
 	esnq es_xfire server_var(gg_command)
+}
+
+event weapon_fire
+{
+	es_format gg_query "UPDATE gg_players SET is_afk = '0' WHERE userid = '%1'" event_var(userid)
+	es_sql query gg_live server_var(gg_query)
 }
 
 event round_end

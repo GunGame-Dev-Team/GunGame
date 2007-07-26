@@ -181,6 +181,21 @@ block buy_cmd
 				es_sql query buy_db server_var(buy_query)
 				es playerset cash server_var(buy_userid) server_var(buy_money)
 				es gg_levelup server_var(buy_userid)
+				// Check to see if turbo mode is on, and if not, give weapon now
+				es_xset gg_exists 0
+				es_xexists gg_exists script gungame4/addons/gg_turbo_mode
+				ifx false(gg_exists) do
+				{
+					es_getplayerprop gg_tmp server_var(buy_userid) "CCSPlayer.baseclass.pl.deadflag"
+					ifx false(gg_tmp) do
+					{
+						es_give server_var(buy_userid) player_weaponstrip
+						es_fire server_var(buy_userid) player_weaponstrip Strip 1
+						es_delayed 0.01 es_xgive server_var(buy_userid) item_assaultsuit
+						es_delayed 0.01 es_xgive server_var(buy_userid) weapon_knife
+						es_delayed 0.01 gg_equip server_var(buy_userid) event_var(team)
+					}
+				}
 			}
 			else do
 			{

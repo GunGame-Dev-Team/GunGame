@@ -81,7 +81,7 @@ block remove_effects
 	es_xgetargv gg_userid 1
 	
 	// Reset player to defaults
-	es_fire server_var(gg_userid) env_spark kill
+	es_fire server_var(gg_userid) env_spark stopspark
 	//es_fire server_var(gg_userid) point_spotlight kill
 	es_setplayerprop server_var(gg_userid) CCSPlayer.baseclass.localdata.m_flLaggedMovementValue 1.0
 	ifx true(est_version) do

@@ -20,17 +20,17 @@ event player_death
 		{
 			if (event_var(weapon) = "knife") do
 			{
+				es gg_getweapon gg_attacker_wpn event_var(attacker)
 				if (server_var(gg_attacker_wpn) != "knife") do
 				{
 					ifx false(gg_user_afk) do
 					{
-						es_xformatqv gg_query "SELECT level FROM gg_players WHERE userid = '%1'" gg_userid
-						es_sql queryvalue gg_live gg_victim_lvl server_var(gg_query)
-						
+						es gg_getlevel gg_victim_lvl event_var(userid)
 						ifx true(gg_knife_pro_limit) do
 						{
 							if (server_var(gg_victim_lvl) > 1) do
 							{
+								es gg_getlevel gg_attacker_lvl event_var(attacker)
 								es_xmathparse gg_tmp "gg_attacker_lvl - gg_victim_lvl"
 								if (server_var(gg_tmp) <= server_var(gg_knife_pro_limit)) do
 								{
