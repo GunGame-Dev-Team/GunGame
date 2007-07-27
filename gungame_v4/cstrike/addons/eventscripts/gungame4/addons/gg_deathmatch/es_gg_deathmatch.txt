@@ -176,7 +176,7 @@ event player_death
 	}
 	es_xdelayed .1 est_RemoveIdle weapon
 	
-	es_delayed server_var(gg_dm_spawntime) est_spawn event_var(userid)
+	es_delayed server_var(gg_dm_spawntime) es_xif (server_var(gg_live_round) == 1) then est_spawn event_var(userid)
 	
 	// Make spawnpoint available again
 	es_set gg_userid event_var(userid)
@@ -258,16 +258,24 @@ block gg_dm_reset_player
 block stuck_cmd
 {
 	es_xgetcmduserid gg_userid
-	es gg_getweapon gg_weapon server_var(gg_userid)
-	if (server_var(gg_weapon) != "hegrenade") do
+	es_getplayerteam gg_team server_var(gg_userid)
+	if (server_var(gg_team) > 1) do
 	{
-		es_xformatqv gg_query "SELECT give FROM gg_players WHERE userid = '%1'" gg_userid
-		es_sql queryvalue gg_live gg_tmp server_var(gg_query)
-		ifx false(gg_tmp) do
+		es gg_getweapon gg_weapon server_var(gg_userid)
+		if (server_var(gg_weapon) != "hegrenade") do
 		{
-			es_xformatqv gg_query "UPDATE gg_players SET give = 1 WHERE userid = '%1'" gg_userid
-			es_sql query gg_live server_var(gg_query)
-			es_xdoblock gungame4/addons/gg_deathmatch/rand_stuck
+			es_xformatqv gg_query "SELECT give FROM gg_players WHERE userid = '%1'" gg_userid
+			es_sql queryvalue gg_live gg_tmp server_var(gg_query)
+			ifx false(gg_tmp) do
+			{
+				es_xformatqv gg_query "UPDATE gg_players SET give = 1 WHERE userid = '%1'" gg_userid
+				es_sql query gg_live server_var(gg_query)
+				es_xdoblock gungame4/addons/gg_deathmatch/rand_stuck
+			}
+			else do
+			{
+				es_tell server_var(gg_userid) #green You cannot use that command now!!
+			}
 		}
 		else do
 		{
@@ -333,7 +341,10 @@ block respawn_cmd
 	es_getplayerprop gg_tmp server_var(gg_userid) "CCSPlayer.baseclass.pl.deadflag"
 	ifx true(gg_tmp) do
 	{
-		es est_spawn server_var(gg_userid)
+		if (server_var(gg_live_round) == 1) do
+		{
+			es est_spawn server_var(gg_userid)
+		}
 	}
 }
 

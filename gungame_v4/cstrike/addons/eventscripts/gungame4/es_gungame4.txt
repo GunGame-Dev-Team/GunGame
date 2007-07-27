@@ -1,4 +1,4 @@
-// GunGame v4.0.79
+// GunGame v4.0.80
 // (c)2007 by GunGame Coding Team (cagemonkey,XE_Manup)
 //
 // We would like to thank the following individuals in no particular order:
@@ -52,7 +52,7 @@ block load
 	//##########################################################################
 
 	//SET CURRENT VERSION
-	es_xset eventscripts_gg "4.0.79"
+	es_xset eventscripts_gg "4.0.80"
 	es_xmakepublic eventscripts_gg
 	
 	//LOADING ANNOUNCEMENT
@@ -766,7 +766,8 @@ event weapon_fire
 event round_end
 {
 	// Set live round status
-	es_xset gg_live_round 0
+	// Needs a delay so c4 bombs do not cause suicides
+	es_xdelayed .2 es_xset gg_live_round 0
 	
 	// Round end code
 	es_xset gg_bomber 0
@@ -1453,6 +1454,7 @@ event gg_win
 	}
 	
 	// End the map
+	es_xset gg_live_round 0
 	// Reset leader menu
 	gg_popup delete gg_leader_menu
 	es_xdoblock gungame4/create_leader_menu
