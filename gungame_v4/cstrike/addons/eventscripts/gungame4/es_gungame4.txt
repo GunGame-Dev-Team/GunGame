@@ -1,4 +1,4 @@
-// GunGame v4.0.76
+// GunGame v4.0.77
 // (c)2007 by GunGame Coding Team (cagemonkey,XE_Manup)
 //
 // We would like to thank the following individuals in no particular order:
@@ -52,7 +52,7 @@ block load
 	//##########################################################################
 
 	//SET CURRENT VERSION
-	es_xset eventscripts_gg "4.0.76"
+	es_xset eventscripts_gg "4.0.77"
 	es_xmakepublic eventscripts_gg
 	
 	//LOADING ANNOUNCEMENT
@@ -101,13 +101,6 @@ block load
 		es_xload crontab
 	}
 	
-	// Setup endmap
-	es_xset gg_exists 0
-	es_xexists gg_exists script event_map_end
-	ifx false(gg_exists) do
-	{
-		es_xload event_map_end
-	}
 	
 	//CRONTAB COMMANDS
 	crontab #daily "es_xdoblock gungame4/prune_database" prune_gg_db 0
@@ -710,32 +703,6 @@ block warmup_start
 	}
 }
 
-event map_end
-{
-	// Reset leader menu
-	gg_popup delete gg_leader_menu
-	es_xdoblock gungame4/create_leader_menu
-	
-	// Reset warmup
-	ifx true(gg_warmup_counter) do
-	{
-		es_xdoblock corelib/noisy_off
-	}
-	
-	if (event_var(reason) >= 5) do
-	{
-		// Play sound
-		es_cexec_all playgamesound server_var(gg_sound_winner)
-		sv_alltalk 1
-		
-		// If GG is loaded via map.cfg file, unload now
-		if (server_var(gg_loaded) == 2) do
-		{
-			es_xdelayed 3 es_xunload gungame4
-		}
-	}
-}
-
 block prune_database
 {
 	// Prune database
@@ -933,7 +900,7 @@ event player_spawn
 		ifx false(gg_warmup_started) do
 		{
 			es_delayed 0.01 gg_equip event_var(userid) event_var(es_userteam)
-			es_delayed 1.5 gg_afk_loc event_var(userid)
+			es_delayed 1 gg_afk_loc event_var(userid)
 		}
 		else do
 		{
@@ -1486,7 +1453,23 @@ event gg_win
 	}
 	
 	// End the map
-	endmap now
+	// Reset leader menu
+	gg_popup delete gg_leader_menu
+	es_xdoblock gungame4/create_leader_menu
+	
+	//Fire game_end
+	es_give server_var(userid) game_end
+	es_fire server_var(userid) game_end EndGame
+	
+	// Play sound
+	es_cexec_all playgamesound server_var(gg_sound_winner)
+	sv_alltalk 1
+		
+	// If GG is loaded via map.cfg file, unload now
+	if (server_var(gg_loaded) == 2) do
+	{
+		es_xdelayed 3 es_xunload gungame4
+	}
 	
 	// Winner Display
 	ifx true(gg_winner_display) do
@@ -1531,26 +1514,28 @@ event gg_win
 			es_sql queryvalue gg_live gg_tmp3 server_var(gg_query)
 			es_xsql queryvalue gg_database gg_tmp4 "SELECT COUNT(*) FROM gg_players"
 			es_set gg_username event_var(name)
-			es_regex matchformat gg_username "s/%/%25/g" server_var(gg_username) "%1"
-			es_regex matchformat gg_username "s/&/%26/g" server_var(gg_username) "%1"
-			es_regex matchformat gg_username "s/'/%27/g" server_var(gg_username) "%1"
-			es_regex matchformat gg_username "s/+/%2B/g" server_var(gg_username) "%1"
-			es_regex matchformat gg_username "s///%2F/g" server_var(gg_username) "%1"
-			es_regex matchformat gg_username "s/</%3C/g" server_var(gg_username) "%1"
-			es_regex matchformat gg_username "s/?/%3F/g" server_var(gg_username) "%1"
-			es_regex matchformat gg_username "s/`/%60/g" server_var(gg_username) "%1"
-			es_regex matchformat gg_username "s/|/%7C/g" server_var(gg_username) "%1"
+			es_xstring gg_username replace "%" "%25"
+			es_xstring gg_username replace "&" "%26"
+			es_xstring gg_username replace "'" "%27"
+			es_xstring gg_username replace "+" "%2B"
+			es_xstring gg_username replace "/" "%2F"
+			es_xstring gg_username replace "<" "%3C"
+			es_xstring gg_username replace ">" "%3E"
+			es_xstring gg_username replace "?" "%3F"
+			es_xstring gg_username replace "`" "%60"
+			es_xstring gg_username replace "|" "%7C"
 		
 			es_getplayername gg_tmp event_var(loser)
-			es_regex matchformat gg_tmp "s/%/%25/g" server_var(gg_tmp) "%1"
-			es_regex matchformat gg_tmp "s/&/%26/g" server_var(gg_tmp) "%1"
-			es_regex matchformat gg_tmp "s/'/%27/g" server_var(gg_tmp) "%1"
-			es_regex matchformat gg_tmp "s/+/%2B/g" server_var(gg_tmp) "%1"
-			es_regex matchformat gg_tmp "s///%2F/g" server_var(gg_tmp) "%1"
-			es_regex matchformat gg_tmp "s/</%3C/g" server_var(gg_tmp) "%1"
-			es_regex matchformat gg_tmp "s/?/%3F/g" server_var(gg_tmp) "%1"
-			es_regex matchformat gg_tmp "s/`/%60/g" server_var(gg_tmp) "%1"
-			es_regex matchformat gg_tmp "s/|/%7C/g" server_var(gg_tmp) "%1"
+			es_xstring gg_tmp replace "%" "%25"
+			es_xstring gg_tmp replace "&" "%26"
+			es_xstring gg_tmp replace "'" "%27"
+			es_xstring gg_tmp replace "+" "%2B"
+			es_xstring gg_tmp replace "/" "%2F"
+			es_xstring gg_tmp replace "<" "%3C"
+			es_xstring gg_tmp replace ">" "%3E"
+			es_xstring gg_tmp replace "?" "%3F"
+			es_xstring gg_tmp replace "`" "%60"
+			es_xstring gg_tmp replace "|" "%7C"
 			es_xformatv gg_tmp_url "%1?winner=%2&loser=%3&wins=%4&rank=%5&total=%6" gg_winner_url gg_username gg_tmp gg_wins gg_tmp3 gg_tmp4
 			es_xdelayed 1 foreach player gg_userid #human "es usermsg motd server_var(gg_userid) 2 Winner server_var(gg_tmp_url)"
 		}

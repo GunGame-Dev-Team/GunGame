@@ -6,16 +6,10 @@ block load
 {
 	es_xregsaycmd !give "gungame4/addons/gg_turbo_mode/give_cmd" "Gives weapons"
 	es_xregclientcmd !give "gungame4/addons/gg_turbo_mode/give_cmd" "Gives weapons"
-	
-	// Add cronjob to endmap if the timelimit is reached
-	crontab * * * * * "es_xdoblock gungame4/addons/gg_turbo_mode/timelimit" gg_timelimit 1
 }
 
 block unload
 {
-	// Remove cronjob created in block load
-	crontab del gg_timelimit
-	
 	es_xunregsaycmd !give
 	es_xunregclientcmd !give
 }
@@ -30,17 +24,6 @@ event gg_levelup
 		es_delayed 0.01 es_xgive event_var(userid) item_assaultsuit
 		es_delayed 0.01 es_xgive event_var(userid) weapon_knife
 		es_delayed 0.01 gg_equip event_var(userid) event_var(team)
-	}
-}
-
-
-block timelimit
-{
-	// If timelimit is up, end the map
-	endmap gettimeleft gg_tmp
-	if (server_var(gg_tmp) <= 0) do
-	{
-		endmap now
 	}
 }
 
