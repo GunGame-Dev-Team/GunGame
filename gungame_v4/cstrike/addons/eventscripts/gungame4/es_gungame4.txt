@@ -1,4 +1,4 @@
-// GunGame v4.0.77
+// GunGame v4.0.79
 // (c)2007 by GunGame Coding Team (cagemonkey,XE_Manup)
 //
 // We would like to thank the following individuals in no particular order:
@@ -52,7 +52,7 @@ block load
 	//##########################################################################
 
 	//SET CURRENT VERSION
-	es_xset eventscripts_gg "4.0.77"
+	es_xset eventscripts_gg "4.0.79"
 	es_xmakepublic eventscripts_gg
 	
 	//LOADING ANNOUNCEMENT
@@ -759,7 +759,7 @@ block strip_weapons
 
 event weapon_fire
 {
-	es_format gg_query "UPDATE gg_players SET is_afk = '0' WHERE userid = '%1'" event_var(userid)
+	es_format gg_query "UPDATE gg_players SET is_afk = '0', afk_rounds = '0' WHERE userid = '%1'" event_var(userid)
 	es_sql query gg_live server_var(gg_query)
 }
 
@@ -976,13 +976,13 @@ block gg_afk_check
 			es inrange gg_tmp server_var(gg_user_y) 1 server_var(gg_dead_y)
 			ifx false(gg_tmp) do
 			{
-				es_xformatqv gg_query "UPDATE gg_players SET is_afk = '0' WHERE userid = '%1'" gg_userid
+				es_xformatqv gg_query "UPDATE gg_players SET is_afk = '0', afk_rounds = '0' WHERE userid = '%1'" gg_userid
 				es_sql query gg_live server_var(gg_query)
 			}
 		}
 		else do
 		{
-			es_xformatqv gg_query "UPDATE gg_players SET is_afk = '0' WHERE userid = '%1'" gg_userid
+			es_xformatqv gg_query "UPDATE gg_players SET is_afk = '0', afk_rounds = '0' WHERE userid = '%1'" gg_userid
 			es_sql query gg_live server_var(gg_query)
 		}
 	}
@@ -1458,8 +1458,8 @@ event gg_win
 	es_xdoblock gungame4/create_leader_menu
 	
 	//Fire game_end
-	es_give server_var(userid) game_end
-	es_fire server_var(userid) game_end EndGame
+	es_give event_var(userid) game_end
+	es_fire event_var(userid) game_end EndGame
 	
 	// Play sound
 	es_cexec_all playgamesound server_var(gg_sound_winner)
