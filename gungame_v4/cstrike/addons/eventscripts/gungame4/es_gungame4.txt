@@ -1,4 +1,4 @@
-// GunGame v4.0.80
+// GunGame v4.0.81
 // (c)2007 by GunGame Coding Team (cagemonkey,XE_Manup)
 //
 // We would like to thank the following individuals in no particular order:
@@ -52,7 +52,7 @@ block load
 	//##########################################################################
 
 	//SET CURRENT VERSION
-	es_xset eventscripts_gg "4.0.80"
+	es_xset eventscripts_gg "4.0.81"
 	es_xmakepublic eventscripts_gg
 	
 	//LOADING ANNOUNCEMENT
@@ -76,6 +76,7 @@ block load
 	//DATABASE SETUP
 	//
 	es_xsql open gg_live ":memory:"
+	es_xsql query gg_live "PRAGMA auto_vacuum = 1"
 	//gg_live gg_players fields: name, userid, steamid, level, afk_rounds, is_afk, afk_x, afk_y, eyeoffset, kills, levelup, give, rank, deaths, wins
 	// NOTE: kills is used to calculate multikills, it IS NOT the total number of kills the player has made
 	// ADDTIONAL NOTE: kills is used in event gg_win for actual kills
@@ -84,6 +85,7 @@ block load
 	es_sql query gg_live server_var(gg_live_create)
 	
 	es_xsql open gg_database |gungame4/db
+	es_xsql query gg_database "PRAGMA auto_vacuum = 1"
 	//gg_database gg_players fields: name, steamid, wins, knife_kills, knife_deaths, nade_kills, nade_deaths, triple_levels, timestamp
 	es_xsql query gg_database "CREATE TABLE IF NOT EXISTS gg_players(name varchar(31), steamid varchar(20), wins int DEFAULT 0, knife_kills int DEFAULT 0, knife_deaths int DEFAULT 0, nade_kills int DEFAULT 0, nade_deaths int DEFAULT 0, triple_levels int DEFAULT 0, timestamp int)"
 	

@@ -44,6 +44,7 @@ block load
 	es_xset gg_dm_tmp3 0
 	es_xset gg_dm_tmp4 0
 	es_xset gg_health 0
+	es_xset gg_armor 0
 	
 	// Init commands
 	es_xset gg_exists 0
@@ -323,8 +324,10 @@ block gg_check_block
 		if (server_var(gg_dm_tmp4) <= 40) do
 		{
 			es playerget health gg_health server_var(gg_userid)
+			es playerget armor gg_armor server_var(gg_userid)
 			es est_spawn server_var(gg_userid) 1
 			es_delayed .25 playerset health server_var(gg_userid) server_var(gg_health)
+			es_delayed .25 playerset armor server_var(gg_userid) server_var(gg_armor)
 		}
 	}
 	es_delayed 2 gg_reset_cmd server_var(gg_userid)
