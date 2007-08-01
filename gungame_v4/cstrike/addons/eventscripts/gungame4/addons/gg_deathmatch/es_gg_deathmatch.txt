@@ -135,7 +135,7 @@ event player_spawn
 {
 	if (event_var(es_userteam) > 1) do
 	{
-		if (server_var(gg_live_round) == 1) do
+		ifx true(gg_live_round) do
 		{
 			es_set gg_userid event_var(userid)
 			if (event_var(es_userteam) > 1) do
@@ -177,7 +177,7 @@ event player_death
 	}
 	es_xdelayed .1 est_RemoveIdle weapon
 	
-	es_delayed server_var(gg_dm_spawntime) es_xif (server_var(gg_live_round) == 1) then est_spawn event_var(userid)
+	es_delayed server_var(gg_dm_spawntime) est_spawn event_var(userid)
 	
 	// Make spawnpoint available again
 	es_set gg_userid event_var(userid)
@@ -304,8 +304,8 @@ block rand_stuck
 	else do
 	{
 		es_getplayerlocation gg_user_x gg_user_y gg_user_z server_var(gg_userid)
-		es_format dm_tmp "%1,%2,170" server_var(gg_dm_tmp) server_var(gg_dm_tmp2)
-		es_setplayerprop server_var(gg_userid) "CCSPlayer.baseclass.localdata.m_vecBaseVelocity" server_var(dm_tmp)
+		es_format gg_tmp "%1,%2,170" server_var(gg_dm_tmp) server_var(gg_dm_tmp2)
+		es_setplayerprop server_var(gg_userid) "CCSPlayer.baseclass.localdata.m_vecBaseVelocity" server_var(gg_tmp)
 		es_delayed .6 gg_check_cmd server_var(gg_userid) server_var(gg_user_x) server_var(gg_user_y)
 	}
 }

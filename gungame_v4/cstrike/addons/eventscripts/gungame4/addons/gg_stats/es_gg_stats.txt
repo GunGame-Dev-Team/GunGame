@@ -12,8 +12,14 @@ event gg_levelup
 {
 	// Log level up for hlstats users
 	es_xcopy gg_oldescape eventscripts_escapechars
-	if (event_var(team) == 2) then es_xset gg_tmp "TERRORIST"
-	if (event_var(team) == 3) then es_xset gg_tmp "CT"
+	if (event_var(team) > 2) do
+	{
+		es_xset gg_tmp "CT"
+	}
+	else do
+	{
+		es_xset gg_tmp "TERRORIST"
+	}
 	es_format gg_tmp2 "%1<%2><%3><%4>" event_var(name) event_var(userid) event_var(steamid) server_var(gg_tmp)
 	es_xset eventscripts_escapechars "; {}()':l"
 	es_logq server_var(gg_tmp2) triggered gg_levelup
@@ -24,8 +30,14 @@ event gg_leveldown
 {
 	// Log level down for hlstats users
 	es_xcopy gg_oldescape eventscripts_escapechars
-	if (event_var(team) == 2) then es_xset gg_tmp "TERRORIST"
-	if (event_var(team) == 3) then es_xset gg_tmp "CT"
+	if (event_var(team) > 2) do
+	{
+		es_xset gg_tmp "CT"
+	}
+	else do
+	{
+		es_xset gg_tmp "TERRORIST"
+	}
 	es_format gg_tmp2 "%1<%2><%3><%4>" event_var(name) event_var(userid) event_var(steamid) server_var(gg_tmp)
 	es_xsetinfo eventscripts_escapechars "; {}()':l"
 	es_logq server_var(gg_tmp2) triggered gg_leveldown
@@ -36,8 +48,14 @@ event gg_win
 {
 	// Log winner for hlstats users
 	es_xcopy gg_oldescape eventscripts_escapechars
-	if (event_var(team) == 2) then es_xset gg_tmp "TERRORIST"
-	if (event_var(team) == 3) then es_xset gg_tmp "CT"
+	if (event_var(team) > 2) do
+	{
+		es_xset gg_tmp "CT"
+	}
+	else do
+	{
+		es_xset gg_tmp "TERRORIST"
+	}
 	es_format gg_tmp2 "%1<%2><%3><%4>" event_var(name) event_var(userid) event_var(steamid) server_var(gg_tmp)
 	es_xset eventscripts_escapechars "; {}()':w"
 	es_logq server_var(gg_tmp2) triggered gg_win
