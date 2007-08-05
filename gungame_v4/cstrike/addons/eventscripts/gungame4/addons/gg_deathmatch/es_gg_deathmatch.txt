@@ -355,6 +355,10 @@ block respawn_cmd
 block add_spawn
 {
 	es_xgetcmduserid gg_userid
+	ifx false(gg_userid) do
+	{
+	    es_xgetargv gg_userid 1
+	}
 	es_getplayerlocation gg_user_x gg_user_y gg_user_z server_var(gg_userid)
 	es_getplayerprop gg_eye0 server_var(gg_userid) "CCSPlayer.m_angEyeAngles[0]"
 	es_getplayerprop gg_eye1 server_var(gg_userid) "CCSPlayer.m_angEyeAngles[1]"
@@ -371,7 +375,15 @@ block add_spawn
 block del_spawn
 {
 	es_xgetcmduserid gg_userid
-	es_xgetargv gg_tmp 1
+	ifx false(gg_userid) do
+	{
+	    es_xgetargv gg_userid 1
+	    es_xgetargv gg_tmp 2
+	}
+	else do
+	{
+	    es_xgetargv gg_tmp 1
+	}
 	if (server_var(gg_tmp) == "#all") do
 	{
 		es_sql query server_var(gg_last_map) "DROP TABLE IF EXISTS spawnpoints"
@@ -390,7 +402,15 @@ block show_spawn
 {
 	// Needs an est_effect command to show sprites to the admin
 	es_xgetcmduserid gg_userid
-	es_xgetargv gg_tmp2 1
+	ifx false(gg_userid) do
+	{
+	    es_xgetargv gg_userid 1
+	    es_xgetargv gg_tmp2 2
+	}
+	else do
+	{
+	    es_xgetargv gg_tmp2 1
+	}
 	es_sql queryvalue server_var(gg_last_map) gg_tmp "SELECT COUNT(id) FROM spawnpoints"
 	es_tell server_var(gg_userid) #multi #default Total spawnpoints: #green server_var(gg_tmp)
 	es_sql query server_var(gg_last_map) gg_tmp_keygroup "SELECT loc_x, loc_y, loc_z FROM spawnpoints"
@@ -419,6 +439,10 @@ block show_sprite
 block admin_ghost
 {
 	es_xgetcmduserid gg_userid
+	ifx false(gg_userid) do
+	{
+	    es_xgetargv gg_userid 1
+	}
 	es_getplayerprop gg_tmp server_var(gg_userid) "CBasePlayer.m_lifeState"
 	if (server_var(gg_tmp) == 1) do
 	{
