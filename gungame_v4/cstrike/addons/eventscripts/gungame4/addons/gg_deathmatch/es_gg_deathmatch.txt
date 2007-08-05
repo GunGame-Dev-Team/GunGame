@@ -374,16 +374,7 @@ block add_spawn
 
 block del_spawn
 {
-	es_xgetcmduserid gg_userid
-	ifx false(gg_userid) do
-	{
-	    es_xgetargv gg_userid 1
-	    es_xgetargv gg_tmp 2
-	}
-	else do
-	{
-	    es_xgetargv gg_tmp 1
-	}
+	es_xgetargv gg_tmp 1
 	if (server_var(gg_tmp) == "#all") do
 	{
 		es_sql query server_var(gg_last_map) "DROP TABLE IF EXISTS spawnpoints"
