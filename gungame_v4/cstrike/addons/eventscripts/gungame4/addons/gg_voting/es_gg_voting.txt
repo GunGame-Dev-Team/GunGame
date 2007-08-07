@@ -121,13 +121,16 @@ event player_say
 {
 	if (event_var(text) == "nextmap") do
 	{
-		ifx false(eventscripts_nextmapoverride) do
-		{
-			foreach player gg_tmp #all "es_toptext server_var(gg_tmp) 5 Nextmap: Decided by vote"
-		}
-		else do
-		{
-			foreach player gg_tmp #all "es_toptext server_var(gg_tmp) 5 Nextmap: server_var(eventscripts_nextmapoverride)"
+	    if (server_var(gg_voting) != 4) do
+	    {
+	        ifx false(eventscripts_nextmapoverride) do
+		    {
+    			foreach player gg_tmp #all "es_toptext server_var(gg_tmp) 5 Nextmap: Decided by vote"
+		    }
+		    else do
+		    {
+    			foreach player gg_tmp #all "es_toptext server_var(gg_tmp) 5 Nextmap: server_var(eventscripts_nextmapoverride)"
+    		}
 		}
 	}
 }
@@ -147,12 +150,11 @@ block read_file
 
 event gg_levelup
 {
-	ifx false(gg_vote_started) do
+	if (server_var(gg_leader_lvl) == server_var(gg_vote_trigger)) do
 	{
-		gg_getleaderlevel gg_voteleader_lvl
-		if (server_var(gg_voteleader_lvl) == server_var(gg_vote_trigger)) do
-		{
-			// Trigger map vote
+	    ifx false(gg_vote_started) do
+	    {
+		    // Trigger map vote
 			es_xset gg_vote_started 1
 			if (server_var(gg_voting) != 4) do
 			{

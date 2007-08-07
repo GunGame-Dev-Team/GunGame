@@ -47,10 +47,6 @@ event es_client_command
       es_sql queryvalue gg_popup_database gg_active_menuname server_var(gg_query)
       ifx true(gg_active_menuname) do
       {
-         es_xevent initialize gg_popup_select
-         es_event setint gg_popup_select userid event_var(userid)
-         es_event setint gg_popup_select selection event_var(commandstring)
-         es_event setstring gg_popup_select menu server_var(gg_active_menuname)
          es_format gg_query "UPDATE gg_popup_players SET active_menuname = '0' WHERE userid= %1" event_var(userid)
          es_sql query gg_popup_database server_var(gg_query)
          es_set gg_selection event_var(commandstring)
@@ -58,14 +54,23 @@ event es_client_command
          es_sql queryvalue gg_popup_database gg_popup_submenuname server_var(gg_query)
          ifx true(gg_popup_submenuname) do
          {
+            es_xevent initialize gg_popup_select
+            es_event setint gg_popup_select userid event_var(userid)
+            es_event setint gg_popup_select selection event_var(commandstring)
+            es_event setstring gg_popup_select menu server_var(gg_active_menuname)
             es_event setstring gg_popup_select submenu server_var(gg_popup_submenuname)
+            es_xevent fire gg_popup_select
             es gg_popup send server_var(gg_popup_submenuname) 0 event_var(userid)
          }
          else do
          {
+            es_xevent initialize gg_popup_select
+            es_event setint gg_popup_select userid event_var(userid)
+            es_event setint gg_popup_select selection event_var(commandstring)
+            es_event setstring gg_popup_select menu server_var(gg_active_menuname)
             es_xevent setstring gg_popup_select submenu 0
+            es_xevent fire gg_popup_select
          }
-         es_xevent fire gg_popup_select
       }
    }
 }

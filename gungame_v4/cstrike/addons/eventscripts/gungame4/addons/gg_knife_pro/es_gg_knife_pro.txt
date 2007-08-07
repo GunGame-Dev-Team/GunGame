@@ -15,12 +15,12 @@ block init
 
 event player_death
 {
-	ifx false(gg_warmup_started) do
-	{
-		if (event_var(es_userteam) != event_var(es_attackerteam)) do
-		{
-			if (event_var(weapon) = "knife") do
-			{
+    if (event_var(weapon) = "knife") do
+    {
+        ifx false(gg_warmup_started) do
+	    {
+    		if (event_var(es_userteam) != event_var(es_attackerteam)) do
+		    {
 				es gg_getweapon gg_attacker_wpn event_var(attacker)
 				if (server_var(gg_attacker_wpn) != "knife") do
 				{
@@ -38,13 +38,13 @@ event player_death
 									if (server_var(gg_attacker_wpn) != "hegrenade") do
 									{
 										// Initialize event gg_levelup
+										es_xmathparse gg_tmp "gg_attacker_lvl + 1"
 										es_xevent initialize gg_levelup
 										es_event setint gg_levelup userid event_var(attacker)
 										es_event setint gg_levelup victim event_var(userid)
 										es_event setstring gg_levelup steamid event_var(es_attackersteamid)
 										es_event setint gg_levelup old_level server_var(gg_attacker_lvl)
-										es_xmath gg_attacker_lvl + 1
-										es_event setint gg_levelup new_level server_var(gg_attacker_lvl)
+										es_event setint gg_levelup new_level server_var(gg_tmp)
 										es_event setint gg_levelup team event_var(es_attackerteam)
 										es_event setstring gg_levelup name event_var(es_attackername)
 										es_event setstring gg_levelup victimname event_var(es_username)
@@ -57,13 +57,13 @@ event player_death
 									}
 
 									// Initialize event gg_leveldown
+									es_xmathparse gg_tmp "gg_victim_lvl - 1"
 									es_xevent initialize gg_leveldown
 									es_event setint gg_leveldown userid event_var(userid)
 									es_event setint gg_leveldown attacker event_var(attacker)
 									es_event setstring gg_leveldown steamid event_var(es_steamid)
 									es_event setint gg_leveldown old_level server_var(gg_victim_lvl)
-									es_xmath gg_victim_lvl - 1
-									es_event setint gg_leveldown new_level server_var(gg_victim_lvl)
+									es_event setint gg_leveldown new_level server_var(gg_tmp)
 									es_event setint gg_leveldown team event_var(es_userteam)
 									es_event setstring gg_leveldown name event_var(es_username)
 									es_event setstring gg_leveldown attackername event_var(es_attackername)
@@ -117,13 +117,13 @@ event player_death
 								if (server_var(gg_attacker_wpn) != "hegrenade") do
 								{
 									// Initialize event gg_levelup
+									es_xmathparse gg_tmp "gg_attacker_lvl + 1"
 									es_xevent initialize gg_levelup
 									es_event setint gg_levelup userid event_var(attacker)
 									es_event setint gg_levelup victim event_var(userid)
 									es_event setint gg_levelup steamid event_var(es_attackersteamid)
 									es_event setint gg_levelup old_level server_var(gg_attacker_lvl)
-									es_xmath gg_attacker_lvl + 1
-									es_event setint gg_levelup new_level server_var(gg_attacker_lvl)
+									es_event setint gg_levelup new_level server_var(gg_tmp)
 									es_event setint gg_levelup team event_var(es_attackerteam)
 									es_event setint gg_levelup name event_var(es_attackername)
 									es_event setstring gg_levelup victimname event_var(es_username)
@@ -137,13 +137,13 @@ event player_death
 									es_menu 5 event_var(attacker) "You are on hegrenade\n You cannot skip this level by knifing"
 								}
 								// Initialize event gg_leveldown
+								es_xmathparse gg_tmp "gg_victim_lvl - 1"
 								es_xevent initialize gg_leveldown
 								es_event setint gg_leveldown userid event_var(userid)
 								es_event setint gg_leveldown attacker event_var(attacker)
 								es_event setint gg_leveldown steamid event_var(es_steamid)
 								es_event setint gg_leveldown old_level server_var(gg_victim_lvl)
-								es_xmath gg_victim_lvl - 1
-								es_event setint gg_leveldown new_level server_var(gg_victim_lvl)
+								es_event setint gg_leveldown new_level server_var(gg_tmp)
 								es_event setint gg_leveldown team event_var(es_userteam)
 								es_event setint gg_leveldown name event_var(es_username)
 								es_event setint gg_leveldown attackername event_var(es_attackername)

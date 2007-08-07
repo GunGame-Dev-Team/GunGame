@@ -133,10 +133,10 @@ event es_map_start
 
 event player_team
 {
-	if (event_var(team) > 0) do
+    ifx true(gg_sound_welcome) do
 	{
-		ifx true(gg_sound_welcome) do
-		{
+	    if (event_var(team) > 0) do
+	    {
 			es_playsound event_var(userid) server_var(gg_sound_welcome) 1.0
 		}
 	}

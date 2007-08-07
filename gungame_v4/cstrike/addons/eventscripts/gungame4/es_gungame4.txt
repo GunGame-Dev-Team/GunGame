@@ -1,4 +1,4 @@
-// GunGame v4.0.83
+// GunGame v4.0.84
 // (c)2007 by GunGame Coding Team (cagemonkey,XE_Manup)
 //
 // We would like to thank the following individuals in no particular order:
@@ -52,7 +52,7 @@ block load
 	//##########################################################################
 
 	//SET CURRENT VERSION
-	es_xset eventscripts_gg "4.0.83"
+	es_xset eventscripts_gg "4.0.84"
 	es_xmakepublic eventscripts_gg
 	
 	//LOADING ANNOUNCEMENT
@@ -536,7 +536,7 @@ block init
 	es_xset gg_bomber 0 "Userid of bomb carrier, Location: bomb_pickup, bomb_dropped, bomb_planted, es_gg_knife_elite"
 	es_xset gg_team 0 "Temp user team variable, Location: equip_player, es_gg_knife_elite"
 
-	es_xset gg_leader_lvl 0 "The highest level (leader level) from gg_live, Location: event gg_levelup"
+	es_xset gg_leader_lvl 1 "The highest level (leader level) from gg_live, Location: event gg_levelup"
 	es_xset gg_leader_count 0 "The number of leaders (players tied on the leading level), Location: block gg_display_level,event gg_levelup"
 	es_xset gg_leader_names "   * There currently is no leader" "Used to format the !level menu to add the leader name or names, Location: block gg_display_level,event gg_levelup"
 	es_xset gg_leader_name_tmp 0 "Used as a temporary holder to format the leader names into a variable, Location: block format_leaders"
@@ -601,6 +601,8 @@ block init
 	
 	es_xset gg_voting 0 "End of map voting feature, Location: config file"
 	es_xset gg_vote_options 0 "Map vote options, Location: config file"
+	es_xset gg_victimname 0 "Victim name, Location: gg_levelup"
+	es_xset gg_attackername 0 "Attacker name, Location: gg_leveldown"
 	
 	//Variables used in gg_popup_lite
 	es_xset gg_popup_command 0 "Used to verify that the command in gg_popup is a valid command, Location: es_gg_popup_lite"
@@ -1129,13 +1131,13 @@ event player_death
 						if (server_var(gg_multikill) < 2) do
 						{
 							// Levelup attacker
+							es_xmathparse gg_tmp "gg_attacker_lvl + 1"
 							es_xevent initialize gg_levelup
 							es_event setint gg_levelup userid event_var(attacker)
 							es_event setint gg_levelup victim event_var(userid)
 							es_event setstring gg_levelup steamid event_var(es_attackersteamid)
 							es_event setint gg_levelup old_level server_var(gg_attacker_lvl)
-							es_xmath gg_attacker_lvl + 1
-							es_event setint gg_levelup new_level server_var(gg_attacker_lvl)
+							es_event setint gg_levelup new_level server_var(gg_tmp)
 							es_event setstring gg_levelup team event_var(es_attackerteam)
 							es_event setstring gg_levelup name event_var(es_attackername)
 							es_event setstring gg_levelup victimname event_var(es_username)
@@ -1149,13 +1151,13 @@ event player_death
 							if (server_var(gg_p_kills) == server_var(gg_multikill)) do
 							{
 								// Levelup attacker
+								es_xmathparse gg_tmp "gg_attacker_lvl + 1"
 								es_xevent initialize gg_levelup
 								es_event setint gg_levelup userid event_var(attacker)
 								es_event setint gg_levelup victim event_var(userid)
 								es_event setstring gg_levelup steamid event_var(es_attackersteamid)
 								es_event setint gg_levelup old_level server_var(gg_attacker_lvl)
-								es_xmath gg_attacker_lvl + 1
-								es_event setint gg_levelup new_level server_var(gg_attacker_lvl)
+								es_event setint gg_levelup new_level server_var(gg_tmp)
 								es_event setint gg_levelup team event_var(es_attackerteam)
 								es_event setstring gg_levelup name event_var(es_attackername)
 								es_event setstring gg_levelup victimname event_var(es_username)
@@ -1212,14 +1214,14 @@ event player_death
 					{
 						// Suicide code here
 						// Initialize event gg_leveldown
+						es_xmathparse gg_tmp "gg_attacker_lvl - gg_suicide_punish"
+						if (server_var(gg_tmp) <= 0) then es_xset gg_tmp 1
 						es_xevent initialize gg_leveldown
 						es_event setint gg_leveldown userid event_var(userid)
 						es_event setint gg_leveldown attacker event_var(attacker)
 						es_event setstring gg_leveldown steamid event_var(es_steamid)
 						es_event setint gg_leveldown old_level server_var(gg_attacker_lvl)
-						es_math gg_attacker_lvl - server_var(gg_suicide_punish)
-						if (server_var(gg_attacker_lvl) <= 0) then es_xset gg_attacker_lvl 1
-						es_event setint gg_leveldown new_level server_var(gg_attacker_lvl)
+						es_event setint gg_leveldown new_level server_var(gg_tmp)
 						es_event setint gg_leveldown team event_var(es_userteam)
 						es_event setstring gg_leveldown name event_var(es_username)
 						es_event setstring gg_leveldown attackername event_var(es_attackername)
@@ -1233,14 +1235,14 @@ event player_death
 					{
 						// TK code here
 						// Initialize event gg_leveldown
+						es_xmathparse gg_tmp "gg_attacker_lvl - gg_tk_punish"
+						if (server_var(gg_tmp) <= 0) then es_xset gg_tmp 1
 						es_xevent initialize gg_leveldown
 						es_event setint gg_leveldown userid event_var(attacker)
 						es_event setint gg_leveldown attacker event_var(attacker)
 						es_event setstring gg_leveldown steamid event_var(es_attackersteamid)
 						es_event setint gg_leveldown old_level server_var(gg_attacker_lvl)
-						es_math gg_attacker_lvl - server_var(gg_tk_punish)
-						if (server_var(gg_attacker_lvl) <= 0) then es_xset gg_attacker_lvl 1
-						es_event setint gg_leveldown new_level server_var(gg_attacker_lvl)
+						es_event setint gg_leveldown new_level server_var(gg_tmp)
 						es_event setint gg_leveldown team event_var(es_attackerteam)
 						es_event setstring gg_leveldown name event_var(es_attackername)
 						es_event setstring gg_leveldown attackername event_var(es_attackername)
@@ -1267,14 +1269,14 @@ event player_death
 					es_sql queryvalue gg_live gg_user_lvl server_var(gg_query)
 				
 					// Initialize event gg_leveldown
+					es_xmathparse gg_tmp "gg_user_lvl - gg_suicide_punish"
+					if (server_var(gg_tmp) <= 0) then es_xset gg_tmp 1
 					es_xevent initialize gg_leveldown
 					es_event setint gg_leveldown userid event_var(userid)
 					es_event setint gg_leveldown attacker event_var(attacker)
 					es_event setstring gg_leveldown steamid event_var(es_steamid)
 					es_event setint gg_leveldown old_level server_var(gg_user_lvl)
-					es_math gg_user_lvl - server_var(gg_suicide_punish)
-					if (server_var(gg_user_lvl) <= 0) then es_xset gg_user_lvl 1
-					es_event setint gg_leveldown new_level server_var(gg_user_lvl)
+					es_event setint gg_leveldown new_level server_var(gg_tmp)
 					es_event setint gg_leveldown team event_var(es_userteam)
 					es_event setstring gg_leveldown name event_var(es_username)
 					es_event setstring gg_leveldown attackername event_var(es_attackername)
@@ -1462,8 +1464,8 @@ event gg_win
 	es_xdoblock gungame4/create_leader_menu
 	
 	//Fire game_end
-	es_give event_var(userid) game_end
-	es_fire event_var(userid) game_end EndGame
+	es_delayed .15 es_xgive event_var(userid) game_end
+	es_delayed .17 es_xfire event_var(userid) game_end EndGame
 	
 	// Play sound
 	es_cexec_all playgamesound server_var(gg_sound_winner)
@@ -1595,13 +1597,13 @@ event bomb_defused
 			if (server_var(gg_user_lvl) != server_var(gg_levels)) do
 			{
 				// Levelup attacker
+				es_xmathparse gg_tmp "gg_user_lvl + 1"
 				es_xevent initialize gg_levelup
 				es_event setint gg_levelup userid event_var(userid)
 				es_xevent setint gg_levelup victim 0
 				es_event setstring gg_levelup steamid event_var(es_steamid)
 				es_event setint gg_levelup old_level server_var(gg_user_lvl)
-				es_xmath gg_user_lvl + 1
-				es_event setint gg_levelup new_level server_var(gg_user_lvl)
+				es_event setint gg_levelup new_level server_var(gg_tmp)
 				es_event setint gg_levelup team event_var(es_userteam)
 				es_event setstring gg_levelup name event_var(es_username)
 				es_xevent setstring gg_levelup victimname 0
@@ -1638,13 +1640,13 @@ event bomb_exploded
 			if (server_var(gg_user_lvl) != server_var(gg_levels)) do
 			{
 				// Levelup attacker
+				es_xmathparse gg_tmp "gg_user_lvl + 1"
 				es_xevent initialize gg_levelup
 				es_event setint gg_levelup userid event_var(userid)
 				es_xevent setint gg_levelup victim 0
 				es_event setstring gg_levelup steamid event_var(es_steamid)
 				es_event setint gg_levelup old_level server_var(gg_user_lvl)
-				es_xmath gg_user_lvl + 1
-				es_event setint gg_levelup new_level server_var(gg_user_lvl)
+				es_event setint gg_levelup new_level server_var(gg_tmp)
 				es_event setint gg_levelup team event_var(es_userteam)
 				es_event setstring gg_levelup name event_var(es_username)
 				es_xevent setstring gg_levelup victimname 0
@@ -1873,7 +1875,7 @@ block gg_display_level
 		{
 			if (server_var(gg_p_wpn) != "knife") do
 			{
-				ifx true(gg_leader_lvl) do
+				if (server_var(gg_leader_lvl) > 1) do
 				{
 					es_xformatv gg_level_menumsg "->1. LEVEL\nYou are on level %1 (%2)\nYou have made %3/%4 of your required kills\n%5\n->2. WINS\nYou have won %6 times\n->3. LEADER(s)\nLeader Level: %7\nCurrent leader(s):\n->   9. View Leaders Menu" gg_p_lvl gg_p_wpn gg_p_kills gg_multikill gg_tmp_leadermsg gg_p_wins gg_leader_lvl
 				}
@@ -1884,7 +1886,7 @@ block gg_display_level
 			}
 			else do
 			{
-				ifx true(gg_leader_lvl) do
+				if (server_var(gg_leader_lvl) > 1) do
 				{
 					es_xformatv gg_level_menumsg "->1. LEVEL\n   * You are on level %1\n   * You need a %2 kill to advance\n%3\n->2. WINS\n   * You have won %4 times\n->3. LEADER(s)\n   * Leader Level: %5\n->   9. View Leaders Menu" gg_p_lvl gg_p_wpn gg_tmp_leadermsg gg_p_wins gg_leader_lvl
 				}
@@ -1896,7 +1898,7 @@ block gg_display_level
 		}
 		else do
 		{
-			ifx true(gg_leader_lvl) do
+			if (server_var(gg_leader_lvl) > 1) do
 			{
 				es_xformatv gg_level_menumsg "->1. LEVEL\n   * You are on level %1\n   * You need a %2 kill to advance\n%3\n->2. WINS\n   * You have won %4 times\n->3. LEADER(s)\n   * Leader Level: %5\n->   9. View Leaders Menu" gg_p_lvl gg_p_wpn gg_tmp_leadermsg gg_p_wins gg_leader_lvl
 			}
@@ -2303,28 +2305,28 @@ block gg_levelup_cmd
 		ifx true(gg_exists) do
 		{
 			// Levelup
+			es_getplayername gg_victimname server_var(gg_victimid)
+			es_xmathparse gg_tmp "gg_user_lvl + 1"
 			es_xevent initialize gg_levelup
 			es_event setint gg_levelup userid server_var(gg_userid)
 			es_event setstring gg_levelup steamid server_var(gg_steamid)
 			es_event setint gg_levelup old_level server_var(gg_user_lvl)
-			es_xmath gg_user_lvl + 1
-			es_event setint gg_levelup new_level server_var(gg_user_lvl)
+			es_event setint gg_levelup new_level server_var(gg_tmp)
 			es_event setstring gg_levelup team server_var(gg_team)
 			es_event setstring gg_levelup name server_var(gg_username)
 			es_event setint gg_levelup victim server_var(gg_victimid)
-			es_getplayername gg_username server_var(gg_victimid)
-			es_event setstring gg_levelup victimname server_var(gg_username)
+			es_event setstring gg_levelup victimname server_var(gg_victimname)
 			es_xevent fire gg_levelup
 		}
 		else do
 		{
 			// Levelup no victim data
+			es_xmathparse gg_tmp "gg_user_lvl + 1"
 			es_xevent initialize gg_levelup
 			es_event setint gg_levelup userid server_var(gg_userid)
 			es_event setstring gg_levelup steamid server_var(gg_steamid)
 			es_event setint gg_levelup old_level server_var(gg_user_lvl)
-			es_xmath gg_user_lvl + 1
-			es_event setint gg_levelup new_level server_var(gg_user_lvl)
+			es_event setint gg_levelup new_level server_var(gg_tmp)
 			es_event setstring gg_levelup team server_var(gg_team)
 			es_event setstring gg_levelup name server_var(gg_username)
 			es_xevent setint gg_levelup victim 0
@@ -2357,13 +2359,13 @@ block gg_leveldown_cmd
 			ifx false(gg_exists) do
 			{
 				// Initialize event gg_leveldown with no attacker
+				es_xmathparse gg_tmp "gg_user_lvl - 1"
 				es_xevent initialize gg_leveldown
 				es_event setint gg_leveldown userid server_var(gg_userid)
 				es_xevent setint gg_leveldown attacker 0
 				es_event setstring gg_leveldown steamid server_var(gg_steamid)
 				es_event setint gg_leveldown old_level server_var(gg_user_lvl)
-				es_xmath gg_user_lvl - 1
-				es_event setint gg_leveldown new_level server_var(gg_user_lvl)
+				es_event setint gg_leveldown new_level server_var(gg_tmp)
 				es_event setint gg_leveldown team server_var(gg_team)
 				es_event setstring gg_leveldown name server_var(gg_username)
 				es_xevent setstring gg_leveldown attackername 0
@@ -2372,17 +2374,17 @@ block gg_leveldown_cmd
 			else do
 			{
 				// Initialize event gg_leveldown
+				es_xmathparse gg_tmp "gg_user_lvl - 1"
+				es_getplayername gg_attackername server_var(gg_attackerid)
 				es_xevent initialize gg_leveldown
 				es_event setint gg_leveldown userid server_var(gg_userid)
 				es_event setint gg_leveldown attacker server_var(gg_attackerid)
 				es_event setstring gg_leveldown steamid server_var(gg_steamid)
 				es_event setint gg_leveldown old_level server_var(gg_user_lvl)
-				es_xmath gg_user_lvl - 1
-				es_event setint gg_leveldown new_level server_var(gg_user_lvl)
+				es_event setint gg_leveldown new_level server_var(gg_tmp)
 				es_event setint gg_leveldown team server_var(gg_team)
 				es_event setstring gg_leveldown name server_var(gg_username)
-				es_getplayername gg_username server_var(gg_attackerid)
-				es_event setstring gg_leveldown attackername server_var(gg_username)
+				es_event setstring gg_leveldown attackername server_var(gg_attackername)
 				es_xevent fire gg_leveldown
 			}
 		}
@@ -2417,7 +2419,7 @@ block gg_win_cmd
 			es_event setstring gg_win steamid server_var(gg_steamid)
 			es_event setint gg_win team server_var(gg_team)
 			es_event setstring gg_win name server_var(gg_username)
-			es_xdelayed .15 es_xevent fire gg_win
+			es_xevent fire gg_win
 		}
 		else do
 		{
@@ -2428,7 +2430,7 @@ block gg_win_cmd
 			es_event setstring gg_win steamid server_var(gg_steamid)
 			es_event setint gg_win team server_var(gg_team)
 			es_event setstring gg_win name server_var(gg_username)
-			es_xdelayed .15 es_xevent fire gg_win
+			es_xevent fire gg_win
 		}
 	}
 }
