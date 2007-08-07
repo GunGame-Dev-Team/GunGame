@@ -77,11 +77,11 @@ block load
 	//
 	es_xsql open gg_live ":memory:"
 	es_xsql query gg_live "PRAGMA auto_vacuum = 1"
-	//gg_live gg_players fields: name, userid, steamid, level, afk_rounds, is_afk, afk_x, afk_y, eyeoffset, kills, levelup, give, rank, deaths, wins
+	//gg_live gg_players fields: name, userid, steamid, level, afk_rounds, is_afk, afk_x, afk_y, eyeoffset, kills, levelup, give, deaths, wins
 	// NOTE: kills is used to calculate multikills, it IS NOT the total number of kills the player has made
 	// ADDTIONAL NOTE: kills is used in event gg_win for actual kills
 	es_xsql query gg_live "DROP TABLE IF EXISTS gg_players"
-	es_xset gg_live_create "CREATE TABLE IF NOT EXISTS gg_players(name varchar(31), userid int, steamid varchar(20), level int(2) DEFAULT 1, afk_rounds int(2) DEFAULT 0, is_afk int(1) DEFAULT 0, afk_x float DEFAULT 1, afk_y float DEFAULT 1, eyeoffset float DEFAULT 1, kills int(2) DEFAULT 0, levelup int(1) DEFAULT 0, give int(1) DEFAULT 0, rank int DEFAULT 0, deaths int DEFAULT 0, wins int DEFAULT 0)"
+	es_xset gg_live_create "CREATE TABLE IF NOT EXISTS gg_players(name varchar(31), userid int, steamid varchar(20), level int(2) DEFAULT 1, afk_rounds int(2) DEFAULT 0, is_afk int(1) DEFAULT 0, afk_x float DEFAULT 1, afk_y float DEFAULT 1, eyeoffset float DEFAULT 1, kills int(2) DEFAULT 0, levelup int(1) DEFAULT 0, give int(1) DEFAULT 0, deaths int DEFAULT 0, wins int DEFAULT 0)"
 	es_sql query gg_live server_var(gg_live_create)
 	
 	es_xsql open gg_database |gungame4/db
@@ -859,8 +859,6 @@ block player_setup
 	{
 		es_sql queryvalue gg_database gg_tmp "SELECT COUNT(*) FROM gg_players"
 	}
-	es_xformatqv gg_query "UPDATE gg_players SET rank = '%1' WHERE steamid = '%2'" gg_tmp gg_steamid
-	es_sql query gg_live server_var(gg_query)
 }
 
 event player_changename
@@ -1485,7 +1483,7 @@ event gg_win
 			es_xcreateplayerlist gg_tmp_playerlist
 			es_xforeachkey gg_userid in gg_tmp_playerlist "es_xdoblock gungame4/winner_database"
 			es_xkeygroupdelete gg_tmp_playerlist
-			es_xsql query gg_live gg4wins "SELECT userid,name,level,kills,deaths,wins,rank FROM gg_players ORDER BY level DESC, name"
+			es_xsql query gg_live gg4wins "SELECT userid,name,level,kills,deaths,wins FROM gg_players ORDER BY level DESC, name"
 		
 			// Get zero key info
 			es_xkeycreate gg4wins "0"
@@ -1495,8 +1493,9 @@ event gg_win
 			es_sql queryvalue gg_database gg_wins server_var(gg_query)
 			es_keysetvalue gg4wins "0" winnerwins server_var(gg_wins)
 			es_set gg_userid event_var(userid)
-			es_xformatqv gg_query "SELECT rank FROM gg_players WHERE userid = '%1'" gg_userid
-			es_sql queryvalue gg_live gg_tmp server_var(gg_query)
+			es_xformatqv gg_query "SELECT COUNT(*) FROM gg_players WHERE wins > '%1'" gg_wins
+			es_sql queryvalue gg_database gg_tmp server_var(gg_query)
+			es_xmath gg_tmp + 1
 			es_keysetvalue gg4wins "0" winnerrank server_var(gg_tmp)
 			es_getplayername gg_tmp event_var(loser)
 			es_keysetvalue gg4wins "0" loser server_var(gg_tmp)
@@ -1516,8 +1515,9 @@ event gg_win
 			es_xformatqv gg_query "SELECT wins FROM gg_players WHERE steamid = '%1'" gg_steamid
 			es_sql queryvalue gg_database gg_wins server_var(gg_query)
 			es_set gg_userid event_var(userid)
-			es_xformatqv gg_query "SELECT rank FROM gg_players WHERE userid = '%1'" gg_userid
-			es_sql queryvalue gg_live gg_tmp3 server_var(gg_query)
+			es_xformatqv gg_query "SELECT COUNT(*) FROM gg_players WHERE wins > '%1'" gg_wins
+			es_sql queryvalue gg_database gg_tmp3 server_var(gg_query)
+			es_xmath gg_tmp3 + 1
 			es_xsql queryvalue gg_database gg_tmp4 "SELECT COUNT(*) FROM gg_players"
 			es_set gg_username event_var(name)
 			es_xstring gg_username replace "%" "%25"
