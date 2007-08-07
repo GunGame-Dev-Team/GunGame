@@ -21,7 +21,7 @@ event player_death
 	    {
     		if (event_var(es_userteam) != event_var(es_attackerteam)) do
 		    {
-				es gg_getweapon gg_attacker_wpn event_var(attacker)
+				//es gg_getweapon gg_attacker_wpn event_var(attacker)
 				if (server_var(gg_attacker_wpn) != "knife") do
 				{
 					ifx false(gg_user_afk) do

@@ -1,4 +1,4 @@
-// GunGame v4.0.84
+// GunGame v4.0.85
 // (c)2007 by GunGame Coding Team (cagemonkey,XE_Manup)
 //
 // We would like to thank the following individuals in no particular order:
@@ -52,7 +52,7 @@ block load
 	//##########################################################################
 
 	//SET CURRENT VERSION
-	es_xset eventscripts_gg "4.0.84"
+	es_xset eventscripts_gg "4.0.85"
 	es_xmakepublic eventscripts_gg
 	
 	//LOADING ANNOUNCEMENT
@@ -2066,8 +2066,9 @@ block gg_display_ranks
 		es_xformatqv gg_query "SELECT name,wins FROM gg_players WHERE wins > %1 ORDER BY wins ASC,name LIMIT 3" gg_wins
 		es_sql query gg_database gg_tmp_keygroup server_var(gg_query)
 		keygroupsort gg_tmp_keygroup wins des #numeric
-		es_xset gg_tmp_counter 1
-		while "server_var(gg_tmp_counter) < 4" "es_xdoblock gungame4/gg_rank_loop"
+		es_xforeachkey gg_tmp_key in gg_tmp_keygroup "es_xdoblock gungame4/gg_rank_loop"
+		//es_xset gg_tmp_counter 1
+		//while "server_var(gg_tmp_counter) < 4" "es_xdoblock gungame4/gg_rank_loop"
 		es_xkeygroupdelete gg_tmp_keygroup
 		
 		// Count players that are tied
@@ -2097,8 +2098,9 @@ block gg_display_ranks
 		es_xformatv gg_menuline_format "%1->3. Nearest players below you:\n Rank   Name\n----------\n" gg_menuline_format
 		es_xformatqv gg_query "SELECT name,wins FROM gg_players WHERE wins < %1 ORDER BY wins DESC,name LIMIT 3" gg_wins
 		es_sql query gg_database gg_tmp_keygroup server_var(gg_query)
-		es_xset gg_tmp_counter 1
-		while "server_var(gg_tmp_counter) < 4" "es_xdoblock gungame4/gg_rank_loop"
+		es_xforeachkey gg_tmp_key in gg_tmp_keygroup "es_xdoblock gungame4/gg_rank_loop"
+		//es_xset gg_tmp_counter 1
+		//while "server_var(gg_tmp_counter) < 4" "es_xdoblock gungame4/gg_rank_loop"
 		
 		// Complete menu and send
 		es_xformatv gg_menuline_format "%1 \n->0. Exit" gg_menuline_format
@@ -2113,26 +2115,21 @@ block gg_display_ranks
 
 block gg_rank_loop
 {
-	es_xset gg_exists 0
-	es_exists gg_exists key gg_tmp_keygroup server_var(gg_tmp_counter)
-	ifx true(gg_exists) do
+	es_keygetvalue gg_tmp gg_tmp_keygroup server_var(gg_tmp_key) wins
+	ifx true(gg_tmp) do
 	{
-		es_keygetvalue gg_tmp gg_tmp_keygroup server_var(gg_tmp_counter) wins
-		ifx true(gg_tmp) do
-		{
-			es_xformatqv gg_query "SELECT COUNT(*) FROM gg_players WHERE wins > '%1'" gg_tmp
-			es_sql queryvalue gg_database gg_tmp server_var(gg_query)
-			es_xmath gg_tmp + 1
-		}
-		else do
-		{
-			es_xcopy gg_tmp gg_total
-		}
-		es_keygetvalue gg_tmp2 gg_tmp_keygroup server_var(gg_tmp_counter) name
-		es_xstring gg_tmp2 replace "\" "-"
-		es_xformatv gg_menuline_format "%1   %2      %3\n" gg_menuline_format gg_tmp gg_tmp2
+		es_xformatqv gg_query "SELECT COUNT(*) FROM gg_players WHERE wins > '%1'" gg_tmp
+		es_sql queryvalue gg_database gg_tmp server_var(gg_query)
+		es_xmath gg_tmp + 1
 	}
-	es_xmath gg_tmp_counter + 1
+	else do
+	{
+		es_xcopy gg_tmp gg_total
+	}
+	es_keygetvalue gg_tmp2 gg_tmp_keygroup server_var(gg_tmp_key) name
+	es_xstring gg_tmp2 replace "\n"
+	es_xstring gg_tmp2 replace "\r"
+	es_xformatv gg_menuline_format "%1   %2      %3\n" gg_menuline_format gg_tmp gg_tmp2
 }
 
 
