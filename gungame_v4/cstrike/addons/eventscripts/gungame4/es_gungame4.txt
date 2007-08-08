@@ -1,4 +1,4 @@
-// GunGame v4.0.85
+// GunGame v4.0.86
 // (c)2007 by GunGame Coding Team (cagemonkey,XE_Manup)
 //
 // We would like to thank the following individuals in no particular order:
@@ -52,7 +52,7 @@ block load
 	//##########################################################################
 
 	//SET CURRENT VERSION
-	es_xset eventscripts_gg "4.0.85"
+	es_xset eventscripts_gg "4.0.86"
 	es_xmakepublic eventscripts_gg
 	
 	//LOADING ANNOUNCEMENT
@@ -404,10 +404,6 @@ block cont_setup
 		es_xdoblock gungame4/create_leader_menu
 	}
 	
-	// Create repeat loops
-	repeat create gg_warmup "es_xdoblock gungame4/warmup_start"
-	repeat create gg_afk_loop_chk "es_xdoblock gungame4/gg_afk_loop"
-	
 	// Execute database pruning
 	crontab run prune_gg_db
 	
@@ -654,6 +650,9 @@ event es_map_start
 	
 	//EXEC MAP CONFIG
 	es_xdelayed 1 gg_map_setup
+	
+	// Start afk loop
+	es_xdelayed 2 es_xdoblock gungame4/gg_afk_loop
 }
 
 block gg_start
@@ -666,7 +665,7 @@ block gg_start
 	{
 		es_xset gg_warmup_started 1
 		es_xcopy gg_warmup_counter gg_warmup_timer
-		es repeat start gg_warmup 1 server_var(gg_warmup_timer)
+		es_xdoblock gungame4/warmup_start
 		ifx false(gg_unl_grenades) do
 		{
 			es_xset gg_exists 0
@@ -704,6 +703,10 @@ block warmup_start
 		}
 		es_xevent initialize gg_start
 		es_xevent fire gg_start
+	}
+	ifx true(gg_warmup_counter) do
+	{
+	    es_xdelayed 1 es_xdoblock gungame4/warmup_start
 	}
 }
 
@@ -747,9 +750,6 @@ event round_start
 	
 	// Reset entities
 	es_xdelayed 1 es_xdoblock gungame4/equip_entity
-	
-	// Start afk loop
-	es_xdelayed 2 repeat start gg_afk_loop_chk 1
 }
 
 block strip_weapons
@@ -778,9 +778,6 @@ event round_end
 	
 	// Fix entity
 	es_xdoblock gungame4/equip_entity
-	
-	// Stop afk_check loop
-	es_xdelayed 2 repeat stop gg_afk_loop_chk
 }
 
 block equip_entity
@@ -948,14 +945,18 @@ block gg_afk_loop
 {
 	ifx false(gg_warmup_started) do
 	{
-		es_sql queryvalue gg_live gg_tmp "SELECT COUNT(userid) FROM gg_players WHERE is_afk = '1'"
-		ifx true(gg_tmp) do
-		{
-			es_sql query gg_live gg_tmp_keygroup "SELECT userid FROM gg_players WHERE is_afk = '1'"
-			es_xforeachkey gg_tmp_key in gg_tmp_keygroup "es_xdoblock gungame4/gg_afk_check"
-			es_xsoon es_xkeygroupdelete gg_tmp_keygroup
+	    ifx true(gg_live_round) do
+	    {
+	        es_sql queryvalue gg_live gg_tmp "SELECT COUNT(userid) FROM gg_players WHERE is_afk = '1'"
+		    ifx true(gg_tmp) do
+		    {
+    			es_sql query gg_live gg_tmp_keygroup "SELECT userid FROM gg_players WHERE is_afk = '1'"
+			    es_xforeachkey gg_tmp_key in gg_tmp_keygroup "es_xdoblock gungame4/gg_afk_check"
+			    es_xsoon es_xkeygroupdelete gg_tmp_keygroup
+		    }
 		}
 	}
+	es_xdelayed 1 es_xdoblock gungame4/gg_afk_loop
 }
 
 
@@ -1482,8 +1483,9 @@ event gg_win
 		{
 			es_xcreateplayerlist gg_tmp_playerlist
 			es_xforeachkey gg_userid in gg_tmp_playerlist "es_xdoblock gungame4/winner_database"
-			es_xkeygroupdelete gg_tmp_playerlist
 			es_xsql query gg_live gg4wins "SELECT userid,name,level,kills,deaths,wins FROM gg_players ORDER BY level DESC, name"
+			es_xforeachkey gg_userid in gg_tmp_playerlist "es_xdoblock gungame4/winner_database_rank"
+			es_xkeygroupdelete gg_tmp_playerlist
 		
 			// Get zero key info
 			es_xkeycreate gg4wins "0"
@@ -1558,6 +1560,16 @@ block winner_database
 	es_sql queryvalue gg_database gg_wins server_var(gg_query)
 	es_xformatqv gg_query "UPDATE gg_players SET kills = '%1',deaths = '%2',wins = '%3' WHERE userid = '%4'" gg_kills gg_deaths gg_wins gg_userid
 	es_sql query gg_live server_var(gg_query)
+}
+
+
+block winner_database_rank
+{
+    es gg_getwins gg_wins server_var(gg_userid)
+    es_xformatqv gg_query "SELECT COUNT(*) FROM gg_players WHERE wins > '%1'" gg_wins
+	es_sql queryvalue gg_database gg_tmp server_var(gg_query)
+	es_xmath gg_tmp + 1
+	es_keysetvalue gg_tmp_playerlist server_var(gg_userid) rank server_var(gg_tmp)
 }
 
 
@@ -1776,13 +1788,6 @@ block unload
 	{
 		es_xunload gungame4/addons/custom
 	}
-	
-	
-	//Delete warmup round timer if the warmup round is running
-	repeat delete gg_warmup
-	
-	// Delete repeat loop for afk checks
-	repeat delete gg_afk_loop_chk
 	
 	// Unload GunGame
 	es_xsql close gg_live
