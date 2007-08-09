@@ -2,9 +2,9 @@
 // This file controls the default behavior if gg_winner_display is set to zero.
 //
 // Enter the base web address where the motd.css is located, including the trailing slash
-$address = 'http://www.cagemonkey.org/';
+$address = 'http://www.yourwebsite.com/';
 // Banner image to use
-$image = 'http://www.cagemonkey.org/images/ggv4.gif';
+$image = 'http://www.yourwebsite.com/images/ggv4.gif';
 // Image attributes
 $image_attr = 'width="700" height="100"';
 // -------------------  do not modify below this line ----------------------------------

@@ -11,8 +11,10 @@ $username = "username";
 $password = "password";
 // Enter the ftp port(usually 21)
 $port = '21';
-// Enter the url of the image you want at the top of the page
-$image = 'http://www.yoursite.com/ggv4.gif';
+// Enter the url of the image you want at the top of the page including the " at each end
+$image = 'images/ggv4.gif';
+// Image attributes
+$image_attr = 'width="700" height="100"';
 // -------------------  do not modify below this line ----------------------------------
 header('Content-type: text/html; charset=utf-8');
 ?>
@@ -20,7 +22,9 @@ header('Content-type: text/html; charset=utf-8');
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <HEAD>
 <TITLE>:::GunGame4 SQL Lite Database Structure:::</TITLE>
+<? echo '<link rel=stylesheet type="text/css" href="'.$address.'motd.css">'; ?>
 </HEAD>
+<BODY>
 <?
 $filepath = $basepath."cstrike/addons/eventscripts/gungame4/addons/web_data/es_gg4wins_db.txt";
 $local_file = 'es_gg4wins_db.txt';
@@ -62,17 +66,15 @@ $loser = $temp[0];
 $temp = get_data($records, '"totals"');
 $totals = $temp[0];
 echo '<div align="center">';
-if ($image != "") {
-echo '<img src="'.$image.'"><p>';
-}
-echo '</div><p class="style4"><span class="style6">';
-echo $winner;
-echo '</span> has won the round by killing <span class="style11">';
-echo $loser;
-echo '</span><p>  Congratulations ';
-echo $winner;
-echo '!! <p>';
-echo $winner."'s stats <p>";
+if ($image)
+    if ($image_attr)
+        echo '<img src="'.$image.'" '.$image_attr.'>';
+    else
+        echo '<img src="'.$image.'">';
+echo '</div><br /><p class="style4"><span class="style6">'.$winner.'</span> has won the round by killing <span class="style11">'.$loser.'</span>';
+echo '<br />';
+echo 'Congratulations '.$winner.'!! </p>';
+echo '<p class="style4"><span class="style6">'.$winner."'s stats</span>";
 echo "     Wins: ".$wins."<br>";
 echo "     Rank: ".$rank."/".$totals;
 
@@ -90,16 +92,17 @@ echo "     Rank: ".$rank."/".$totals;
 <?
 for($index = 0; $index < count($playername); $index++) {
 echo "<tr>\n";
-echo "<td ALIGN=center>".$playername[$index]."</td>";
-echo "<td ALIGN=center>".$playerlevel[$index]."</td>";
-echo "<td ALIGN=center>".$playerkills[$index]."</td>";
-echo "<td ALIGN=center>".$playerdeaths[$index]."</td>";
-echo "<td ALIGN=center>".$playerwins[$index]."</td>";
-echo "<td ALIGN=center>".$playerrank[$index]."</td>";
+echo '<td ALIGN=center><span class="style4">'.$playername[$index]."</span></td>";
+echo '<td ALIGN=center><span class="style4">'.$playerlevel[$index]."</span></td>";
+echo '<td ALIGN=center><span class="style4">'.$playerkills[$index]."</span></td>";
+echo '<td ALIGN=center><span class="style4">'.$playerdeaths[$index]."</span></td>";
+echo '<td ALIGN=center><span class="style4">'.$playerwins[$index]."</span></td>";
+echo '<td ALIGN=center><span class="style4">'.$playerrank[$index]."</span></td>";
 echo "</tr>\n";
 };
 ?>
 </table>
+</BODY>
 </HTML>
 <?
 

@@ -1,4 +1,4 @@
-// GunGame v4.0.87
+// GunGame v4.0.88
 // (c)2007 by GunGame Coding Team (cagemonkey,XE_Manup)
 //
 // We would like to thank the following individuals in no particular order:
@@ -52,7 +52,7 @@ block load
 	//##########################################################################
 
 	//SET CURRENT VERSION
-	es_xset eventscripts_gg "4.0.87"
+	es_xset eventscripts_gg "4.0.88"
 	es_xmakepublic eventscripts_gg
 	
 	//LOADING ANNOUNCEMENT
@@ -736,9 +736,6 @@ event round_start
 	es_xset gg_tempcount 0
 	while "server_var(gg_tempcount) < 25" "es_xdoblock gungame4/strip_weapons"
 	
-	// Set live round status
-	es_xdelayed 1 es_xset gg_live_round 1
-	
 	// Disable objectives
 	ifx false(gg_map_obj) do
 	{
@@ -753,6 +750,12 @@ event round_start
 	
 	// Reset entities
 	es_xdelayed 1 es_xdoblock gungame4/equip_entity
+}
+
+event round_freeze_end
+{
+    // Set live round status
+	es_xdelayed .5 es_xset gg_live_round 1
 }
 
 block strip_weapons
@@ -1076,7 +1079,12 @@ block equip_player
 	es_xformatqv gg_query "SELECT weapon FROM gg_weapons WHERE level = '%1'" gg_user_lvl
 	es_sql queryvalue gg_live gg_user_wpn server_var(gg_query)
 	es_xformatv gg_tmp "Current level: %1 of %2\nCurrent weapon: %3" gg_user_lvl gg_levels gg_user_wpn
-	es usermsg hudhint server_var(gg_userid) server_var(gg_tmp)
+	//es usermsg hudhint server_var(gg_userid) server_var(gg_tmp)
+	es_xusermsg create hudhint HintText
+    es_xusermsg write short hudhint -1
+    es_usermsg write string hudhint server_var(gg_tmp)
+    es_usermsg send hudhint server_var(gg_userid)
+    es_xusermsg delete hudhint
 }
 
 event player_death
@@ -1165,7 +1173,12 @@ event player_death
 								
 								// HUD hint message
 								es_xformatv gg_tmp "Kills this level: %1 of %2" gg_p_kills gg_multikill
-								es usermsg hudhint event_var(attacker) server_var(gg_tmp)
+								//es usermsg hudhint event_var(attacker) server_var(gg_tmp)
+                                es_xusermsg create hudhint HintText
+                                es_xusermsg write short hudhint -1
+                                es_usermsg write string hudhint server_var(gg_tmp)
+                                es_usermsg send hudhint event_var(attacker)
+                                es_xusermsg delete hudhint
 							}
 						}	
 					}
@@ -1312,40 +1325,6 @@ event gg_levelup
 
 		// Retrieve the highest level from the database:
 		es_xsql queryvalue gg_live gg_leader_lvl "SELECT MAX(level) FROM gg_players"
-		if (server_var(gg_leader_lvl) != 1) do
-		{
-			// Find out the leader's name/s:
-			es_xformatqv gg_query "SELECT name FROM gg_players WHERE level = '%1'" gg_leader_lvl
-			es_sql query gg_live gg_leaders_keygroup server_var(gg_query)
-			es_xset gg_leader_names "!@#$"
-			es_xforeachkey gg_tempkey in gg_leaders_keygroup "es_xdoblock gungame4/format_leaders"
-			es_xkeygroupdelete gg_leaders_keygroup
-			es_set gg_leader_count server_var(gg_tempkey)
-			if (server_var(gg_leader_names) != "!@#$") do
-			{
-				es_xstring gg_leader_names replace "!@#$"	
-			}
-			else do
-			{
-				es_xset gg_leader_names "   * There currently is no leader"
-			}
-			// Create leader menu:
-			gg_popup exists gg_leader_menu
-			ifx true(gg_exists) do
-			{
-				gg_popup delete gg_leader_menu
-			}
-			gg_popup create gg_leader_menu
-			gg_popup addline gg_leader_menu "->1. Current Leaders:"
-			es_xformatqv gg_query "SELECT weapon FROM gg_weapons WHERE level = '%1'" gg_leader_lvl
-			es_sql queryvalue gg_live gg_leader_wpn server_var(gg_query)
-			es_xformatv gg_leader_text "Level %1 (%2)" gg_leader_lvl gg_leader_wpn
-			es gg_popup addline gg_leader_menu server_var(gg_leader_text)
-			gg_popup addline gg_leader_menu "--------------------------"
-			es gg_popup addline gg_leader_menu server_var(gg_leader_names)
-			gg_popup addline gg_leader_menu "--------------------------"
-			gg_popup addline gg_leader_menu "0. Exit"
-		}
 		if (event_var(new_level) = server_var(gg_leader_lvl)) do
 		{
 			if (server_var(gg_leader_count) > 1) do
@@ -1377,43 +1356,6 @@ event gg_leveldown
 	es_set gg_tmp event_var(new_level)
 	es_xformatqv gg_query "UPDATE gg_players SET kills = '0', level = '%1' WHERE userid = '%2'" gg_tmp gg_userid
 	es_sql query gg_live server_var(gg_query)
-	
-	// Retrieve the highest level from the database:
-	es_xsql queryvalue gg_live gg_leader_lvl "SELECT MAX(level) FROM gg_players"
-	if (server_var(gg_leader_lvl) != 1) do
-	{
-		// Find out the leader's name/s:
-		es_xformatqv gg_query "SELECT name FROM gg_players WHERE level = '%1'" gg_leader_lvl
-		es_sql query gg_live gg_leaders_keygroup server_var(gg_query)
-		es_xset gg_leader_names "!@#$"
-		es_xforeachkey gg_tempkey in gg_leaders_keygroup "es_xdoblock gungame4/format_leaders"
-		es_xkeygroupdelete gg_leaders_keygroup
-		es_set gg_leader_count server_var(gg_tempkey)
-		if (server_var(gg_leader_names) != "!@#$") do
-		{
-			es_xstring gg_leader_names replace "!@#$"	
-		}
-		else do
-		{
-			es_xset gg_leader_names "   * There currently is no leader"
-		}
-		// Create leader menu:
-		gg_popup exists gg_leader_menu
-		ifx true(gg_exists) do
-		{
-			gg_popup delete gg_leader_menu
-		}
-		gg_popup create gg_leader_menu
-		gg_popup addline gg_leader_menu "->1. Current Leaders:"
-		es_xformatqv gg_query "SELECT weapon FROM gg_weapons WHERE level = '%1'" gg_leader_lvl
-		es_sql queryvalue gg_live gg_leader_wpn server_var(gg_query)
-		es_xformatv gg_leader_text "Level %1 (%2)" gg_leader_lvl gg_leader_wpn
-		es gg_popup addline gg_leader_menu server_var(gg_leader_text)
-		gg_popup addline gg_leader_menu "--------------------------"
-		es gg_popup addline gg_leader_menu server_var(gg_leader_names)
-		gg_popup addline gg_leader_menu "--------------------------"
-		gg_popup addline gg_leader_menu "0. Exit"
-	}
 }
 
 event gg_win
@@ -1477,9 +1419,9 @@ event gg_win
 		{
 			es_xcreateplayerlist gg_tmp_playerlist
 			es_xforeachkey gg_userid in gg_tmp_playerlist "es_xdoblock gungame4/winner_database"
-			es_xsql query gg_live gg4wins "SELECT userid,name,level,kills,deaths,wins FROM gg_players ORDER BY level DESC, name"
-			es_xforeachkey gg_userid in gg_tmp_playerlist "es_xdoblock gungame4/winner_database_rank"
 			es_xkeygroupdelete gg_tmp_playerlist
+			es_xsql query gg_live gg4wins "SELECT userid,name,level,kills,deaths,wins FROM gg_players ORDER BY level DESC, name"
+			es_xforeachkey gg_tmp_key in gg4wins "es_xdoblock gungame4/winner_database_rank"
 		
 			// Get zero key info
 			es_xkeycreate gg4wins "0"
@@ -1559,11 +1501,12 @@ block winner_database
 
 block winner_database_rank
 {
+    es_keygetvalue gg_userid gg4wins server_var(gg_tmp_key) userid
     es gg_getwins gg_wins server_var(gg_userid)
     es_xformatqv gg_query "SELECT COUNT(*) FROM gg_players WHERE wins > '%1'" gg_wins
 	es_sql queryvalue gg_database gg_tmp server_var(gg_query)
 	es_xmath gg_tmp + 1
-	es_keysetvalue gg_tmp_playerlist server_var(gg_userid) rank server_var(gg_tmp)
+	es_keysetvalue gg4wins server_var(gg_tmp_key) rank server_var(gg_tmp)
 }
 
 
@@ -1820,12 +1763,48 @@ block gg_display_level
 	es gg_getlevel gg_p_lvl server_var(gg_userid)
 	es_set gg_p_lvlsbehind server_var(gg_leader_lvl)
 	es_math gg_p_lvlsbehind - server_var(gg_p_lvl)
-	es_xkeygroupdelete gg_!level_keygroup
+	//es_xkeygroupdelete gg_!level_keygroup
 	es gg_getweapon gg_p_wpn server_var(gg_userid)
-	es uniqueid gg_steamid server_var(gg_userid) 1
+	//es uniqueid gg_steamid server_var(gg_userid) 1
 	es gg_getwins gg_p_wins server_var(gg_userid)
 	if (server_var(gg_leader_lvl) > 1) do
 	{
+	    // Retrieve the highest level from the database:
+	    es_xsql queryvalue gg_live gg_leader_lvl "SELECT MAX(level) FROM gg_players"
+	    if (server_var(gg_leader_lvl) != 1) do
+	    {
+    		// Find out the leader's name/s:
+		    es_xformatqv gg_query "SELECT name FROM gg_players WHERE level = '%1'" gg_leader_lvl
+		    es_sql query gg_live gg_leaders_keygroup server_var(gg_query)
+		    es_xset gg_leader_names "!@#$"
+		    es_xforeachkey gg_tempkey in gg_leaders_keygroup "es_xdoblock gungame4/format_leaders"
+		    es_xkeygroupdelete gg_leaders_keygroup
+		    es_set gg_leader_count server_var(gg_tempkey)
+		    if (server_var(gg_leader_names) != "!@#$") do
+		    {
+    			es_xstring gg_leader_names replace "!@#$"	
+		    }
+		    else do
+		    {
+    			es_xset gg_leader_names "   * There currently is no leader"
+		    }
+		    // Create leader menu:
+		    gg_popup exists gg_leader_menu
+		    ifx true(gg_exists) do
+		    {
+    			gg_popup delete gg_leader_menu
+		    }
+		    gg_popup create gg_leader_menu
+		    gg_popup addline gg_leader_menu "->1. Current Leaders:"
+		    es_xformatqv gg_query "SELECT weapon FROM gg_weapons WHERE level = '%1'" gg_leader_lvl
+		    es_sql queryvalue gg_live gg_leader_wpn server_var(gg_query)
+		    es_xformatv gg_leader_text "Level %1 (%2)" gg_leader_lvl gg_leader_wpn
+		    es gg_popup addline gg_leader_menu server_var(gg_leader_text)
+		    gg_popup addline gg_leader_menu "--------------------------"
+		    es gg_popup addline gg_leader_menu server_var(gg_leader_names)
+		    gg_popup addline gg_leader_menu "--------------------------"
+		    gg_popup addline gg_leader_menu "0. Exit"
+		}
 		if (server_var(gg_p_lvlsbehind) = 0) do
 		{
 			if (event_var(es_username) in server_var(gg_leader_names)) do
@@ -1933,6 +1912,45 @@ block gg_display_level
 
 block gg_display_leaders
 {
+    // Build menu first
+    // Retrieve the highest level from the database:
+	es_xsql queryvalue gg_live gg_leader_lvl "SELECT MAX(level) FROM gg_players"
+	if (server_var(gg_leader_lvl) != 1) do
+	{
+		// Find out the leader's name/s:
+		es_xformatqv gg_query "SELECT name FROM gg_players WHERE level = '%1'" gg_leader_lvl
+		es_sql query gg_live gg_leaders_keygroup server_var(gg_query)
+		es_xset gg_leader_names "!@#$"
+		es_xforeachkey gg_tempkey in gg_leaders_keygroup "es_xdoblock gungame4/format_leaders"
+		es_xkeygroupdelete gg_leaders_keygroup
+		es_set gg_leader_count server_var(gg_tempkey)
+		if (server_var(gg_leader_names) != "!@#$") do
+		{
+			es_xstring gg_leader_names replace "!@#$"	
+		}
+		else do
+		{
+			es_xset gg_leader_names "   * There currently is no leader"
+		}
+		// Create leader menu:
+		gg_popup exists gg_leader_menu
+		ifx true(gg_exists) do
+		{
+			gg_popup delete gg_leader_menu
+		}
+		gg_popup create gg_leader_menu
+		gg_popup addline gg_leader_menu "->1. Current Leaders:"
+		es_xformatqv gg_query "SELECT weapon FROM gg_weapons WHERE level = '%1'" gg_leader_lvl
+		es_sql queryvalue gg_live gg_leader_wpn server_var(gg_query)
+		es_xformatv gg_leader_text "Level %1 (%2)" gg_leader_lvl gg_leader_wpn
+		es gg_popup addline gg_leader_menu server_var(gg_leader_text)
+		gg_popup addline gg_leader_menu "--------------------------"
+		es gg_popup addline gg_leader_menu server_var(gg_leader_names)
+		gg_popup addline gg_leader_menu "--------------------------"
+		gg_popup addline gg_leader_menu "0. Exit"
+	}
+    
+    // Send menu
 	es_xgetcmduserid gg_userid
 	es gg_popup send gg_leader_menu 0 server_var(gg_userid)
 }

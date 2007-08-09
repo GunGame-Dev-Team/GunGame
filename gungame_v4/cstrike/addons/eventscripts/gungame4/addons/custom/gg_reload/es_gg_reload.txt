@@ -24,15 +24,15 @@ event player_death
 		}
 		else do
 		{
-			if (event_var(weapon) != "m249") do
+			if (event_var(weapon) == "m249") do
 			{
 			    es_format reload_tmp "weapon_%1" event_var(weapon)
-				es playerset clip event_var(attacker) server_var(reload_tmp) 30
+				es playerset clip event_var(attacker) server_var(reload_tmp) 255
 			}
 			else do
 			{
 			    es_format reload_tmp "weapon_%1" event_var(weapon)
-				es playerset clip event_var(attacker) server_var(reload_tmp) 255
+				es playerset clip event_var(attacker) server_var(reload_tmp) 30
 			}
 		}
 	}
