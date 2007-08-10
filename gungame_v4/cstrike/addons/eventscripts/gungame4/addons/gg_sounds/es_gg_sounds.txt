@@ -150,6 +150,8 @@ event gg_levelup
 	
 	if (event_var(new_level) == server_var(gg_leader_lvl)) do
 	{
+	    es_xformatqv gg_query "SELECT weapon FROM gg_weapons WHERE level = '%1'" gg_leader_lvl
+		es_sql queryvalue gg_live gg_leader_wpn server_var(gg_query)
 		if (server_var(gg_leader_wpn) == "hegrenade") do
 		{
 			// Play nade sound here

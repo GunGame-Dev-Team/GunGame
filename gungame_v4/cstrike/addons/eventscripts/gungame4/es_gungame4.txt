@@ -1,4 +1,4 @@
-// GunGame v4.0.88
+// GunGame v4.0.89
 // (c)2007 by GunGame Coding Team (cagemonkey,XE_Manup)
 //
 // We would like to thank the following individuals in no particular order:
@@ -52,7 +52,7 @@ block load
 	//##########################################################################
 
 	//SET CURRENT VERSION
-	es_xset eventscripts_gg "4.0.88"
+	es_xset eventscripts_gg "4.0.89"
 	es_xmakepublic eventscripts_gg
 	
 	//LOADING ANNOUNCEMENT
@@ -1325,6 +1325,8 @@ event gg_levelup
 
 		// Retrieve the highest level from the database:
 		es_xsql queryvalue gg_live gg_leader_lvl "SELECT MAX(level) FROM gg_players"
+		es_xformatqv gg_query "SELECT COUNT(*) FROM gg_players WHERE level = '%1'" gg_leader_lvl
+	    es_sql queryvalue gg_live gg_leader_count server_var(gg_query)
 		if (event_var(new_level) = server_var(gg_leader_lvl)) do
 		{
 			if (server_var(gg_leader_count) > 1) do
@@ -1771,6 +1773,8 @@ block gg_display_level
 	{
 	    // Retrieve the highest level from the database:
 	    es_xsql queryvalue gg_live gg_leader_lvl "SELECT MAX(level) FROM gg_players"
+	    es_xformatqv gg_query "SELECT COUNT(*) FROM gg_players WHERE level = '%1'" gg_leader_lvl
+	    es_sql queryvalue gg_live gg_leader_count server_var(gg_query)
 	    if (server_var(gg_leader_lvl) != 1) do
 	    {
     		// Find out the leader's name/s:
