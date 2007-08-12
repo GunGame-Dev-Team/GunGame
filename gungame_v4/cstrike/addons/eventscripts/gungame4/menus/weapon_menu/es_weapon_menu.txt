@@ -96,11 +96,11 @@ block create_weapon_list
             		    {
             		        es_xmath gg_tmp2 + 1
             		        es_log Level: server_var(gg_tmp2) Weapon: hegrenade
-	                        es_xformatqv gg_query "UPDATE gg_weapons SET level = '%1' WHERE weapon = 'hegrenade'" gg_tmp3
+	                        es_xformatqv gg_query "UPDATE gg_weapons SET level = '%1' WHERE weapon = 'hegrenade'" gg_tmp2
 	                        es_sql query gg_live server_var(gg_query)
 	                        es_xmath gg_tmp2 + 1
             		        es_log Level: server_var(gg_tmp2) Weapon: knife
-	                        es_xformatqv gg_query "UPDATE gg_weapons SET level = '%1' WHERE weapon = 'knife'" gg_tmp3
+	                        es_xformatqv gg_query "UPDATE gg_weapons SET level = '%1' WHERE weapon = 'knife'" gg_tmp2
 	                        es_sql query gg_live server_var(gg_query)
 	                    }
 	                    else do
@@ -110,14 +110,14 @@ block create_weapon_list
 	                        {
 	                            es_xmath gg_tmp2 + 1
             		            es_log Level: server_var(gg_tmp2) Weapon: hegrenade
-	                            es_xformatqv gg_query "UPDATE gg_weapons SET level = '%1' WHERE weapon = 'hegrenade'" gg_tmp3
+	                            es_xformatqv gg_query "UPDATE gg_weapons SET level = '%1' WHERE weapon = 'hegrenade'" gg_tmp2
 	                            es_sql query gg_live server_var(gg_query)
 	                        }
 	                        else do
 	                        {
 	                            es_xmath gg_tmp2 + 1
             		            es_log Level: server_var(gg_tmp2) Weapon: knife
-	                            es_xformatqv gg_query "UPDATE gg_weapons SET level = '%1' WHERE weapon = 'knife'" gg_tmp3
+	                            es_xformatqv gg_query "UPDATE gg_weapons SET level = '%1' WHERE weapon = 'knife'" gg_tmp2
 	                            es_sql query gg_live server_var(gg_query)
 	                        }
 	                    }
