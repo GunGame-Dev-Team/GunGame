@@ -70,7 +70,7 @@ block create_weapon_list
       {
          if (server_var(gg_level_counter) <= server_var(gg_levels)) do
          {
-         		es_xformatv gg_tmp "weapon_%1" gg_tmp_weapon
+         	es_xformatv gg_tmp "weapon_%1" gg_tmp_weapon
             es_xformatqv gg_query "INSERT INTO gg_weapons (level,weapon,weapon_name) VALUES('%1','%2','%3')" gg_level_counter gg_tmp_weapon gg_tmp
             es_sql query gg_live server_var(gg_query)
             es_xmath gg_level_counter + 1
@@ -83,9 +83,45 @@ block create_weapon_list
             	// Optional randomize code
             	ifx true(gg_random_weapon_order) do
             	{
-            		es_xsql query gg_live gg_rand_keygroup "SELECT weapon FROM gg_weapons ORDER BY RANDOM()"
+            		es_xsql query gg_live gg_rand_keygroup "SELECT weapon FROM gg_weapons WHERE weapon != 'hegrenade' AND weapon != 'knife' ORDER BY RANDOM()"
             		es_xforeachkey gg_tmp_rand in gg_rand_keygroup "es_xdoblock gungame4/menus/weapon_menu/rand_weapon"
             		es_xkeygroupdelete gg_rand_keygroup
+            		// Add knife and hegrenade back
+            		es_xsql queryvalue gg_live gg_tmp "SELECT COUNT(*) FROM gg_weapons"
+            		es_xsql queryvalue gg_live gg_tmp2 "SELECT COUNT(*) FROM gg_weapons WHERE weapon != 'hegrenade' AND weapon != 'knife'"
+            		es_xmathparse gg_tmp3 "gg_tmp - gg_tmp2"
+            		ifx true(gg_tmp3) do
+            		{
+            		    if (server_var(gg_tmp3) == 2) do
+            		    {
+            		        es_xmath gg_tmp2 + 1
+            		        es_log Level: server_var(gg_tmp2) Weapon: hegrenade
+	                        es_xformatqv gg_query "UPDATE gg_weapons SET level = '%1' WHERE weapon = 'hegrenade'" gg_tmp3
+	                        es_sql query gg_live server_var(gg_query)
+	                        es_xmath gg_tmp2 + 1
+            		        es_log Level: server_var(gg_tmp2) Weapon: knife
+	                        es_xformatqv gg_query "UPDATE gg_weapons SET level = '%1' WHERE weapon = 'knife'" gg_tmp3
+	                        es_sql query gg_live server_var(gg_query)
+	                    }
+	                    else do
+	                    {
+	                        es_xsql queryvalue gg_live gg_tmp4 "SELECT weapon FROM gg_weapons WHERE weapon = 'hegrenade'"
+	                        ifx true(gg_tmp4) do
+	                        {
+	                            es_xmath gg_tmp2 + 1
+            		            es_log Level: server_var(gg_tmp2) Weapon: hegrenade
+	                            es_xformatqv gg_query "UPDATE gg_weapons SET level = '%1' WHERE weapon = 'hegrenade'" gg_tmp3
+	                            es_sql query gg_live server_var(gg_query)
+	                        }
+	                        else do
+	                        {
+	                            es_xmath gg_tmp2 + 1
+            		            es_log Level: server_var(gg_tmp2) Weapon: knife
+	                            es_xformatqv gg_query "UPDATE gg_weapons SET level = '%1' WHERE weapon = 'knife'" gg_tmp3
+	                            es_sql query gg_live server_var(gg_query)
+	                        }
+	                    }
+	                }
             		es_xlog [GunGame] Weapon order randomized.
             	}
             }
