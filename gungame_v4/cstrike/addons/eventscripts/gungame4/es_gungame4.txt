@@ -1,4 +1,4 @@
-// GunGame v4.0.91
+// GunGame v4.0.92
 // (c)2007 by GunGame Coding Team (cagemonkey,XE_Manup)
 //
 // We would like to thank the following individuals in no particular order:
@@ -52,7 +52,7 @@ block load
 	//##########################################################################
 
 	//SET CURRENT VERSION
-	es_xset eventscripts_gg "4.0.91"
+	es_xset eventscripts_gg "4.0.92"
 	es_xmakepublic eventscripts_gg
 	
 	//LOADING ANNOUNCEMENT
@@ -1488,6 +1488,7 @@ event bomb_planted
 {
 	// Reset bomber
 	es_xset gg_bomber 0
+	es_fire event_var(userid) weapon_c4 Kill
 }
 
 event bomb_defused
