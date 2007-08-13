@@ -1655,6 +1655,12 @@ block unload
 		es_xunload gungame4/addons/gg_sounds
 	}
 	es_xset gg_exists 0
+	es_xexists gg_exists script gungame4/menus/welcome_menu
+	ifx true(gg_exists) do
+	{
+		es_xunload gungame4/menus/welcome_menu
+	}
+	es_xset gg_exists 0
 	es_xexists gg_exists script gungame4/addons/gg_noblock
 	ifx true(gg_exists) do
 	{
