@@ -63,8 +63,8 @@ block give_cmd
 	 					}
 		 			}
 			 		
-		 			// Reset command in 2 seconds
-		 			es_delayed 2 gg_reset_cmd server_var(gg_userid)
+		 			// Reset command in 10 seconds
+		 			es_delayed 10 gg_reset_cmd server_var(gg_userid)
 		 		}
 		 		else do
 		 		{
