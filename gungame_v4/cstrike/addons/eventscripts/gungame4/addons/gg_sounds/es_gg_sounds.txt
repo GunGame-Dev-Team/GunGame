@@ -135,7 +135,7 @@ event player_team
 {
     ifx true(gg_sound_welcome) do
 	{
-	    if (event_var(team) > 0) do
+	    if (event_var(team) > 1) do
 	    {
 			es_playsound event_var(userid) server_var(gg_sound_welcome) 1.0
 		}
