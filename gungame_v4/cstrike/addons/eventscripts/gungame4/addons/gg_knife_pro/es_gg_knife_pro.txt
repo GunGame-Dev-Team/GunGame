@@ -121,11 +121,11 @@ event player_death
 									es_xevent initialize gg_levelup
 									es_event setint gg_levelup userid event_var(attacker)
 									es_event setint gg_levelup victim event_var(userid)
-									es_event setint gg_levelup steamid event_var(es_attackersteamid)
+									es_event setstring gg_levelup steamid event_var(es_attackersteamid)
 									es_event setint gg_levelup old_level server_var(gg_attacker_lvl)
 									es_event setint gg_levelup new_level server_var(gg_tmp)
 									es_event setint gg_levelup team event_var(es_attackerteam)
-									es_event setint gg_levelup name event_var(es_attackername)
+									es_event setstring gg_levelup name event_var(es_attackername)
 									es_event setstring gg_levelup victimname event_var(es_username)
 									es_xevent fire gg_levelup
 									es_format gg_format "#lightgreen %1 #defaultstole a level from#lightgreen %2" event_var(es_attackername) event_var(es_username)
@@ -141,12 +141,12 @@ event player_death
 								es_xevent initialize gg_leveldown
 								es_event setint gg_leveldown userid event_var(userid)
 								es_event setint gg_leveldown attacker event_var(attacker)
-								es_event setint gg_leveldown steamid event_var(es_steamid)
+								es_event setstring gg_leveldown steamid event_var(es_steamid)
 								es_event setint gg_leveldown old_level server_var(gg_victim_lvl)
 								es_event setint gg_leveldown new_level server_var(gg_tmp)
 								es_event setint gg_leveldown team event_var(es_userteam)
-								es_event setint gg_leveldown name event_var(es_username)
-								es_event setint gg_leveldown attackername event_var(es_attackername)
+								es_event setstring gg_leveldown name event_var(es_username)
+								es_event setstring gg_leveldown attackername event_var(es_attackername)
 								es_xevent fire gg_leveldown
 								
 								// ***** gg_stats

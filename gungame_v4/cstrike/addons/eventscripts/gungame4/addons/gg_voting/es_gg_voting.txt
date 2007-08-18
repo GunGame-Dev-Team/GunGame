@@ -9,7 +9,7 @@ block load
 	// Check gg_vote_options
 	ifx false(gg_vote_options) do
 	{
-		es_dbgmsg 0 Invalid map options set in cfg, unloading gg_voting addon
+		es_xdbgmsg 0 Invalid map options set in cfg, unloading gg_voting addon
 		es_xunload gungame4/addons/gg_voting
 	}
 	else do
@@ -28,67 +28,76 @@ block load
 		gg_getmaxlevel gg_vote_trigger
 		es_xmath gg_vote_trigger - 2
 		
-		refcount increment eventscripts_maphandler
-		
-		downloadable sound/admin_plugin/actions/startyourvoting.mp3
-		downloadable sound/admin_plugin/actions/endofvote.mp3
-		
-		// Create database
-		es_xsql query gg_live "CREATE TABLE IF NOT EXISTS vote(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, mapname VARCHAR(50))"
-		
 		if (server_var(gg_voting) != 4) do
 		{
-			// Read files
-			if (server_var(gg_voting) == 1) do
+			ifx true(mani_nextmap) do
 			{
-				// Read mapcycle.txt
-				est_openfile gg_file_id r mapcycle.txt
+				es_xdbgmsg 0 Invalid gg_voting setup in config, unloading gg_voting addon
+				es_xunload gungame4/addons/gg_voting
 			}
-			if (server_var(gg_voting) == 2) do
+			else do
 			{
-				// Read maplist.txt
-				est_openfile gg_file_id r maplist.txt
+				refcount increment eventscripts_maphandler
+				downloadable sound/admin_plugin/actions/startyourvoting.mp3
+				downloadable sound/admin_plugin/actions/endofvote.mp3
+				
+				// Create database
+				es_xsql query gg_live "CREATE TABLE IF NOT EXISTS vote(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, mapname VARCHAR(50))"
+				
+				// Read files
+				if (server_var(gg_voting) == 1) do
+				{
+					// Read mapcycle.txt
+					est_openfile gg_file_id r mapcycle.txt
+				}
+				if (server_var(gg_voting) == 2) do
+				{
+					// Read maplist.txt
+					est_openfile gg_file_id r maplist.txt
+				}
+				if (server_var(gg_voting) == 3) do
+				{
+					// Read ggmaplist.txt
+					est_openfile gg_file_id r cfg/gungame/ggmaplist.txt
+				}
+				es est_countlines gg_line_count server_var(gg_file_id)
+				es_xset gg_line_num 0
+    			while "server_var(gg_line_num) < server_var(gg_line_count)" "es_xdoblock gungame4/addons/gg_voting/read_file"
+    			es est_closefile server_var(gg_file_id)
+	    		
+    			// Load dependencies
+				es_xset gg_exists 0
+				es_xexists gg_exists script popup
+				ifx false(gg_exists) do
+				{
+					es_xload popup
+				}
+				es_xset gg_exists 0
+				es_xexists gg_exists script keymenu
+				ifx false(gg_exists) do
+				{
+					es_xload keymenu
+				}
+				es_xset gg_exists 0
+				es_xexists gg_exists script vote
+				ifx false(gg_exists) do
+				{
+					es_xload vote
+				}
 			}
-			if (server_var(gg_voting) == 3) do
-			{
-				// Read ggmaplist.txt
-				est_openfile gg_file_id r cfg/gungame/ggmaplist.txt
-			}
-			es est_countlines gg_line_count server_var(gg_file_id)
-			es_xset gg_line_num 0
-    		while "server_var(gg_line_num) < server_var(gg_line_count)" "es_xdoblock gungame4/addons/gg_voting/read_file"
-    		es est_closefile server_var(gg_file_id)
     	}
-	    
-	    // Load dependencies
-		es_xset gg_exists 0
-		es_xexists gg_exists script popup
-		ifx false(gg_exists) do
-		{
-			es_xload popup
-		}
-		es_xset gg_exists 0
-		es_xexists gg_exists script keymenu
-		ifx false(gg_exists) do
-		{
-			es_xload keymenu
-		}
-		es_xset gg_exists 0
-		es_xexists gg_exists script vote
-		ifx false(gg_exists) do
-		{
-			es_xload vote
-		}
 	}
 }
 
 event es_map_start
 {
-	es_sql query gg_live "DROP TABLE IF EXISTS vote"
-	es_xsql query gg_live "CREATE TABLE IF NOT EXISTS vote(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, mapname VARCHAR(50))"
-	
 	if (server_var(gg_voting) != 4) do
 	{
+		es_sql query gg_live "DROP TABLE IF EXISTS vote"
+		es_xsql query gg_live "CREATE TABLE IF NOT EXISTS vote(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, mapname VARCHAR(50))"
+		downloadable sound/admin_plugin/actions/startyourvoting.mp3
+		downloadable sound/admin_plugin/actions/endofvote.mp3
+		
 		// Reread maplist
 		if (server_var(gg_voting) == 1) do
 		{
@@ -110,10 +119,6 @@ event es_map_start
     	while "server_var(gg_line_num) < server_var(gg_line_count)" "es_xdoblock gungame4/addons/gg_voting/read_file"
     	es est_closefile server_var(gg_file_id)
     }
-    
-    downloadable sound/admin_plugin/actions/startyourvoting.mp3
-	downloadable sound/admin_plugin/actions/endofvote.mp3
-	
 	es_xset gg_vote_started 0
 }
 
@@ -125,11 +130,11 @@ event player_say
 	    {
 	        ifx false(eventscripts_nextmapoverride) do
 		    {
-    			foreach player gg_tmp #all "es_toptext server_var(gg_tmp) 5 Nextmap: Decided by vote"
+    			foreach player gg_tmp #human "es_toptext server_var(gg_tmp) 5 Nextmap: Decided by vote"
 		    }
 		    else do
 		    {
-    			foreach player gg_tmp #all "es_toptext server_var(gg_tmp) 5 Nextmap: server_var(eventscripts_nextmapoverride)"
+    			foreach player gg_tmp #human "es_toptext server_var(gg_tmp) 5 Nextmap: server_var(eventscripts_nextmapoverride)"
     		}
 		}
 	}
