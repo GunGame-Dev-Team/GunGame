@@ -1,4 +1,4 @@
-// GunGame v4.0.93
+// GunGame v4.0.93-test
 // (c)2007 by GunGame Coding Team (cagemonkey,XE_Manup)
 //
 // We would like to thank the following individuals in no particular order:
@@ -52,7 +52,7 @@ block load
 	//##########################################################################
 
 	//SET CURRENT VERSION
-	es_xset eventscripts_gg "4.0.93"
+	es_xset eventscripts_gg "4.0.93-test"
 	es_xmakepublic eventscripts_gg
 	
 	//LOADING ANNOUNCEMENT
@@ -93,7 +93,7 @@ block load
 	//LOAD DEPENDENCIES
 	//
 	// Setup gg_popup
-	es_xload gungame4/addons/gg_popup_lite
+	es_xload gungame4/gg_popup_lite
 	//
 	// Setup Crontab
 	es_xset gg_exists 0
@@ -220,170 +220,170 @@ block cont_setup
 	//MENU SETUP
 	//
 	// Setup weapon menu
-	es_xload gungame4/menus/weapon_menu
+	es_xload gungame4/weapon_menu
 	// Setup rules menu
-	es_xload gungame4/menus/rules_menu
+	es_xload gungame4/rules_menu
 	// Setup command menu
-	es_xload gungame4/menus/commands_menu
+	es_xload gungame4/commands_menu
 	// Setup top menu
-	es_xload gungame4/menus/top_menu
+	es_xload gungame4/top_menu
 	
 	
 	//ADDON SETUP
 	//
 	// ***** gg_sounds_enable
 	es_xset gg_exists 0
-	es_xexists gg_exists script gungame4/addons/gg_sounds
+	es_xexists gg_exists script gungame4/gg_sounds
 	ifx false(gg_exists) do
 	{
-		es_xload gungame4/addons/gg_sounds
+		es_xload gungame4/gg_sounds
 	}
 	// ***** gg_handicap
 	ifx true(gg_handicap) do
 	{
 		es_xset gg_exists 0
-		es_xexists gg_exists script gungame4/addons/gg_handicap
+		es_xexists gg_exists script gungame4/gg_handicap
 		ifx false(gg_exists) do
 		{
-			es_xload gungame4/addons/gg_handicap
+			es_xload gungame4/gg_handicap
 		}
 	}
 	// ***** welcome_menu
 	ifx true(gg_join_msg) do
 	{
 		es_xset gg_exists 0
-		es_xexists gg_exists script gungame4/menus/welcome_menu
+		es_xexists gg_exists script gungame4/welcome_menu
 		ifx false(gg_exists) do
 		{
-			es_xload gungame4/menus/welcome_menu
+			es_xload gungame4/welcome_menu
 		}
 	}
 	// ***** gg_triple_level
 	ifx true(gg_triple_on) do
 	{
 		es_xset gg_exists 0
-		es_xexists gg_exists script gungame4/addons/gg_triple_level
+		es_xexists gg_exists script gungame4/gg_triple_level
 		ifx false(gg_exists) do
 		{
-			es_xload gungame4/addons/gg_triple_level
+			es_xload gungame4/gg_triple_level
 		}
 	}
 	// ***** gg_turbo
 	ifx true(gg_turbo) do
 	{
 		es_xset gg_exists 0
-		es_xexists gg_exists script gungame4/addons/gg_turbo_mode
+		es_xexists gg_exists script gungame4/gg_turbo_mode
 		ifx false(gg_exists) do
 		{
-			es_xload gungame4/addons/gg_turbo_mode
+			es_xload gungame4/gg_turbo_mode
 		}
 	}
 	// ***** gg_knife_pro
 	ifx true(gg_knife_pro) do
 	{
 		es_xset gg_exists 0
-		es_xexists gg_exists script gungame4/addons/gg_knife_pro
+		es_xexists gg_exists script gungame4/gg_knife_pro
 		ifx false(gg_exists) do
 		{
-			es_xload gungame4/addons/gg_knife_pro
+			es_xload gungame4/gg_knife_pro
 		}
 	}
 	// ***** gg_knife_elite
 	ifx true(gg_knife_elite) do
 	{
 		es_xset gg_exists 0
-		es_xexists gg_exists script gungame4/addons/gg_knife_elite
+		es_xexists gg_exists script gungame4/gg_knife_elite
 		ifx false(gg_exists) do
 		{
-			es_xload gungame4/addons/gg_knife_elite
+			es_xload gungame4/gg_knife_elite
 		}
 	}
 	// ***** gg_deathmatch
 	ifx true(gg_deathmatch) do
 	{
 		es_xset gg_exists 0
-		es_xexists gg_exists script gungame4/addons/gg_deathmatch
+		es_xexists gg_exists script gungame4/gg_deathmatch
 		ifx false(gg_exists) do
 		{
-			es_xload gungame4/addons/gg_deathmatch
+			es_xload gungame4/gg_deathmatch
 		}
 	}
 	// ***** gg_earn_nade
 	ifx true(gg_xtra_grenades) do
 	{
 		es_xset gg_exists 0
-		es_xexists gg_exists script gungame4/addons/gg_earn_nade
+		es_xexists gg_exists script gungame4/gg_earn_nade
 		ifx false(gg_exists) do
 		{
-			es_xload gungame4/addons/gg_earn_nade
+			es_xload gungame4/gg_earn_nade
 		}
 	}
 	// ***** gg_unl_grenade
 	ifx true(gg_unl_grenades) do
 	{
 		es_xset gg_exists 0
-		es_xexists gg_exists script gungame4/addons/gg_unl_grenade
+		es_xexists gg_exists script gungame4/gg_unl_grenade
 		ifx false(gg_exists) do
 		{
-			es_xload gungame4/addons/gg_unl_grenade
+			es_xload gungame4/gg_unl_grenade
 		}
 	}
 	// ***** gg_nade_bonus
 	ifx true(gg_nade_bonus) do
 	{
 		es_xset gg_exists 0
-		es_xexists gg_exists script gungame4/addons/gg_nade_bonus
+		es_xexists gg_exists script gungame4/gg_nade_bonus
 		ifx false(gg_exists) do
 		{
-			es_xload gungame4/addons/gg_nade_bonus
+			es_xload gungame4/gg_nade_bonus
 		}
 	}
 	// ***** gg_noblock_enable
 	ifx true(gg_noblock_enable) do
 	{
 		es_xset gg_exists 0
-		es_xexists gg_exists script gungame4/addons/gg_noblock
+		es_xexists gg_exists script gungame4/gg_noblock
 		ifx false(gg_exists) do
 		{
-			es_xload gungame4/addons/gg_noblock
+			es_xload gungame4/gg_noblock
 		}
 	}
 	// ***** gg_auto_ff
 	ifx true(gg_auto_ff) do
 	{
 		es_xset gg_exists 0
-		es_xexists gg_exists script gungame4/addons/gg_friendlyfire
+		es_xexists gg_exists script gungame4/gg_friendlyfire
 		ifx false(gg_exists) do
 		{
-			es_xload gungame4/addons/gg_friendlyfire
+			es_xload gungame4/gg_friendlyfire
 		}
 	}
 	// ***** gg_stats_log
 	ifx true(gg_stats_log) do
 	{
 		es_xset gg_exists 0
-		es_xexists gg_exists script gungame4/addons/gg_stats
+		es_xexists gg_exists script gungame4/gg_stats
 		ifx false(gg_exists) do
 		{
-			es_xload gungame4/addons/gg_stats
+			es_xload gungame4/gg_stats
 		}
 	}
 	// ***** gg_map_voting
 	ifx true(gg_voting) do
 	{
 		es_xset gg_exists 0
-		es_xexists gg_exists script gungame4/addons/gg_voting
+		es_xexists gg_exists script gungame4/gg_voting
 		ifx false(gg_exists) do
 		{
-			es_xload gungame4/addons/gg_voting
+			es_xload gungame4/gg_voting
 		}
 	}
 	// ***** custom addons
 	es_xset gg_exists 0
-	es_xexists gg_exists script gungame4/addons/custom
+	es_xexists gg_exists script gungame4/custom
 	ifx false(gg_exists) do
 	{
-		es_xload gungame4/addons/custom
+		es_xload gungame4/custom
 	}
 	
 	
@@ -638,7 +638,7 @@ event es_map_start
 	// Reload weapons
 	ifx true(gg_random_weapon_order) do
 	{
-		es_xload gungame4/menus/weapon_menu
+		es_xload gungame4/weapon_menu
 	}
 	
 	// Load custom events
@@ -676,10 +676,10 @@ block gg_start
 		ifx false(gg_unl_grenades) do
 		{
 			es_xset gg_exists 0
-			es_xexists gg_exists script gungame4/addons/gg_unl_grenade
+			es_xexists gg_exists script gungame4/gg_unl_grenade
 			ifx false(gg_exists) do
 			{
-				es_xload gungame4/addons/gg_unl_grenade
+				es_xload gungame4/gg_unl_grenade
 			}
 		}
 	}
@@ -705,10 +705,10 @@ block warmup_start
 		ifx false(gg_unl_grenades) do
 		{
 			es_xset gg_exists 0
-			es_xexists gg_exists script gungame4/addons/gg_unl_grenade
+			es_xexists gg_exists script gungame4/gg_unl_grenade
 			ifx true(gg_exists) do
 			{
-				es_xunload gungame4/addons/gg_unl_grenade
+				es_xunload gungame4/gg_unl_grenade
 			}
 		}
 		es_xevent initialize gg_start
@@ -1400,7 +1400,7 @@ event gg_win
 			es_keysetvalue gg4wins "0" totals server_var(gg_tmp)
 		
 			// Store database and send motd
-			es_xkeygroupsave gg4wins |gungame4/addons/web_data
+			es_xkeygroupsave gg4wins |gungame4/web_data
 			es_xkeygroupdelete gg4wins
 			es_xrand gg_tmp 0 1000
 			es_xformatv gg_tmp_url "%1?%2" gg_winner_url gg_tmp
@@ -1584,112 +1584,112 @@ block unload
 	crontab del prune_gg_db
 	
 	// Remove top menu
-	es_xunload gungame4/menus/top_menu
+	es_xunload gungame4/top_menu
 	
 	// Unload Addons
-	es_xunload gungame4/addons/gg_popup_lite
+	es_xunload gungame4/gg_popup_lite
 	
 	es_xset gg_exists 0
-	es_xexists gg_exists script gungame4/addons/gg_handicap
+	es_xexists gg_exists script gungame4/gg_handicap
 	ifx true(gg_exists) do
 	{
-		es_xunload gungame4/addons/gg_handicap
+		es_xunload gungame4/gg_handicap
 	}
 	es_xset gg_exists 0
-	es_xexists gg_exists script gungame4/addons/gg_voting
+	es_xexists gg_exists script gungame4/gg_voting
 	ifx true(gg_exists) do
 	{
-		es_xunload gungame4/addons/gg_voting
+		es_xunload gungame4/gg_voting
 	}
 	es_xset gg_exists 0
-	es_xexists gg_exists script gungame4/addons/gg_turbo_mode
+	es_xexists gg_exists script gungame4/gg_turbo_mode
 	ifx true(gg_exists) do
 	{
-		es_xunload gungame4/addons/gg_turbo_mode
+		es_xunload gungame4/gg_turbo_mode
 	}
 	es_xset gg_exists 0
-	es_xexists gg_exists script gungame4/addons/gg_knife_pro
+	es_xexists gg_exists script gungame4/gg_knife_pro
 	ifx true(gg_exists) do
 	{
-		es_xunload gungame4/addons/gg_knife_pro
+		es_xunload gungame4/gg_knife_pro
 	}
 	es_xset gg_exists 0
-	es_xexists gg_exists script gungame4/addons/gg_knife_elite
+	es_xexists gg_exists script gungame4/gg_knife_elite
 	ifx true(gg_exists) do
 	{
-		es_xunload gungame4/addons/gg_knife_elite
+		es_xunload gungame4/gg_knife_elite
 	}
 	es_xset gg_exists 0
-	es_xexists gg_exists script gungame4/addons/gg_triple_level
+	es_xexists gg_exists script gungame4/gg_triple_level
 	ifx true(gg_exists) do
 	{
-		es_xunload gungame4/addons/gg_triple_level
+		es_xunload gungame4/gg_triple_level
 	}
 	es_xset gg_exists 0
-	es_xexists gg_exists script gungame4/addons/gg_deathmatch
+	es_xexists gg_exists script gungame4/gg_deathmatch
 	ifx true(gg_exists) do
 	{
-		es_xunload gungame4/addons/gg_deathmatch
+		es_xunload gungame4/gg_deathmatch
 	}
 	es_xset gg_exists 0
-	es_xexists gg_exists script gungame4/addons/gg_converter
+	es_xexists gg_exists script gungame4/gg_converter
 	ifx true(gg_exists) do
 	{
-		es_xunload gungame4/addons/gg_converter
+		es_xunload gungame4/gg_converter
 	}
 	es_xset gg_exists 0
-	es_xexists gg_exists script gungame4/addons/gg_unl_grenade
+	es_xexists gg_exists script gungame4/gg_unl_grenade
 	ifx true(gg_exists) do
 	{
-		es_xunload gungame4/addons/gg_unl_grenade
+		es_xunload gungame4/gg_unl_grenade
 	}
 	es_xset gg_exists 0
-	es_xexists gg_exists script gungame4/addons/gg_earn_nade
+	es_xexists gg_exists script gungame4/gg_earn_nade
 	ifx true(gg_exists) do
 	{
-		es_xunload gungame4/addons/gg_earn_nade
+		es_xunload gungame4/gg_earn_nade
 	}
 	es_xset gg_exists 0
-	es_xexists gg_exists script gungame4/addons/gg_sounds
+	es_xexists gg_exists script gungame4/gg_sounds
 	ifx true(gg_exists) do
 	{
-		es_xunload gungame4/addons/gg_sounds
+		es_xunload gungame4/gg_sounds
 	}
 	es_xset gg_exists 0
-	es_xexists gg_exists script gungame4/menus/welcome_menu
+	es_xexists gg_exists script gungame4/welcome_menu
 	ifx true(gg_exists) do
 	{
-		es_xunload gungame4/menus/welcome_menu
+		es_xunload gungame4/welcome_menu
 	}
 	es_xset gg_exists 0
-	es_xexists gg_exists script gungame4/addons/gg_noblock
+	es_xexists gg_exists script gungame4/gg_noblock
 	ifx true(gg_exists) do
 	{
-		es_xunload gungame4/addons/gg_noblock
+		es_xunload gungame4/gg_noblock
 	}
 	es_xset gg_exists 0
-	es_xexists gg_exists script gungame4/addons/gg_friendlyfire
+	es_xexists gg_exists script gungame4/gg_friendlyfire
 	ifx true(gg_exists) do
 	{
-		es_xunload gungame4/addons/gg_friendlyfire
+		es_xunload gungame4/gg_friendlyfire
 	}
 	es_xset gg_exists 0
-	es_xexists gg_exists script gungame4/addons/gg_nade_bonus
+	es_xexists gg_exists script gungame4/gg_nade_bonus
 	ifx true(gg_exists) do
 	{
-		es_xunload gungame4/addons/gg_nade_bonus
+		es_xunload gungame4/gg_nade_bonus
 	}
 	es_xset gg_exists 0
-	es_xexists gg_exists script gungame4/addons/gg_stats
+	es_xexists gg_exists script gungame4/gg_stats
 	ifx true(gg_exists) do
 	{
-		es_xunload gungame4/addons/gg_stats
+		es_xunload gungame4/gg_stats
 	}
 	es_xset gg_exists 0
-	es_xexists gg_exists script gungame4/addons/custom
+	es_xexists gg_exists script gungame4/custom
 	ifx true(gg_exists) do
 	{
-		es_xunload gungame4/addons/custom
+		es_xunload gungame4/custom
 	}
 	
 	// Unload GunGame
@@ -2176,13 +2176,13 @@ block gg_set_weapon_order
 				{
 					es_xset gg_random_weapon_order 1
 					// Create weapon list
-					es_xload gungame4/menus/weapon_menu
+					es_xload gungame4/weapon_menu
 					es_xsoon es_xset gg_random_weapon_order 0
 				}
 				else do
 				{
 					// Create weapon list
-					es_xload gungame4/menus/weapon_menu
+					es_xload gungame4/weapon_menu
 				}
 			}
 			else do
@@ -2195,13 +2195,13 @@ block gg_set_weapon_order
 					while "server_var(gg_level_counter) > 0" "es_xdoblock gungame4/reverse_order"
 					es_xcopy gg_weapon_order gg_typo_format
 					// Create weapon list
-					es_xload gungame4/menus/weapon_menu
+					es_xload gungame4/weapon_menu
 				}
 				else do
 				{
 					es_xcopy gg_weapon_order gg_tmp_weapon_order
 					// Create weapon list
-					es_xload gungame4/menus/weapon_menu
+					es_xload gungame4/weapon_menu
 				}
 			}
 			
