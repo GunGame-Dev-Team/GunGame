@@ -157,26 +157,34 @@ event gg_levelup
 {
 	if (server_var(gg_leader_lvl) == server_var(gg_vote_trigger)) do
 	{
-	    ifx false(gg_vote_started) do
-	    {
-		    // Trigger map vote
-			es_xset gg_vote_started 1
-			if (server_var(gg_voting) != 4) do
-			{
-				vote delete gg_mapvote
-				vote create gg_mapvote "gungame4/addons/gg_voting/vote_result" "gungame4/addons/gg_voting/vote_submit"
-				vote setquestion gg_mapvote "Choose the next map"
-				es_xformatqv gg_query "SELECT mapname FROM vote WHERE mapname != '%1' ORDER BY RANDOM() LIMIT %2" eventscripts_currentmap gg_vote_options
-				es_sql query gg_live gg_tmp_keygroup server_var(gg_query)
-				es_xforeachkey gg_tmp_key in gg_tmp_keygroup "es_xdoblock gungame4/addons/gg_voting/get_maps"
-				es_xsoon es_xkeygroupdelete gg_tmp_keygroup
-				vote start gg_mapvote 20
-				es_xcexec_all play admin_plugin/actions/startyourvoting.mp3
+		// Only continue if no other script has set the next map
+		ifx false(eventscripts_nextmapoverride) do
+		{
+			 ifx false(gg_vote_started) do
+	    	{
+			    // Trigger map vote
+				es_xset gg_vote_started 1
+				if (server_var(gg_voting) != 4) do
+				{
+					vote delete gg_mapvote
+					vote create gg_mapvote "gungame4/addons/gg_voting/vote_result" "gungame4/addons/gg_voting/vote_submit"
+					vote setquestion gg_mapvote "Choose the next map"
+					es_xformatqv gg_query "SELECT mapname FROM vote WHERE mapname != '%1' ORDER BY RANDOM() LIMIT %2" eventscripts_currentmap gg_vote_options
+					es_sql query gg_live gg_tmp_keygroup server_var(gg_query)
+					es_xforeachkey gg_tmp_key in gg_tmp_keygroup "es_xdoblock gungame4/addons/gg_voting/get_maps"
+					es_xsoon es_xkeygroupdelete gg_tmp_keygroup
+					vote start gg_mapvote 20
+					es_xcexec_all play admin_plugin/actions/startyourvoting.mp3
+				}
+				else do
+				{
+					es ma_voterandom end server_var(gg_vote_options)
+				}
 			}
-			else do
-			{
-				es ma_voterandom end server_var(gg_vote_options)
-			}
+		}
+		else do
+		{
+			es_xdbgmsg 0 [GunGame] - Map vote failed because eventscripts_nextmapoverride was previously set by another script.
 		}
 	}
 }

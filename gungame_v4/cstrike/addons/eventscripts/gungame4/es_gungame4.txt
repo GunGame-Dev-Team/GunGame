@@ -1,4 +1,4 @@
-// GunGame v4.0.94
+// GunGame v4.0.95
 // (c)2007 by GunGame Coding Team (cagemonkey,XE_Manup)
 //
 // We would like to thank the following individuals in no particular order:
@@ -52,7 +52,7 @@ block load
 	//##########################################################################
 
 	//SET CURRENT VERSION
-	es_xset eventscripts_gg "4.0.94"
+	es_xset eventscripts_gg "4.0.95"
 	es_xmakepublic eventscripts_gg
 	
 	//LOADING ANNOUNCEMENT
@@ -1274,16 +1274,17 @@ event gg_levelup
 	}
 	else do
 	{
+		// Retrieve the highest level from the database:
+		es_xsql queryvalue gg_live gg_leader_lvl "SELECT MAX(level) FROM gg_players"
+		es_xformatqv gg_query "SELECT COUNT(*) FROM gg_players WHERE level = '%1'" gg_leader_lvl
+	    es_sql queryvalue gg_live gg_leader_count server_var(gg_query)
+	    
 		// Regular levelup code
 		es_set gg_userid event_var(userid)
 		es_set gg_tmp event_var(new_level)
 		es_xformatqv gg_query "UPDATE gg_players SET kills = '0', level = '%1', levelup = levelup + 1 WHERE userid = '%2'" gg_tmp gg_userid
 		es_sql query gg_live server_var(gg_query)
 
-		// Retrieve the highest level from the database:
-		es_xsql queryvalue gg_live gg_leader_lvl "SELECT MAX(level) FROM gg_players"
-		es_xformatqv gg_query "SELECT COUNT(*) FROM gg_players WHERE level = '%1'" gg_leader_lvl
-	    es_sql queryvalue gg_live gg_leader_count server_var(gg_query)
 		if (event_var(new_level) = server_var(gg_leader_lvl)) do
 		{
 			if (server_var(gg_leader_count) > 1) do
