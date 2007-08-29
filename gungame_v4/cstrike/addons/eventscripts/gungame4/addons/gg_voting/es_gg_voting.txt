@@ -35,6 +35,11 @@ block load
 				es_xdbgmsg 0 Invalid gg_voting setup in config, unloading gg_voting addon
 				es_xunload gungame4/addons/gg_voting
 			}
+			ifx false(est_version) do
+			{
+				es_xdbgmsg 0 Invalid gg_voting setup in config, unloading gg_voting addon
+				es_xunload gungame4/addons/gg_voting
+			}
 			else do
 			{
 				refcount increment eventscripts_maphandler

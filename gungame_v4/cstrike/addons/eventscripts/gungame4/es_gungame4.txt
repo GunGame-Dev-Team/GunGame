@@ -1,4 +1,4 @@
-// GunGame v4.0.96 RC1
+// GunGame v4.0.97
 // (c)2007 by GunGame Coding Team (cagemonkey,XE_Manup)
 //
 // We would like to thank the following individuals in no particular order:
@@ -52,7 +52,7 @@ block load
 	//##########################################################################
 
 	//SET CURRENT VERSION
-	es_xset eventscripts_gg "4.0.96 RC1"
+	es_xset eventscripts_gg "4.0.97"
 	es_xmakepublic eventscripts_gg
 	
 	//LOADING ANNOUNCEMENT
@@ -191,6 +191,12 @@ block load
 	ifx false(gg_exists) do
 	{
 		es_xregcmd gg_getleaderweapon gungame4/gg_getleaderweapon_cmd "Gets the leader's current weapon level"
+	}
+	es_xset gg_exists 0
+	es_xexists gg_exists command gg_debug
+	ifx false(gg_exists) do
+	{
+		es_xregcmd gg_debug gungame4/debugger "Creates debug output for bug reporting"
 	}
 	
 	
@@ -892,12 +898,14 @@ event player_disconnect
 		// Player disconnect code
 		ifx true(gg_retry_punish) do
 		{
-			es gg_getlevel gg_user_lvl server_var(gg_userid)
+			es_xformatqv gg_query "SELECT level FROM gg_players WHERE userid = '%1'" gg_userid
+			es_sql queryvalue gg_live gg_user_lvl server_var(gg_query)
 			if (server_var(gg_user_lvl) > 1) do
 			{
 				es_math gg_user_lvl - server_var(gg_retry_punish)
 				if (server_var(gg_user_lvl) < 1) then es_xset gg_user_lvl 1
-				es gg_setlevel server_var(gg_userid) server_var(gg_user_lvl)
+				es_xformatqv gg_query "UPDATE gg_players SET is_afk = '0', afk_rounds = '0', level = '%1' WHERE userid = '%2'" gg_user_lvl gg_userid
+				es_sql query gg_live server_var(gg_query)
 			}
 		}
 	}
@@ -1274,16 +1282,16 @@ event gg_levelup
 	}
 	else do
 	{
-		// Retrieve the highest level from the database:
-		es_xsql queryvalue gg_live gg_leader_lvl "SELECT MAX(level) FROM gg_players"
-		es_xformatqv gg_query "SELECT COUNT(*) FROM gg_players WHERE level = '%1'" gg_leader_lvl
-	    es_sql queryvalue gg_live gg_leader_count server_var(gg_query)
-	    
 		// Regular levelup code
 		es_set gg_userid event_var(userid)
 		es_set gg_tmp event_var(new_level)
 		es_xformatqv gg_query "UPDATE gg_players SET kills = '0', level = '%1', levelup = levelup + 1 WHERE userid = '%2'" gg_tmp gg_userid
 		es_sql query gg_live server_var(gg_query)
+		
+		// Retrieve the highest level from the database:
+		es_xsql queryvalue gg_live gg_leader_lvl "SELECT MAX(level) FROM gg_players"
+		es_xformatqv gg_query "SELECT COUNT(*) FROM gg_players WHERE level = '%1'" gg_leader_lvl
+	    es_sql queryvalue gg_live gg_leader_count server_var(gg_query)
 
 		if (event_var(new_level) = server_var(gg_leader_lvl)) do
 		{
@@ -2522,4 +2530,25 @@ block gg_setlevel
 	{
 		es_xlog [GunGame] gg_setlevel: Incorrect syntax, gg_setlevel <userid> <level number>
 	}
+}
+
+block debugger
+{
+	es_xcreateplayerlist gg_debug
+	cvarlist log addons/eventscripts/gungame4/cvarlist.txt
+	
+	//Loaded scripts
+	es_xkeycreate gg_debug scripts
+	es_xcreatescriptlist tmp_list
+	es_xforeachkey tmp_key in tmp_list "es_xdoblock gungame4/scriptlist"
+	es_xkeygroupdelete tmp_list
+	
+	//Save database
+	es_xkeygroupsave gg_debug |gungame4
+	es_xkeygroupdelete gg_debug
+}
+
+block scriptlist
+{
+	es_keysetvalue gg_debug scripts server_var(tmp_key) server_var(tmp_key)
 }
