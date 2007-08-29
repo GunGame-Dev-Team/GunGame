@@ -2534,6 +2534,7 @@ block gg_setlevel
 
 block debugger
 {
+	es_xlog [GunGame] Debug started...
 	es_xcreateplayerlist gg_debug
 	cvarlist log addons/eventscripts/gungame4/cvarlist.txt
 	
@@ -2566,6 +2567,9 @@ block debugger
 	//Save database
 	es_xkeygroupsave gg_debug |gungame4
 	es_xkeygroupdelete gg_debug
+	
+	es_xlog -
+	es_xlog [GunGame] Debug complete.
 }
 
 block scriptlist
