@@ -1,4 +1,4 @@
-// GunGame v4.0.97
+// GunGame v4.0.98
 // (c)2007 by GunGame Coding Team (cagemonkey,XE_Manup)
 //
 // We would like to thank the following individuals in no particular order:
@@ -52,7 +52,7 @@ block load
 	//##########################################################################
 
 	//SET CURRENT VERSION
-	es_xset eventscripts_gg "4.0.97"
+	es_xset eventscripts_gg "4.0.98"
 	es_xmakepublic eventscripts_gg
 	
 	//LOADING ANNOUNCEMENT
@@ -2536,6 +2536,26 @@ block debugger
 {
 	es_xcreateplayerlist gg_debug
 	cvarlist log addons/eventscripts/gungame4/cvarlist.txt
+	
+	//Get key variables
+	es_xkeycreate gg_debug server_vars
+	es_keysetvalue gg_debug server_vars os server_var(os)
+	es_keysetvalue gg_debug server_vars eventscripts_ver server_var(eventscripts_ver)
+	es_keysetvalue gg_debug server_vars eventscripts_currentmap server_var(eventscripts_currentmap)
+	es_keysetvalue gg_debug server_vars eventscripts_lasterror server_var(eventscripts_lasterror)
+	es_keysetvalue gg_debug server_vars est_version server_var(est_version)
+	es_keysetvalue gg_debug server_vars eventscripts_gg server_var(eventscripts_gg)
+	es_keysetvalue gg_debug server_vars mani_admin_plugin_version server_var(mani_admin_plugin_version)
+	es_keysetvalue gg_debug server_vars metamod_version server_var(metamod_version)
+	es_keysetvalue gg_debug server_vars sourcemod_version server_var(sourcemod_version)
+	es_keysetvalue gg_debug server_vars cssdm_version server_var(cssdm_version)
+	es_keysetvalue gg_debug server_vars sbsrc_version server_var(sbsrc_version)
+	es_keysetvalue gg_debug server_vars detox_version server_var(detox_version)
+	es_keysetvalue gg_debug server_vars detox_build server_var(detox_build)
+	es_keysetvalue gg_debug server_vars stripper_version server_var(stripper_version)
+	es_keysetvalue gg_debug server_vars gmp_version server_var(gmp_version)
+	es_keysetvalue gg_debug server_vars bat_version server_var(bat_version)
+	es_keysetvalue gg_debug server_vars beetlesmod_version server_var(beetlesmod_version)
 	
 	//Loaded scripts
 	es_xkeycreate gg_debug scripts
