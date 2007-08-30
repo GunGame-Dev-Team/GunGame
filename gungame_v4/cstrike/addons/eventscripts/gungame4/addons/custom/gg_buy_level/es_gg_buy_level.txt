@@ -18,7 +18,7 @@ block config
 	
 	// Enable announcement to players that this script is loaded
 	// 0=off, 1=on
-	es_xset buy_announce 1
+	es_xset buy_announce 0
 }
 
 block load

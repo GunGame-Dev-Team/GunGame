@@ -1,4 +1,4 @@
-// GunGame v4.0.98
+// GunGame v4.0.99
 // (c)2007 by GunGame Coding Team (cagemonkey,XE_Manup)
 //
 // We would like to thank the following individuals in no particular order:
@@ -52,7 +52,7 @@ block load
 	//##########################################################################
 
 	//SET CURRENT VERSION
-	es_xset eventscripts_gg "4.0.98"
+	es_xset eventscripts_gg "4.0.99"
 	es_xmakepublic eventscripts_gg
 	
 	//LOADING ANNOUNCEMENT
@@ -615,6 +615,7 @@ block init
 	es_xset gg_vote_options 0 "Map vote options, Location: config file"
 	es_xset gg_victimname 0 "Victim name, Location: gg_levelup"
 	es_xset gg_attackername 0 "Attacker name, Location: gg_leveldown"
+	es_xset buy_announce 0 "cvar for Buylevel announcement"
 	
 	//Variables used in gg_popup_lite
 	es_xset gg_popup_command 0 "Used to verify that the command in gg_popup is a valid command, Location: es_gg_popup_lite"
