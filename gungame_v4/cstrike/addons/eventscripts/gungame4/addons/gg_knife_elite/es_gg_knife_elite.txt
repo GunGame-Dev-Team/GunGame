@@ -17,6 +17,7 @@ block load
 block init
 {
 	es_xset gg_levelup 0 "Checks to see if a player has leveled up in a round, Location: es_gg_knife_elite"
+	es_xset gg_armor 0
 	es_xset gg_exists 0
 	es_xexists gg_exists command gg_knife_elite_strip
 	ifx false(gg_exists) do
@@ -35,12 +36,9 @@ event gg_levelup
 
 event item_pickup
 {
-	ifx false(est_version) do
+	ifx true(gg_live_round) do
 	{
-		ifx true(gg_live_round) do
-		{
-			es gg_knife_elite_strip event_var(userid) event_var(es_userteam)
-		}
+		es gg_knife_elite_strip event_var(userid) event_var(es_userteam)
 	}
 }
 
@@ -56,9 +54,10 @@ block strip
 		{
 			if (event_var(item) != "c4") do
 			{
+				es playerget armor gg_armor event_var(userid)
 				es_give server_var(gg_userid) player_weaponstrip
 				es_fire server_var(gg_userid) player_weaponstrip Strip 1
-				es_soon es_xgive server_var(gg_userid) item_assaultsuit
+				es_soon playerset armor server_var(gg_userid) server_var(gg_armor)
 				es_soon es_xgive server_var(gg_userid) weapon_knife
 				if (server_var(gg_bomber) = server_var(gg_userid)) then es_xdelayed .1 es_xgive server_var(gg_userid) weapon_c4 
 				if (server_var(gg_team) == 3) then es_xdelayed .1 es_xsetplayerprop server_var(gg_userid) CCSPlayer.m_bHasDefuser 1

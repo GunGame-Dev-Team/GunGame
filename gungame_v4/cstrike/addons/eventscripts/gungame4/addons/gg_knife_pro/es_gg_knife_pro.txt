@@ -31,7 +31,7 @@ event player_death
 						{
 							if (server_var(gg_victim_lvl) > 1) do
 							{
-								es gg_getlevel gg_attacker_lvl event_var(attacker)
+								//es gg_getlevel gg_attacker_lvl event_var(attacker)
 								es_xmathparse gg_tmp "gg_attacker_lvl - gg_victim_lvl"
 								if (server_var(gg_tmp) <= server_var(gg_knife_pro_limit)) do
 								{
@@ -72,9 +72,7 @@ event player_death
 									es_msg #multi server_var(gg_format)
 									
 									// ***** gg_stats
-									es_xset gg_exists 0
-									es_xexists gg_exists script gungame4/addons/gg_stats
-									ifx true(gg_exists) do
+									ifx true(gg_stats_enabled) do
 									{
 										// Log level steal for hlstats users
 										es_xcopy gg_oldescape eventscripts_escapechars
@@ -150,9 +148,7 @@ event player_death
 								es_xevent fire gg_leveldown
 								
 								// ***** gg_stats
-								es_xset gg_exists 0
-								es_xexists gg_exists script gungame4/addons/gg_stats
-								ifx true(gg_exists) do
+								ifx true(gg_stats_enabled) do
 								{
 									// Log level steal for hlstats users
 									es_xcopy gg_oldescape eventscripts_escapechars

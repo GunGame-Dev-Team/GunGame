@@ -6,6 +6,7 @@ block load
 {
 	// Init vars
 	es_xset gg_oldescape 0
+	es_xset gg_stats_enabled 1
 }
 
 event gg_levelup
@@ -60,4 +61,9 @@ event gg_win
 	es_xset eventscripts_escapechars "; {}()':w"
 	es_logq server_var(gg_tmp2) triggered gg_win
 	es_xcopy eventscripts_escapechars gg_oldescape
+}
+
+block unload
+{
+	es_xset gg_stats_enabled 0
 }

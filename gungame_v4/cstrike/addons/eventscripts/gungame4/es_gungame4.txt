@@ -1,4 +1,4 @@
-// GunGame v4.0.99
+// GunGame v4.0.100
 // (c)2007 by GunGame Coding Team (cagemonkey,XE_Manup)
 //
 // We would like to thank the following individuals in no particular order:
@@ -52,7 +52,7 @@ block load
 	//##########################################################################
 
 	//SET CURRENT VERSION
-	es_xset eventscripts_gg "4.0.99"
+	es_xset eventscripts_gg "4.0.100"
 	es_xmakepublic eventscripts_gg
 	
 	//LOADING ANNOUNCEMENT
@@ -864,20 +864,6 @@ block player_setup
 		// Player does not exist in database
 		es_xformatqv gg_query "INSERT INTO gg_players ('name', 'userid', 'steamid') VALUES ('%1', '%2', '%3')" gg_username gg_userid gg_steamid
 		es_sql query gg_live server_var(gg_query)
-	}
-	
-	//Add rank to GG_LIVE
-	es_xformatqv gg_query "SELECT wins FROM gg_players WHERE steamid = '%1'" gg_steamid
-	es_sql queryvalue gg_database gg_tmp server_var(gg_query)
-	ifx true(gg_tmp) do
-	{
-		es_xformatqv gg_query "SELECT COUNT(*) FROM gg_players WHERE wins > '%1'" gg_tmp
-		es_sql queryvalue gg_database gg_tmp server_var(gg_query)
-		es_xmath gg_tmp + 1
-	}
-	else do
-	{
-		es_sql queryvalue gg_database gg_tmp "SELECT COUNT(*) FROM gg_players"
 	}
 }
 
@@ -2237,7 +2223,7 @@ block gg_set_weapon_order
 	}
 	else do
 	{
-		es_xlog [GunGame] gg_setweapons: not enough arguments - Syntax: gg_setweapons <weapon>,<weapon>,<etc>
+		es_xdbgmsg 0 [GunGame] gg_setweapons: not enough arguments - Syntax: gg_setweapons <weapon>,<weapon>,<etc>
 	}
 }
 
@@ -2261,7 +2247,7 @@ block gg_getlevel
 	}
 	else do
 	{
-		es_xlog [GunGame] gg_getlevel: Incorrect syntax, gg_getlevel <variable> <userid>
+		es_xdbgmsg 0 [GunGame] gg_getlevel: Incorrect syntax, gg_getlevel <variable> <userid>
 	}
 }
 
@@ -2279,7 +2265,7 @@ block gg_getwins
 	}
 	else do
 	{
-		es_xlog [GunGame] gg_getwins: Incorrect syntax, gg_getwins <variable> <userid>
+		es_xdbgmsg 0 [GunGame] gg_getwins: Incorrect syntax, gg_getwins <variable> <userid>
 	}
 }
 
@@ -2388,7 +2374,7 @@ block gg_leveldown_cmd
 		}
 		else do
 		{
-			es_log [GunGame] gg_leveldown: Could not leveldown userid server_var(gg_userid) is already on level 1.
+			es_dbgmsg 0 [GunGame] gg_leveldown: Could not leveldown userid server_var(gg_userid) is already on level 1.
 		}
 	}
 }
@@ -2443,7 +2429,7 @@ block gg_getmaxlevel_cmd
 	}
 	else do
 	{
-		es_xlog [GunGame] - gg_getmaxlevel: Incorrect syntax- gg_getmaxlevel <var>
+		es_xdbgmsg 0 [GunGame] - gg_getmaxlevel: Incorrect syntax- gg_getmaxlevel <var>
 	}
 }
 
@@ -2457,7 +2443,7 @@ block gg_getleaderlevel_cmd
 	}
 	else do
 	{
-		es_xlog [GunGame] - gg_getleaderlevel: Incorrect syntax- gg_getleaderlevel <var>
+		es_xdbgmsg 0 [GunGame] - gg_getleaderlevel: Incorrect syntax- gg_getleaderlevel <var>
 	}
 }
 
@@ -2473,7 +2459,7 @@ block gg_getleaderweapon_cmd
 	}
 	else do
 	{
-		es_xlog [GunGame] - gg_getleaderweapon: Incorrect syntax- gg_getleaderweapon <var>
+		es_xdbgmsg 0 [GunGame] - gg_getleaderweapon: Incorrect syntax- gg_getleaderweapon <var>
 	}
 }
 		
@@ -2493,7 +2479,7 @@ block gg_getweapon
 	}
 	else do
 	{
-		es_xlog [GunGame] gg_getweapon: Incorrect syntax, gg_getweapon <variable> <userid>
+		es_xdbgmsg 0 [GunGame] gg_getweapon: Incorrect syntax, gg_getweapon <variable> <userid>
 	}
 }
 
@@ -2510,7 +2496,6 @@ block gg_setlevel
 		{
 			ifx parse("gg_tmp >= 1 and gg_tmp <= gg_levels") do
 			{
-				es_xformatqv gg_query "SELECT level FROM gg_players WHERE userid = '%1'" gg_userid
 				es_xformatqv gg_query "UPDATE gg_players SET level = '%1' WHERE userid = '%2'" gg_tmp gg_userid
 				es_sql query gg_live server_var(gg_query)
 					
@@ -2519,17 +2504,17 @@ block gg_setlevel
 			}
 			else do
 			{
-				es_log [GunGame] gg_setlevel: Level must be between 1 and server_var(gg_levels)
+				es_xdbgmsg 0 [GunGame] gg_setlevel: Level must be between 1 and server_var(gg_levels)
 			}
 		}
 		else do
 		{
-			es_xlog [GunGame] gg_setlevel: Invalid userid, gg_setlevel <userid> <level number>
+			es_xdbgmsg 0 [GunGame] gg_setlevel: Invalid userid, gg_setlevel <userid> <level number>
 		}
 	}
 	else do
 	{
-		es_xlog [GunGame] gg_setlevel: Incorrect syntax, gg_setlevel <userid> <level number>
+		es_xdbgmsg 0 [GunGame] gg_setlevel: Incorrect syntax, gg_setlevel <userid> <level number>
 	}
 }
 
@@ -2543,6 +2528,7 @@ block debugger
 	es_xkeycreate gg_debug server_vars
 	es_keysetvalue gg_debug server_vars os server_var(os)
 	es_keysetvalue gg_debug server_vars eventscripts_ver server_var(eventscripts_ver)
+	es_keysetvalue gg_debug server_vars es_corelib_ver server_var(es_corelib_ver)
 	es_keysetvalue gg_debug server_vars eventscripts_currentmap server_var(eventscripts_currentmap)
 	es_keysetvalue gg_debug server_vars eventscripts_lasterror server_var(eventscripts_lasterror)
 	es_keysetvalue gg_debug server_vars est_version server_var(est_version)
