@@ -616,6 +616,7 @@ block init
 	es_xset gg_victimname 0 "Victim name, Location: gg_levelup"
 	es_xset gg_attackername 0 "Attacker name, Location: gg_leveldown"
 	es_xset buy_announce 0 "cvar for Buylevel announcement"
+	es_xset buylevel 0 "to reset buylevel announcement if disabled"
 	
 	//Variables used in gg_popup_lite
 	es_xset gg_popup_command 0 "Used to verify that the command in gg_popup is a valid command, Location: es_gg_popup_lite"
