@@ -61,4 +61,10 @@
 		// This event only fires at the end of the warmup round.
 		// If your server has no warmup round, use es_map_start.
 	}
+	"gg_vote"
+	{
+		// No event_vars for this event
+		// This event only fires when the leader has reached the max level - 2
+		// and no other scripts has set the nextmap and a vote has not already been started.
+	}
 }

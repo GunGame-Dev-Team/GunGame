@@ -436,6 +436,10 @@ block cont_setup
 	{
 		crontab del gg_timelimit
 	}
+	
+	// Voting options
+	gg_getmaxlevel gg_vote_trigger
+	es_xmath gg_vote_trigger - 2
 }
 
 block init
@@ -616,7 +620,6 @@ block init
 	es_xset gg_victimname 0 "Victim name, Location: gg_levelup"
 	es_xset gg_attackername 0 "Attacker name, Location: gg_leveldown"
 	es_xset buy_announce 0 "cvar for Buylevel announcement"
-	es_xset buylevel 0 "to reset buylevel announcement if disabled"
 	
 	//Variables used in gg_popup_lite
 	es_xset gg_popup_command 0 "Used to verify that the command in gg_popup is a valid command, Location: es_gg_popup_lite"
@@ -1301,6 +1304,25 @@ event gg_levelup
 				es_format gg_format "#green%1#default is now leading on level #lightgreen%2" event_var(name) event_var(new_level)
 				es_msg #multi server_var(gg_format)
 			}
+		}
+	}
+	// Voting
+	if (server_var(gg_leader_lvl) == server_var(gg_vote_trigger)) do
+	{
+		// Only continue if no other script has set the next map
+		ifx false(eventscripts_nextmapoverride) do
+		{
+			 ifx false(gg_vote_started) do
+	    	{
+			    // Trigger map vote
+				es_xset gg_vote_started 1
+				es_xevent initialize gg_vote
+				es_xevent fire gg_vote
+			}
+		}
+		else do
+		{
+			es_xdbgmsg 0 [GunGame] - Map vote failed because eventscripts_nextmapoverride was previously set by another script.
 		}
 	}
 }
