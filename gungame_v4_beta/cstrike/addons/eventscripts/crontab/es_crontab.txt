@@ -1,5 +1,5 @@
 // Crontab
-// v1.2.3
+// v1.2.2
 //
 // Submitted by cagemonkey
 // See Wikipedia page for details:
@@ -242,7 +242,7 @@ block gettime
 	if (server_var(_crontab_server_months) < 10) then es_xformatv _crontab_server_months "_%1" _crontab_server_months
 	
 	// Check database and execute commands if needed
-	es_dbgmsg 1 [Crontab] - Processing crontab for time: server_var(_crontab_server_time)
+	es_log [Crontab] - Processing crontab for time: server_var(_crontab_server_time)
 	es_xforeachkey _crontab_tmp_key in crontab "es_xdoblock crontab/check"
 	// Perform this block again every 60 seconds
 	es_xdelayed 59 es_xdoblock crontab/gettime
@@ -291,7 +291,7 @@ event es_map_start
 		es_string _crontab_server_time replace "_" "0"
 		
 		// Check database and execute commands if needed
-		es_dbgmsg 1 [Crontab] - Processing crontab for time: server_var(_crontab_server_time)
+		es_log [Crontab] - Processing crontab for time: server_var(_crontab_server_time)
 		es_xforeachkey _crontab_tmp_key in crontab "es_xdoblock crontab/check"
 		
 		// start gettime block to execute crontab command from database
@@ -313,27 +313,27 @@ block crontab
 		es_xkeygetvalue _crontab_job_total crontab jobs total
 		if (server_var(_crontab_job_total) > 0) do
 		{
-			es_dbgmsg 0 [Crontab] Total jobs running: server_var(_crontab_job_total)
-			es_xdbgmsg 0 [Crontab] Job listing:
-			es_xdbgmsg 0 ---------------------------------------------
+			es_log [Crontab] Total jobs running: server_var(_crontab_job_total)
+			es_xlog [Crontab] Job listing:
+			es_xlog ---------------------------------------------
 			//es_xset _crontab_job_count 0
 			es_xforeachkey _crontab_tmp_key in crontab "es_xdoblock crontab/printjobs"
 		}
 		else do
 		{
-			es_xdbgmsg 0 [Crontab] - No jobs exist.
+			es_xlog [Crontab] - No jobs exist.
 		}
-		es_xdbgmsg 0 ---------------------------------------------
-		es_xdbgmsg 0 [Crontab] - Syntax: crontab M h d m w <command> [job name] [overwrite]
-		es_xdbgmsg 0 [Crontab] - Minutes 0-59, hours 0-23, days 1-31, months 1-12, day of the week 0-6 (0=Sunday)
-		es_xdbgmsg 0 [Crontab] - Optional: [job name] - no spaces, [overwrite] - 0=no 1=yes
-		es_xdbgmsg 0 [Crontab] - <command> MUST be enclosed in quotes.
-		es_xdbgmsg 0 [Crontab] - Syntax: crontab del <job name>  Deletes job
-		es_xdbgmsg 0 [Crontab] - Syntax: crontab run <job name>  Executes job now and updates timestamp
-		es_xdbgmsg 0 [Crontab] - Syntax: crontab search <type> <job name or command to search for>  Searches database for a cronjob match, <type> = 'job' or 'command'
-		es_xdbgmsg 0 [Crontab] - Syntax: crontab backup  Creates a backup of the current crontab database.
-		es_xdbgmsg 0 [Crontab] - Syntax: crontab restore  Restores the crontab database from a previous backup.
-		es_xdbgmsg 0 [Crontab] - See en.wikipedia.org/wiki/Crontab for more help and complete list of options
+		es_xlog ---------------------------------------------
+		es_xlog [Crontab] - Syntax: crontab M h d m w <command> [job name] [overwrite]
+		es_xlog [Crontab] - Minutes 0-59, hours 0-23, days 1-31, months 1-12, day of the week 0-6 (0=Sunday)
+		es_xlog [Crontab] - Optional: [job name] - no spaces, [overwrite] - 0=no 1=yes
+		es_xlog [Crontab] - <command> MUST be enclosed in quotes.
+		es_xlog [Crontab] - Syntax: crontab del <job name>  Deletes job
+		es_xlog [Crontab] - Syntax: crontab run <job name>  Executes job now and updates timestamp
+		es_xlog [Crontab] - Syntax: crontab search <type> <job name or command to search for>  Searches database for a cronjob match, <type> = 'job' or 'command'
+		es_xlog [Crontab] - Syntax: crontab backup  Creates a backup of the current crontab database.
+		es_xlog [Crontab] - Syntax: crontab restore  Restores the crontab database from a previous backup.
+		es_xlog [Crontab] - See en.wikipedia.org/wiki/Crontab for more help and complete list of options
 	}
 	else do
 	{
@@ -366,7 +366,7 @@ block crontab
 					{
 						ifx false(_crontab_arg_2) do
 						{
-							es_xdbgmsg 0 [Crontab] - Not enough arguments. Type 'crontab' for syntax.
+							es_xlog [Crontab] - Not enough arguments. Type 'crontab' for syntax.
 						}
 						else do
 						{
@@ -400,7 +400,7 @@ block crontab
 						{
 							ifx false(_crontab_arg_2) do
 							{
-								es_xdbgmsg 0 [Crontab] - Not enough arguments. Type 'crontab' for syntax.
+								es_xlog [Crontab] - Not enough arguments. Type 'crontab' for syntax.
 							}
 							else do
 							{
@@ -434,7 +434,7 @@ block crontab
 							{
 								ifx false(_crontab_arg_2) do
 								{
-									es_xdbgmsg 0 [Crontab] - Not enough arguments. Type 'crontab' for syntax.
+									es_xlog [Crontab] - Not enough arguments. Type 'crontab' for syntax.
 								}
 								else do
 								{
@@ -468,7 +468,7 @@ block crontab
 								{
 									ifx false(_crontab_arg_2) do
 									{
-										es_xdbgmsg 0 [Crontab] - Not enough arguments. Type 'crontab' for syntax.
+										es_xlog [Crontab] - Not enough arguments. Type 'crontab' for syntax.
 									}
 									else do
 									{
@@ -502,7 +502,7 @@ block crontab
 									{
 										ifx false(_crontab_arg_2) do
 										{
-											es_xdbgmsg 0 [Crontab] - Not enough arguments. Type 'crontab' for syntax.
+											es_xlog [Crontab] - Not enough arguments. Type 'crontab' for syntax.
 										}
 										else do
 										{
@@ -537,7 +537,7 @@ block crontab
 										{
 											ifx false(_crontab_arg_2) do
 											{
-												es_xdbgmsg 0 [Crontab] - Not enough arguments. Type 'crontab' for syntax.
+												es_xlog [Crontab] - Not enough arguments. Type 'crontab' for syntax.
 											}
 											else do
 											{
@@ -571,7 +571,7 @@ block crontab
 											{
 												ifx false(_crontab_arg_2) do
 												{
-													es_xdbgmsg 0 [Crontab] - Not enough arguments. Type 'crontab' for syntax.
+													es_xlog [Crontab] - Not enough arguments. Type 'crontab' for syntax.
 												}
 												else do
 												{
@@ -612,7 +612,7 @@ block crontab
 											{
 												es_xset _crontab_match 0
 												es_xforeachkey _crontab_tmp_key in crontab "es_xdoblock crontab/search"
-												if (server_var(_crontab_match) == 0) then es_xdbgmsg 0 [Crontab] There were no matches found for server_var(_crontab_arg_2) server_var(_crontab_arg_3)
+												if (server_var(_crontab_match) == 0) then es_xlog [Crontab] There were no matches found for server_var(_crontab_arg_2) server_var(_crontab_arg_3)
 											}
 											else do
 											{
@@ -640,8 +640,8 @@ block crontab
 														}
 														else do
 														{
-															es_xdbgmsg 0 [Crontab] - Database could not be restored. Backup does not exist or is corrupted.
-															es_xdbgmsg 0 [Crontab] - You can create a backup database using 'crontab backup'.
+															es_xlog [Crontab] - Database could not be restored. Backup does not exist or is corrupted.
+															es_xlog [Crontab] - You can create a backup database using 'crontab backup'.
 														}
 													}
 													else do
@@ -667,7 +667,7 @@ block crontab
 															es_keysetvalue crontab server_var(_crontab_job_name) time server_var(_crontab_new_command)
 															es_keysetvalue crontab server_var(_crontab_job_name) command server_var(_crontab_arg_6)
 															es_log [Crontab] - Job 'server_var(_crontab_job_name)' created.
-															es_xdbgmsg 0 [Crontab] - Job name is temporarily saved to _crontab_job_name
+															es_xlog [Crontab] - Job name is temporarily saved to _crontab_job_name
 															es_xkeygroupsave crontab |crontab
 														}
 														else do
@@ -695,9 +695,9 @@ block crontab
 																	}
 																	else do
 																	{
-																		es_xdbgmsg 0 [Crontab] - That job name already exists. Add overwrite permission to overwrite this job.
-																		es_xdbgmsg 0 [Crontab] - Type 'crontab' with no arguments to get the current joblist and syntax.
-																		es_xdbgmsg 0 [Crontab] - See en.wikipedia.org/wiki/Crontab for more help and complete list of options
+																		es_xlog [Crontab] - That job name already exists. Add overwrite permission to overwrite this job.
+																		es_xlog [Crontab] - Type 'crontab' with no arguments to get the current joblist and syntax.
+																		es_xlog [Crontab] - See en.wikipedia.org/wiki/Crontab for more help and complete list of options
 																	}
 																}
 																else do
@@ -721,9 +721,9 @@ block crontab
 															}
 															else do
 															{
-																es_xdbgmsg 0 [Crontab] - That job name is reserved.  Pick a different job name.
-																es_xdbgmsg 0 [Crontab] - Type 'crontab' with no arguments to get the current joblist and syntax.
-																es_xdbgmsg 0 [Crontab] - See en.wikipedia.org/wiki/Crontab for more help and complete list of options
+																es_xlog [Crontab] - That job name is reserved.  Pick a different job name.
+																es_xlog [Crontab] - Type 'crontab' with no arguments to get the current joblist and syntax.
+																es_xlog [Crontab] - See en.wikipedia.org/wiki/Crontab for more help and complete list of options
 															}
 														}
 													}
@@ -768,9 +768,9 @@ block search
 		{
 			es_keygetvalue _crontab_tmp crontab server_var(_crontab_tmp_key) command
 			es_keygetvalue _crontab_tmp2 crontab server_var(_crontab_tmp_key) time
-			es_dbgmsg 0 [Crontab] Job name 'server_var(_crontab_arg_3)' exists.
-			es_dbgmsg 0 [Crontab] Command: server_var(_crontab_tmp)
-			es_dbgmsg 0 [Crontab] Scheduled time: server_var(_crontab_tmp2)
+			es_log [Crontab] Job name 'server_var(_crontab_arg_3)' exists.
+			es_log [Crontab] Command: server_var(_crontab_tmp)
+			es_log [Crontab] Scheduled time: server_var(_crontab_tmp2)
 			es_xset _crontab_match 1
 		}
 	}
@@ -782,9 +782,9 @@ block search
 		{
 			es_keygetvalue _crontab_tmp crontab server_var(_crontab_tmp_key) name
 			es_keygetvalue _crontab_tmp2 crontab server_var(_crontab_tmp_key) time
-			es_xdbgmsg 0 [Crontab] Command exists.
-			es_dbgmsg 0 [Crontab] Job name: server_var(_crontab_tmp)
-			es_dbgmsg 0 [Crontab] Scheduled time: server_var(_crontab_tmp2)
+			es_xlog [Crontab] Command exists.
+			es_log [Crontab] Job name: server_var(_crontab_tmp)
+			es_log [Crontab] Scheduled time: server_var(_crontab_tmp2)
 			es_xset _crontab_match 1
 		}
 	}
@@ -802,11 +802,11 @@ block printjobs
 		es_keygetvalue _crontab_job_timestamp crontab server_var(_crontab_tmp_key) timestamp
 		es_xstring _crontab_job_time replace "_"
 		//es_log [Crontab] Job # server_var(_crontab_job_count) name: server_var(_crontab_job_name)
-		es_dbgmsg 0 [Crontab] Job name: server_var(_crontab_job_name)
-		es_dbgmsg 0 [Crontab] Job scheduled time: server_var(_crontab_job_time)
-		es_dbgmsg 0 [Crontab] Job command: server_var(_crontab_job_command)
-		es_dbgmsg 0 [Crontab] Job last ran: server_var(_crontab_job_timestamp)
-		es_xdbgmsg 0 ---------------------------------------------
+		es_log [Crontab] Job name: server_var(_crontab_job_name)
+		es_log [Crontab] Job scheduled time: server_var(_crontab_job_time)
+		es_log [Crontab] Job command: server_var(_crontab_job_command)
+		es_log [Crontab] Job last ran: server_var(_crontab_job_timestamp)
+		es_xlog ---------------------------------------------
 	}
 }
 
@@ -1051,7 +1051,7 @@ block execute
 		es_xkeygroupsave crontab |crontab
 		es alias _crontab_command server_var(_crontab_new_command)
 		_crontab_command
-		es_dbgmsg 1 [Crontab] - Executed job: server_var(_crontab_new_command)
+		es_log [Crontab] - Executed job: server_var(_crontab_new_command)
 	}
 	else do
 	{
