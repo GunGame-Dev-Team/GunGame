@@ -1,5 +1,5 @@
-// GunGame v4.0.107
-// (c)2007 by GunGame Coding Team (cagemonkey,XE_Manup)
+// GunGame v4.0.108
+// (c)2007 by GunGame Coding Team (cagemonkey,XE_Manup,GoodfellaDeal)
 //
 // We would like to thank the following individuals in no particular order:
 // Mattie, Don, Awuh0, tnbporsche911, Lost
@@ -52,7 +52,7 @@ block load
 	//##########################################################################
 
 	//SET CURRENT VERSION
-	es_xset eventscripts_gg "4.0.107"
+	es_xset eventscripts_gg "4.0.108"
 	es_xmakepublic eventscripts_gg
 	
 	//LOADING ANNOUNCEMENT
@@ -883,27 +883,18 @@ event player_changename
 event player_disconnect
 {
 	es_set gg_userid event_var(userid)
-	es_isbot gg_tmp server_var(gg_userid)
-	ifx false(gg_tmp) do
+	// Player disconnect code
+	ifx true(gg_retry_punish) do
 	{
-		// Player disconnect code
-		ifx true(gg_retry_punish) do
+		es_xformatqv gg_query "SELECT level FROM gg_players WHERE userid = '%1'" gg_userid
+		es_sql queryvalue gg_live gg_user_lvl server_var(gg_query)
+		if (server_var(gg_user_lvl) > 1) do
 		{
-			es_xformatqv gg_query "SELECT level FROM gg_players WHERE userid = '%1'" gg_userid
-			es_sql queryvalue gg_live gg_user_lvl server_var(gg_query)
-			if (server_var(gg_user_lvl) > 1) do
-			{
-				es_math gg_user_lvl - server_var(gg_retry_punish)
-				if (server_var(gg_user_lvl) < 1) then es_xset gg_user_lvl 1
-				es_xformatqv gg_query "UPDATE gg_players SET is_afk = '0', afk_rounds = '0', level = '%1' WHERE userid = '%2'" gg_user_lvl gg_userid
-				es_sql query gg_live server_var(gg_query)
-			}
+			es_math gg_user_lvl - server_var(gg_retry_punish)
+			if (server_var(gg_user_lvl) < 1) then es_xset gg_user_lvl 1
+			es_xformatqv gg_query "UPDATE gg_players SET is_afk = '0', afk_rounds = '0', level = '%1' WHERE userid = '%2'" gg_user_lvl gg_userid
+			es_sql query gg_live server_var(gg_query)
 		}
-	}
-	else do
-	{
-		es_xformatqv gg_query "DELETE FROM gg_players WHERE userid = '%1'" gg_userid
-		es_sql query gg_live server_var(gg_query)
 	}
 }
 
