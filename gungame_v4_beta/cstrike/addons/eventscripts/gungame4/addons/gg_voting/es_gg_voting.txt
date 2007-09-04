@@ -1,0 +1,230 @@
+block load
+{
+    es_sql open gg_map_votes ":memory:"
+    es_sql query gg_map_votes "CREATE TABLE IF NOT EXISTS map_vote_full(map_name varchar(30),map_votes int(2) DEFAULT 0);CREATE TABLE IF NOT EXISTS map_vote_rand1(map_name varchar(30),map_index int(3),map_votes int(2) DEFAULT 0);CREATE TABLE IF NOT EXISTS map_vote_rand2(map_name varchar(30),map_index int(3),map_votes int(2) DEFAULT 0);CREATE TABLE IF NOT EXISTS map_vote_rand3(map_name varchar(30),map_index int(3),map_votes int(2) DEFAULT 0)"
+    es_xkeygroupload gg4maps |gungame4/addons/gungame4/addons/gg_voting
+    es_xset map_exists 0
+    es_xexists map_exists script popup
+    ifx false(map_exists) do
+    {
+        es_xload popup
+    }
+    es_xset map_key_name 0
+    es_xset map_name 0
+    es_xset map_votes 0
+    es_xset map_query 0
+    es_xset map_random_tablename 0
+    es_xset map_popup_line 0
+    es_xset map_userid 0
+    es_set map_time server_var(gg_vote_timelimit)
+    es_set temp_map_time server_var(gg_vote_timelimit)
+    es_xmath temp_map_time + 1
+    es_xforeachkey map_key_name in gg4maps "es_xdoblock gungame4/addons/gungame4/addons/gg_voting/add_map"
+    es_xkeygroupdelete gg4maps
+    ifx false(gg_map_vote_type) do
+    {
+        // Set up random map votes
+        es_xset map_rand 0
+        es_xset map_random_count 0
+        while "server_var(map_random_count) != 3" "es_xdoblock gungame4/addons/gungame4/addons/gg_voting/random_vote"
+    }
+    else do
+    {
+        es_exists map_exists script keymenu
+        ifx false(map_exists) do
+        {
+            es_xload keymenu
+        }
+        es_xsql query gg_map_votes gg4maps "SELECT map_name FROM map_vote_full ORDER by map_name ASC"
+        // Create the complete maplist popup:
+        keymenu create map_list_full map_name gungame4/addons/gungame4/addons/gg_voting/map_choice_keymenu gg4maps #keyvalue map_name #keyvalue map_name Select a Map
+        es_xkeygroupdelete gg4maps
+        es_xset map_random_tablename map_vote_full
+    }
+}
+
+block unload
+{
+    es_sql query gg_map_votes "DROP TABLE map_vote_full;DROP TABLE map_vote_rand1;DROP TABLE map_vote_rand2;DROP TABLE map_vote_rand3"
+    es_sql close gg_map_votes
+    ifx false(gg_map_vote_type) do
+    {
+        popup delete map_vote_rand1
+        popup delete map_vote_rand2
+        popup delete map_vote_rand3
+    }
+    else do
+    {
+        keymenu exists map_exists map_list_full
+        ifx true(map_exists) do
+        {
+            keymenu delete map_list_full
+        }
+    }
+}
+
+block add_map
+{
+    es_keygetvalue map_name gg4maps server_var(map_key_name) mapname
+    es_xformatqv map_query "REPLACE INTO map_vote_full(map_name) VALUES('%1')" map_name
+    es_sql query gg_map_votes server_var(map_query)
+}
+
+block add_random
+{
+    es_keygetvalue map_name map_temp_keygroup server_var(map_key_name) map_name
+    es_xformatv map_popup_line "->%1. %2" map_key_name map_name
+    es popup addline server_var(map_random_tablename) server_var(map_popup_line)
+    es_xformatqv map_query "REPLACE INTO '%1'(map_name,map_index) VALUES('%2',%3)" map_random_tablename map_name map_key_name
+    es_sql query gg_map_votes server_var(map_query)
+}
+
+block random_vote
+{
+    es_xmath map_random_count + 1
+    es_xformatqv map_random_tablename "map_vote_rand%1" map_random_count
+    es popup create server_var(map_random_tablename)
+    es popup menuselect server_var(map_random_tablename) "gungame4/addons/gungame4/addons/gg_voting/map_choice_random"
+    es popup addline server_var(map_random_tablename) "Select a Map:"
+    es popup addline server_var(map_random_tablename) "-----------------"
+    es_xsql query gg_map_votes map_temp_keygroup "SELECT map_name FROM map_vote_full ORDER BY RANDOM() LIMIT 9"
+    es_xforeachkey map_key_name in map_temp_keygroup "es_xdoblock gungame4/addons/gungame4/addons/gg_voting/add_random"
+    es popup addline server_var(map_random_tablename) "-----------------"
+    es popup addline server_var(map_random_tablename) "0. Exit"
+    es_xkeygroupdelete map_temp_keygroup
+}
+
+event gg_vote
+{
+    if (server_var(gg_map_vote_type) = 0) do
+    {
+        es_xrand map_rand 1 3
+        es_xformatqv map_random_tablename "map_vote_rand%1" map_rand
+        es popup send server_var(map_random_tablename) #human
+        repeat create map_vote_gg "es_xdoblock gungame4/addons/gungame4/addons/gg_voting/update_hudhint_votes"
+        es repeat start map_vote_gg 1 server_var(temp_map_time)
+    }
+    if (server_var(gg_map_vote_type) = 1) do
+    {
+        es keymenu send map_list_full event_var(userid)
+        repeat create map_vote_gg "es_xdoblock gungame4/addons/gungame4/addons/gg_voting/update_hudhint_votes"
+        es repeat start map_vote_gg 1 server_var(temp_map_time)
+    }
+    if (server_var(gg_map_vote_type) = 2) do
+    {
+        ma_voterandom "end" 9
+    }
+}
+
+block map_choice_random
+{
+    if (server_var(_popup_choice) < 10) do
+    {
+        es_xformatqv map_query "UPDATE %1 SET map_votes = map_votes + 1 WHERE map_index = %2" map_random_tablename _popup_choice
+        es_sql query gg_map_votes server_var(map_query)
+        es_xformatqv map_query "SELECT map_votes FROM '%1' WHERE map_index = %2" map_random_tablename _popup_choice
+        es_sql queryvalue gg_map_votes map_votes server_var(map_query)
+        es_xformatqv map_query "SELECT map_name,map_votes FROM %1 WHERE map_votes > 0 ORDER BY map_votes DESC LIMIT 3" map_random_tablename
+        es_sql query gg_map_votes map_top3_keygroup server_var(map_query)
+        es_xset map_votes_hudhint_maps 0
+        es_foreachkey map_key_name in map_top3_keygroup "es_xdoblock gungame4/addons/gungame4/addons/gg_voting/update_hudhint_maps"
+        es_xkeygroupdelete map_top3_keygroup
+    }
+}
+
+block map_choice_keymenu
+{
+    es_xset map_random_tablename map_vote_full
+    es_xformatqv map_query "UPDATE map_vote_full SET map_votes = map_votes + 1 WHERE map_name = '%1'" map_name
+    es_sql query gg_map_votes server_var(map_query)
+    es_xsql query gg_map_votes map_top3_keygroup "SELECT map_name,map_votes FROM map_vote_full WHERE map_votes > 0 ORDER BY map_votes DESC LIMIT 3"
+    es_xset map_votes_hudhint_maps 0
+    es_foreachkey map_key_name in map_top3_keygroup "es_xdoblock gungame4/addons/gungame4/addons/gg_voting/update_hudhint_maps"
+    es_xkeygroupdelete map_top3_keygroup
+}
+
+block update_hudhint_votes
+{
+    es_xset map_players 0
+    es_xset map_hudhint_votes 0
+    es_xmath map_time - 1
+    if (server_var(map_time) != -1) do
+    {
+        foreach player map_userid #human "es_xmath map_players + 1"
+        es_xformatqv map_query "SELECT SUM(map_votes) FROM %1" map_random_tablename
+        es_sql queryvalue gg_map_votes map_votes server_var(map_query)
+        if (server_var(map_votes) != server_var(map_players)) do
+        {
+            es_xformatv map_votes_hudhint_info "VOTE PROGRESS:\nTime Remaining: (%1)  Votes: (%2/%3)" map_time map_votes map_players
+            if (server_var(map_votes_hudhint_maps) != 0) do
+            {
+                es_xformatv map_votes_hudhint "%1\n%2" map_votes_hudhint_info map_votes_hudhint_maps
+            }
+            else do
+            {
+                es_xformatv map_votes_hudhint "%1" map_votes_hudhint_info
+            }
+            foreach player map_userid #human "es usermsg hudhint server_var(map_userid) server_var(map_votes_hudhint)"
+        }
+        else do
+        {
+            repeat stop map_vote_gg
+            repeat delete map_vote_gg
+            es_xdoblock gungame4/addons/gungame4/addons/gg_voting/announce_voted_map
+        }
+        if (server_var(map_time) = 0) then popup unsendname server_var(map_random_tablename) #human
+    }
+    else do
+    {
+        if (server_var(map_votes) != 0) do
+        {
+            repeat delete map_vote_gg
+            es_xdoblock gungame4/addons/gungame4/addons/gg_voting/announce_voted_map
+        }
+        else do
+        {
+            es_xset map_name 0
+            es_set map_time server_var(gg_vote_timelimit)
+            es_set temp_map_time server_var(gg_vote_timelimit)
+            es_xmath temp_map_time + 1
+            es_xformat map_votes_hudhint "No votes were cast.\nNext map will be determined by the map cycle."
+            foreach player map_userid #human "es usermsg hudhint server_var(map_userid) server_var(map_votes_hudhint)"
+        }
+    }
+}
+
+block update_hudhint_maps
+{
+    es_keygetvalue map_name map_top3_keygroup server_var(map_key_name) map_name
+    es_keygetvalue map_votes map_top3_keygroup server_var(map_key_name) map_votes
+    es_xformatv map_votes_hudhint_maps "%1\n%2: %3" map_votes_hudhint_maps map_name map_votes
+    es_xstring map_votes_hudhint_maps replace "0\n"
+}
+
+block reset_votes
+{
+    es_xset map_votes_hudhint_maps 0
+    es_set map_time server_var(gg_vote_timelimit)
+    es_set temp_map_time server_var(gg_vote_timelimit)
+    es_xmath temp_map_time + 1
+    es_xset map_players 0
+    es_xformatqv map_query "UPDATE %1 SET map_votes = 0" map_random_tablename
+    es_sql query gg_map_votes server_var(map_query)
+}
+
+block announce_voted_map
+{
+    es_xformatqv map_query "SELECT map_name FROM %1 WHERE map_votes = (SELECT MAX(map_votes) FROM %1) LIMIT 1" map_random_tablename
+    es_sql queryvalue gg_map_votes map_name server_var(map_query)
+    es_xformatv map_votes_hudhint "%1 won the vote." map_name
+    foreach player map_userid #human "es usermsg hudhint server_var(map_userid) server_var(map_votes_hudhint);es_toptext server_var(map_userid) 5 #yellow NextMap: server_var(map_name)"
+    es_xdoblock gungame4/addons/gungame4/addons/gg_voting/reset_votes
+}
+
+event gg_win
+{
+    if (server_var(map_name) != 0) do
+    {
+        es_forcevalue nextlevel server_var(map_name)
+    }
+}
