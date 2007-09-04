@@ -1,4 +1,4 @@
-// GunGame v4.0.108
+// GunGame v4.0.109
 // (c)2007 by GunGame Coding Team (cagemonkey,XE_Manup,GoodfellaDeal)
 //
 // We would like to thank the following individuals in no particular order:
@@ -52,7 +52,7 @@ block load
 	//##########################################################################
 
 	//SET CURRENT VERSION
-	es_xset eventscripts_gg "4.0.108"
+	es_xset eventscripts_gg "4.0.109"
 	es_xmakepublic eventscripts_gg
 	
 	//LOADING ANNOUNCEMENT
@@ -615,8 +615,11 @@ block init
 	es_xset gg_menu_pagecount 0 "Menu page count"
 	es_xset gg_page_counter 0 "Menu page counter"
 	
+	// Variables used in gg_voting
 	es_xset gg_voting 0 "End of map voting feature, Location: config file"
-	es_xset gg_vote_options 0 "Map vote options, Location: config file"
+	es_xset gg_map_vote_type 0 "Map vote options, Location: config file"
+	es_xset gg_vote_timelimit 0 "Map vote timelimit, Location: config file"
+	
 	es_xset gg_victimname 0 "Victim name, Location: gg_levelup"
 	es_xset gg_attackername 0 "Attacker name, Location: gg_leveldown"
 	es_xset buy_announce 0 "cvar for Buylevel announcement"
