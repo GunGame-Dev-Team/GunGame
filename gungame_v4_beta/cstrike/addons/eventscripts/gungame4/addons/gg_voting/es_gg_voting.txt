@@ -41,6 +41,7 @@ block load
         es_xkeygroupdelete gg4maps
         es_xset map_random_tablename map_vote_full
     }
+    es_xdoblock gungame4/addons/gg_voting/vote_downloads
 }
 
 block unload
@@ -61,6 +62,19 @@ block unload
             keymenu delete map_list_full
         }
     }
+}
+
+block vote_downloads
+{
+    downloadable sound/admin_plugin/actions/endofvote.mp3
+    downloadable sound/admin_plugin/actions/menuexit.wav
+    downloadable sound/admin_plugin/actions/menuselect.wav
+    downloadable sound/admin_plugin/actions/startyourvoting.mp3
+}
+
+event es_map_start
+{
+    es_xdoblock gungame4/addons/gg_voting/vote_downloads
 }
 
 block add_map
@@ -104,6 +118,7 @@ block random_vote
 
 event gg_vote
 {
+    es_xcexec_all play admin_plugin/actions/startyourvoting.mp3
     if (server_var(gg_map_vote_type) = 0) do
     {
         es_xrand map_rand 1 3
@@ -135,6 +150,7 @@ block map_choice_random
 {
     if (server_var(_popup_choice) < 10) do
     {
+        es_playsound server_var(_popup_userid) admin_plugin/actions/menuselect.wav
         es_xformatqv map_query "UPDATE %1 SET map_votes = map_votes + 1 WHERE map_index = %2" map_random_tablename _popup_choice
         es_sql query gg_map_votes server_var(map_query)
         es_xformatqv map_query "SELECT map_votes FROM '%1' WHERE map_index = %2" map_random_tablename _popup_choice
@@ -145,17 +161,29 @@ block map_choice_random
         es_foreachkey map_key_name in map_top3_keygroup "es_xdoblock gungame4/addons/gg_voting/update_hudhint_maps"
         es_xkeygroupdelete map_top3_keygroup
     }
+    else do
+    {
+        es_playsound server_var(_popup_userid) admin_plugin/actions/menuexit.wav
+    }
 }
 
 block map_choice_keymenu
 {
-    es_xset map_random_tablename map_vote_full
-    es_xformatqv map_query "UPDATE map_vote_full SET map_votes = map_votes + 1 WHERE map_name = '%1'" map_name
-    es_sql query gg_map_votes server_var(map_query)
-    es_xsql query gg_map_votes map_top3_keygroup "SELECT map_name,map_votes FROM map_vote_full WHERE map_votes > 0 ORDER BY map_votes DESC LIMIT 3"
-    es_xset map_votes_hudhint_maps 0
-    es_foreachkey map_key_name in map_top3_keygroup "es_xdoblock gungame4/addons/gg_voting/update_hudhint_maps"
-    es_xkeygroupdelete map_top3_keygroup
+    if (server_var(_popup_choice) < 10) do
+    {
+        es_playsound server_var(_popup_userid) admin_plugin/actions/menuselect.wav
+        es_xset map_random_tablename map_vote_full
+        es_xformatqv map_query "UPDATE map_vote_full SET map_votes = map_votes + 1 WHERE map_name = '%1'" map_name
+        es_sql query gg_map_votes server_var(map_query)
+        es_xsql query gg_map_votes map_top3_keygroup "SELECT map_name,map_votes FROM map_vote_full WHERE map_votes > 0 ORDER BY map_votes DESC LIMIT 3"
+        es_xset map_votes_hudhint_maps 0
+        es_foreachkey map_key_name in map_top3_keygroup "es_xdoblock gungame4/addons/gg_voting/update_hudhint_maps"
+        es_xkeygroupdelete map_top3_keygroup
+    }
+    else do
+    {
+        es_playsound server_var(_popup_userid) admin_plugin/actions/menuexit.wav
+    }
 }
 
 block update_hudhint_votes
@@ -183,14 +211,17 @@ block update_hudhint_votes
         }
         else do
         {
+            es popup unsendname server_var(map_random_tablename) #human
             repeat stop map_vote_gg
             repeat delete map_vote_gg
+            es_xcexec_all play admin_plugin/actions/endofvote.mp3
             es_xdoblock gungame4/addons/gg_voting/announce_voted_map
         }
         if (server_var(map_time) = 0) then popup unsendname server_var(map_random_tablename) #human
     }
     else do
     {
+        es_xcexec_all play admin_plugin/actions/endofvote.mp3
         if (server_var(map_votes) != 0) do
         {
             repeat delete map_vote_gg
