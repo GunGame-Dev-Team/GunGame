@@ -1,4 +1,4 @@
-// GunGame v4.0.111
+// GunGame v4.0.112
 // (c)2007 by GunGame Coding Team (cagemonkey,XE_Manup,GoodfellaDeal)
 //
 // We would like to thank the following individuals in no particular order:
@@ -52,7 +52,7 @@ block load
 	//##########################################################################
 
 	//SET CURRENT VERSION
-	es_xset eventscripts_gg "4.0.111"
+	es_xset eventscripts_gg "4.0.112"
 	es_xmakepublic eventscripts_gg
 	
 	//LOADING ANNOUNCEMENT

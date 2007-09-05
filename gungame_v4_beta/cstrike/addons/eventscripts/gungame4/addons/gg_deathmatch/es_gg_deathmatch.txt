@@ -118,7 +118,7 @@ event es_map_start
 	{
 		// Make spawnpointx available again
 		es_sql query server_var(gg_last_map) "UPDATE spawnpoints SET userid = 0"
-		es_xsql close server_var(gg_last_map)
+		es_sql close server_var(gg_last_map)
 	}
 	es_set gg_last_map server_var(eventscripts_currentmap)
 	forcecase gg_last_map lower
