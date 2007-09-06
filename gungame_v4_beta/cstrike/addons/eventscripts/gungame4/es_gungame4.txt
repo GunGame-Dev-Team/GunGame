@@ -1,8 +1,10 @@
-// GunGame v4.0.112
+// GunGame v4.0.113
 // (c)2007 by GunGame Coding Team (cagemonkey,XE_Manup,GoodfellaDeal)
 //
 // We would like to thank the following individuals in no particular order:
 // Mattie, Don, Awuh0, tnbporsche911, Lost
+//
+// GunGame sounds by sub7 -- http://www.indecks.org
 // 
 // Cagemonkey's website:
 // http://www.cagemonkey.org
@@ -44,6 +46,8 @@ block load
 	
 	// All other GunGame configuration settings are located in the config folder.  Find the config for your language
 	//   and edit the settings in it for your server.  /cstrike/cfg/gungame/
+	// **NOTE: This feature was originally planned for GG4, but is no longer being added.
+	//         But, this variable must still be set to read the right cfg file.
 	
 	
 	//##########################################################################
@@ -52,7 +56,7 @@ block load
 	//##########################################################################
 
 	//SET CURRENT VERSION
-	es_xset eventscripts_gg "4.0.112"
+	es_xset eventscripts_gg "4.0.113"
 	es_xmakepublic eventscripts_gg
 	
 	//LOADING ANNOUNCEMENT
@@ -439,7 +443,7 @@ block cont_setup
 	
 	// Voting options
 	gg_getmaxlevel gg_vote_trigger
-	es_xmath gg_vote_trigger - 2
+	es_xmath gg_vote_trigger - 3
 }
 
 block init
@@ -621,6 +625,7 @@ block init
 	es_xset gg_vote_timelimit 0 "Map vote timelimit, Location: config file"
 	es_xset gg_vote_started 0
 	es_xset gg_vote_options 0
+	es_xset gg_vote_result 0 "Map vote result from gg_voting"
 	
 	es_xset gg_victimname 0 "Victim name, Location: gg_levelup"
 	es_xset gg_attackername 0 "Attacker name, Location: gg_leveldown"
@@ -1308,9 +1313,9 @@ event gg_levelup
 		// Only continue if no other script has set the next map
 		ifx false(eventscripts_nextmapoverride) do
 		{
-			 ifx false(gg_vote_started) do
+			ifx false(gg_vote_started) do
 	    	{
-			    // Trigger map vote
+				// Trigger map vote
 				es_xset gg_vote_started 1
 				es_xevent initialize gg_vote
 				es_xevent fire gg_vote
@@ -1360,9 +1365,18 @@ event gg_win
 		}
 		else do
 		{
-			foreach player gg_tmp #all "es_toptext server_var(gg_tmp) 5 #yellow event_var(name) won!"
-			es_msg #multi #green event_var(name) #lightgreen won!
-			es_msg #multi #green event_var(name) #lightgreen won!
+			ifx true(gg_vote_result) do
+			{
+				foreach player gg_tmp #all "es_toptext server_var(gg_tmp) 5 #yellow event_var(name) won! Nextmap: server_var(gg_vote_result)"
+				es_msg #multi #green event_var(name) #lightgreen won! Nextmap: server_var(gg_vote_result)
+				es_msg #multi #green event_var(name) #lightgreen won! Nextmap: server_var(gg_vote_result)
+			}
+			else do
+			{
+				foreach player gg_tmp #all "es_toptext server_var(gg_tmp) 5 #yellow event_var(name) won!"
+				es_msg #multi #green event_var(name) #lightgreen won!
+				es_msg #multi #green event_var(name) #lightgreen won!
+			}
 		}
 	}
 	
@@ -1371,9 +1385,6 @@ event gg_win
 	// Reset leader menu
 	gg_popup delete gg_leader_menu
 	es_xdoblock gungame4/create_leader_menu
-	
-	// Reset map voting
-	es_xset gg_vote_started 0
 	
 	//Fire game_end
 	es_delayed .15 es_xgive event_var(userid) game_end

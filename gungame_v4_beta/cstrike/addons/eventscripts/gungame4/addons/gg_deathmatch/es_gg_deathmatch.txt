@@ -116,7 +116,7 @@ event es_map_start
 {
 	if (server_var(gg_last_map) != 0) do
 	{
-		// Make spawnpointx available again
+		// Make spawnpoints available again
 		es_sql query server_var(gg_last_map) "UPDATE spawnpoints SET userid = 0"
 		es_sql close server_var(gg_last_map)
 	}
@@ -127,7 +127,6 @@ event es_map_start
 	es_sql open server_var(gg_last_map) |gungame4/addons/gg_deathmatch/spawnpoints
 	es_sql query server_var(gg_last_map) server_var(gg_spawn_table)
 	es_sql query server_var(gg_last_map) "UPDATE spawnpoints SET userid = 0"
-	es_xsql close server_var(gg_last_map)
 }
 
 
@@ -455,7 +454,7 @@ block unload
 	{
 		// Make spawnpointx available again
 		es_sql query server_var(gg_last_map) "UPDATE spawnpoints SET userid = 0"
-		es_xsql close server_var(gg_last_map)
+		es_sql close server_var(gg_last_map)
 		es_xset gg_last_map 0
 	}
 	
