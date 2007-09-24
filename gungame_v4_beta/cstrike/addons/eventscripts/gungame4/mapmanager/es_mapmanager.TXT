@@ -1,0 +1,620 @@
+// GunGame Map Manager Stand-Alone Addon
+//   Run GunGame on a Per-Map Basis
+// (c)2007 by GunGame Coding Team
+//     (Cagemonkey, XE_ManUp, Goodfella_Deal)
+//
+//       Maps to Run on Can be Set In
+//   the file in cfg/gungame/mapmanager.cfg	
+
+block load
+{
+	// GunGame Language Options:
+	//
+	// "en" - English                   english
+	// "es" - Spanish (Español)         spanish
+	// "fr" - French (Français)         french
+	// "de" - German (Deutsch)          german
+	// "it" - Italian (Italiano)        italian
+	// "ko" - Korean                    korean
+	// "zh-cn" - Simplified Chinese     schinese
+	// "zh-tw" - Traditional Chinese    tchinese
+	// "ru" - Russian                   russian
+	// "th" - Thai                      thai
+	// "ja" - Japanese                  japanese
+	// "pt" - Portuguese (Português)    portuguese
+	// "pl" - Polish (Polski)           polish
+	// "da" - Danish (Dansk)            danish
+	// "nl" - Dutch (Nederlands)        dutch
+	// "fi" - Finnish (Suomi)           finnish
+	// "no" - Norwegian (Norsk)         norwegian
+	// "sv" - Swedish (Svenska)         swedish
+	//
+
+	es_xset gg_lang "en"
+	
+	// Nothing Else to be set here. Any other options for
+	// GunGame MapManager should be set in the file:
+	// cfg/gungame/mapmanager.cfg	
+	// DO NOT EDIT BELOW THIS POINT
+	
+	es_xdbgmsg 0 [GG4 MapManager] Loading...
+	es_xdbgmsg 0 [GG4 MapManager] Setting Variables
+	// Init vars
+	es_xset gg_tmp_sound 0
+	es_xset gg_sound_winner 0
+	es_xset gg_sound_string 0
+	es_xset gg_exists 0
+	es_xset gg_temp 0
+	es_xset gg_temp2 0
+	es_xset gg_map 0
+	es_xset gg_userid 0
+	es_xset gg_mapselect 0
+	es_xset gg_load 0
+	es_xset gg_menuline_format 0
+	es_xset gg_tmp_counter 0
+	es_xset gg_keycount 0
+	
+	// Load GunGame vars so we can read the config.
+	es_xdoblock gungame4/mapamanger/ggconfig_vars
+
+	es_xdbgmsg 0 [GG4 MapManager] Making Public		
+	// Let Her Be Known!
+	es_xset GG_MapManager "1.0"
+	es_xmakepublic GG_MapManager
+	
+	// Load the GunGame config.
+	// EXEC CONFIG
+	// Do not use es_mexec because the file cannot be edited while the server is running.
+	es_xdbgmsg 0 [GG4 MapManager] Loading GunGame4 Config
+	es_xformatv gg_lang_conf "gungame/gg_%1_config.cfg" gg_lang
+	es exec server_var(gg_lang_conf)
+	
+	es_xdbgmsg 0 [GG4 MapManager] Ensuring gg_sounds is unloaded
+	// Unload gg_sounds if it is on
+	es_exists gg_exists script gungame4/addons/gg_sounds
+	ifx true(gg_exists) do
+	{
+		es_xunload gungame4/addons/gg_sounds
+	}
+	
+	es_xdbgmsg 0 [GG4 MapManager] Ensuring Popup and Keymenu are loaded
+	// Ensure popup is loaded.
+	es_exists gg_exists script popup
+	ifx false(gg_exists) do
+	{
+		es_xload popup
+	}
+	
+	// Ensure keymenu is loaded.
+	es_exists gg_exists script keymenu
+	ifx false(gg_exists) do
+	{
+		es_xload keymenu
+	}
+	
+	es_xdbgmsg 0 [GG4 MapManager] Registering commands	
+	// Register Server Commands
+	es_xset gg_exists 0
+	es_xexists gg_exists command gg_addmap
+	ifx false(gg_exists) do
+	{
+		es_xregcmd gg_addmap gungame4/mapmanager/gg_addmap "Map Manager - Internal Gun Game Command"
+	}
+	es_xset gg_exists 0
+	es_xexists command gg_removemap
+	{
+		es_xregcmd gg_removemap gungame4/mapmanager/gg_removemap "Map Manager - Internal Gun Game Command"
+	}
+	
+	// Register Admin Commands
+	clientcmd create say !gg_addmap "gungame4/mapmanager/gg_addmap" "map_add" "#admin"
+	clientcmd create console gg_addmap "gungame4/mapmanager/gg_addmap" "map_add" "#admin"
+	clientcmd create say !gg_removemap "gungame4/mapmanager/gg_removemap" "map_remove" "#admin"
+	clientcmd create console gg_removemap "gungame4/mapmanager/gg_removemap" "map_remove" "#admin"
+	clientcmd create say !gg_listmaps "gungame4/mapmanager/gg_ggmaps" "menu_send" "#admin"
+	clientcmd create console gg_listmaps "gungame4/mapmanager/gg_ggmaps" "menu_send" "#admin"
+	
+	es_xdbgmsg 0 [GG4 MapManager] Running the Configuration
+	// Run the Config
+	//    Note: Config just run gg_addmap commands to load maps directly into database.
+	//    Note: Must be run AFTER commands are created.
+	//    Note: If executed at any other time, be sure to: es_xset gg_load 0  first
+	es exec gungame/mapmanager.cfg
+	
+	// Reset gg_load to 1 so errors are reported properly
+	es_xset gg_load 1
+	
+	es_xdbgmsg 0 [GG4 MapManager] Setting downloadables
+	// Load sounds into downloadables
+	es_xformatv gg_sound_string "sound/%1,sound/%2,sound/%3,sound/%4,sound/%5,sound/%6,sound/%7,sound/%8" gg_sound_welcome gg_sound_knife gg_sound_nade gg_sound_levelup gg_sound_leveldown gg_sound_levelsteal gg_sound_triple gg_sound_handicap
+	es foreach token gg_tmp_sound server_var(gg_sound_string) "," "es_xdoblock gungame4/mapmanager/load_sounds"
+    
+ 	// Check for random winner sound
+	ifx false(gg_rand_song) do
+	{
+		if ("gungame" in server_var(gg_sound_winner)) do
+		{
+			es_xformatv gg_tmp_sound "sound/%1" gg_sound_winner
+			es downloadable server_var(gg_tmp_sound)
+		}
+	}
+	else do
+	{
+		es_token gg_tmp server_var(gg_songlist) 0 ,
+		es_rand gg_tmp2 1 server_var(gg_tmp)
+		es_token gg_tmp_sound server_var(gg_songlist) server_var(gg_tmp2) ,
+		es_xformatv gg_sound_winner "gungame/%1" gg_tmp_sound
+		es_xformatv gg_tmp_sound "sound/%1" gg_sound_winner
+		es downloadable server_var(gg_tmp_sound)
+	}
+
+	es_xdbgmsg 0 [GG4 MapManager] Loading Complete
+}
+
+block ggconfig_vars
+{
+	es_xset gg_join_msg 0 "Enables/disables join message, Location: config file"
+
+	es_xset gg_sound_levelup 0 "Sound played to a player that levels up, Location: config file, es_map_start, gg_levelup"
+	es_xset gg_sound_leveldown 0 "Sound played to a player that levels down, Location: config file, es_map_start, gg_leveldown"
+	es_xset gg_sound_nade 0 "Sound played to all players at round_start when the leader is on nade level, Location: config file, es_map_start, round_start"
+	es_xset gg_sound_knife 0 "Sound played to all players at round start when the leader is on knife level, Location: config file, es_map_start, round_start"
+	es_xset gg_sound_welcome 0 "Sound played to a connecting player, Location: config file, es_map_start, player_spawn"
+	es_xset gg_sound_handicap 0 "Sound played to all players when the handicap system updates, Location: config file"
+	
+	es_xset gg_sound_levelsteal 0 "Sound played when a player steals a level, Location: config file"
+	es_xset gg_sound_winner 0 "Sound played to all players when someone wins, Location: config file, es_map_start, gg_win"
+	es_xset gg_sound_triple 0 "Sound emitted from player if the Triple Level, Location: config file, es_map_start"
+	es_xset gg_rand_song 0 "Enables/disables random winner songs, Location: config file, es_map_start"
+	es_xset gg_songlist 0 "Song list used for random winner songs, Location: config file, es_map_start"
+}
+
+block load_sounds
+{
+    if ("gungame" in server_var(gg_tmp_sound)) then downloadable server_var(gg_tmp_sound)
+}
+
+event es_map_start
+{
+	// Check first to see if its a reload. If so, ignore.
+	//    Note: sv_restart is run after GunGame is loaded in block map_check
+	//    Note: if its been fired gg_reloaded = 1 to ensure it doesn't just repeat itself
+	//    Note: gg_reloaded will be reset to 0 once its run in the block map_check again.
+	// Unload GunGame.
+	es_xexists gg_exists script gungame4
+	ifx true(gg_exists) do
+	{
+		es_xunload gungame4
+		es_xdbgmsg 0 [GunGame] gg_mapmanager is unloading gungame4
+	}
+	// Check to see if Gun Game should be loaded
+	es_xdoblock gungame4/mapmanager/map_check
+	// Unload gg_sounds addon if Gun Game is loaded
+	es_xexists gg_exists script gungame4/addons/gg_sounds
+	ifx true(gg_exists) do
+	{
+		es_xunload gungame4/addons/gg_sounds
+	}
+	// Load sounds into downloadables
+	es foreach token gg_tmp_sound server_var(gg_sound_string) "," "es_xdoblock gungame4/mapmanager/load_sounds"
+	
+	ifx false(gg_rand_song) do
+	{
+		if ("gungame" in server_var(gg_sound_winner)) do
+		{
+			es_xformatv gg_tmp_sound "sound/%1" gg_sound_winner
+			es downloadable server_var(gg_tmp_sound)
+		}
+	}
+	else do
+	{
+		es_token gg_tmp server_var(gg_songlist) 0 ,
+		es_rand gg_tmp2 1 server_var(gg_tmp)
+		es_token gg_tmp_sound server_var(gg_songlist) server_var(gg_tmp2) ,
+		es_format gg_sound_winner "gungame/%1" server_var(gg_tmp_sound)
+		es_format gg_tmp_sound "sound/%1" server_var(gg_sound_winner)
+		es downloadable server_var(gg_tmp_sound)
+	}
+}
+
+event player_team
+{
+    ifx true(gg_sound_welcome) do
+	{
+	    if (event_var(team) > 1) do
+	    {
+			es_playsound event_var(userid) server_var(gg_sound_welcome) 1.0
+		}
+	}
+}
+
+event gg_levelup
+{
+	es_playsound event_var(userid) server_var(gg_sound_levelup) 1.0
+	//es_cexec event_var(userid) playgamesound server_var(gg_sound_levelup)
+	
+	if (event_var(new_level) == server_var(gg_leader_lvl)) do
+	{
+	    es_xformatqv gg_query "SELECT weapon FROM gg_weapons WHERE level = '%1'" gg_leader_lvl
+		es_sql queryvalue gg_live gg_leader_wpn server_var(gg_query)
+		if (server_var(gg_leader_wpn) == "hegrenade") do
+		{
+			// Play nade sound here
+			es_cexec_all playgamesound server_var(gg_sound_nade)
+		}
+		if (server_var(gg_leader_wpn) == "knife") do
+		{
+			// Play knife sound here
+			es_cexec_all playgamesound server_var(gg_sound_knife)
+		}
+	}
+}
+
+event gg_leveldown
+{
+	es_playsound event_var(userid) server_var(gg_sound_leveldown) 1.0
+}
+
+block gg_addmap
+{
+	// Creates the gg_addmap command
+	// Compensates for all known possible user errors
+	es_xgetargc gg_temp
+	es_xgetcmduserid gg_userid
+	if (server_var(gg_temp) == "2") do
+	{
+		es_xgetargv gg_map 1
+		es_xexists gg_exists keygroup gungamemaps
+		ifx true(gg_exists) do
+		{
+			es_exists gg_exists key gungamemaps server_var(gg_map)
+			ifx false(gg_exists) do
+			{
+				es_exists gg_exists map server_var(gg_map)
+				ifx true(gg_exists) do
+				{
+					es_keycreate gungamemaps server_var(gg_map)
+					es_keysetvalue gungamemaps server_var(gg_map) 0 0
+					es_xkeygroupsave gungamemaps |gungame4/mapmanager
+					es_tell server_var(gg_userid) #multi #lightgreen GunGame #green will now run when the map #default server_var(gg_map) #green is loaded.
+					es echo [GunGame] GunGame will now run when the map server_var(gg_map) is loaded.
+				}
+				else do
+				{
+					ifx false(gg_load) do
+					{
+						es echo [GunGame] Map Manager is unable to load server_var(gg_map) into database
+						es echo [GunGame] server_var(gg_map) is not installed on your server
+						echo [GunGame] gg_addmap: Map from config is not on server.
+					}
+					else do
+					{
+						es_tell server_var(gg_userid) #multi #green No file for the map #lightgreen server_var(gg_map) #green is on the server!
+						echo [GunGame] gg_addmap: Map is not on server.
+					}
+				}
+			}
+			else do
+			{
+				ifx true(gg_load) do
+				{
+					es_tell server_var(gg_userid) #green server_var(gg_map) is already included in your GunGame Maplist!
+					echo [GunGame] gg_addmap: Map Already in Maplist
+				}
+			}
+		}
+		else do
+		{
+			es_xkeygroupcreate gungamemaps
+			es_keycreate gungamemaps server_var(gg_map)
+			es_xkeygroupsave gungamemaps |gungame4/mapmanager
+		}
+	}
+	else do
+	{
+		es_tell server_var(gg_userid) #multi #green gg_addmap: Incorrect Syntax Used: #default !gg_addmap <mapname>
+		echo [GunGame] gg_addmap: Incorrect syntax, gg_addmap <mapname>
+	}
+}
+	else do
+	{
+		es_tell gg_userid #green There are no maps set for GunGame to run on.
+		es_tell gg_userid #multi #green Say #lightgreen !gg_addmap <mapname> #green to add a map to the database.
+		echo [GG4 MapManager] There are no maps set for GunGame to run on.
+		echo [GG4 MapManager] Say: !gg_addmap <mapname>   to add a map to the database.
+	}
+}
+
+block gg_removemap
+{
+	// Creates the gg_removemap command
+	// Compensates for all known possible user errors
+	es_xgetargc gg_temp
+	es_xgetcmduserid gg_userid
+	if (server_var(gg_temp) == 2) do
+	{
+		es_xgetargv gg_map 1
+		es_xexists gg_exists keygroup gungamemaps
+		ifx true(gg_exists) do
+		{
+			es_exists gg_exists key gungamemaps server_var(gg_map)
+			ifx true(gg_exists) do
+			{
+				es_keydelete gungamemaps server_var(gg_map)
+				es_tell server_var(gg_userid) #multi #lightgreen GunGame #green will no longer be loaded on the map #default server_var(gg_map)
+				es echo [GunGame] GunGame will no longer be loaded on the map server_var(gg_map)
+				es_keygroupsave gungamemaps |gungame4/mapmanager
+			}
+			else do
+			{
+				es_tell server_var(gg_userid) #multi #default server_var(gg_map) #green was not in the GunGame Maplist!
+			}
+		}
+		else do
+		{
+			es_tell server_var(gg_userid) #green Map does not exist in the GunGame Maplist!
+			echo [GunGame] gg_removemap: No database present. Map not in list.
+		}
+	}
+}
+
+block map_check
+{
+	// Check to see if Gun Game needs to be loaded/unloaded
+	es_xexists gg_exists keygroup gungamemaps
+	ifx true(gg_exists) do
+	{
+		es_xforeachkey gg_map in gungamemaps "if (server_var(gg_map) == server_var(eventscripts_currentmap)) then es_xdoblock gungame4/mapmanager/gg_loaded"
+	}
+	else do
+	{
+		// Database wasn't found so lets see if we can load it.
+		// If not error will go to console from attempted load, lets add some errors of our own to the console as well.
+		es_xkeygroupload gungamemaps |gungame4/mapmanager
+		es_xexists gg_exists keygroup gungamemaps
+		ifx true(gg_exists) do
+		{
+			es_xdoblock gungame4/mapmanager/map_check
+		}
+		else do
+		{
+			echo [GunGame] gg_mapmanager: No gungamemaps database found.
+			echo [GunGame] No database can be found for the GunGame Map Manager Maplist!
+			echo [GunGame] GunGame will not be loaded until maps have been added!
+			echo [GunGame] Use the command !gg_addmap to add maps to the list while in game.
+			echo [GunGame] or
+			echo [GunGame] Ensure that the following directories have proper read/write access (CHMOD 755 on linux):
+			echo [GunGame] cstrike/cfg/gungame/mapmanager
+			echo [GunGame] cstrike/addons/eventscripts/gungame4/mapmanager
+			echo [GunGame]
+			echo [GunGame] Visit www.CageMonkey.org for more support.
+		}
+	}
+}
+
+block gg_loaded
+{
+	// Load GunGame and Restart the Game
+	es_xload gungame4
+	echo [GunGame] gg_mapmanager is loading GunGame v4
+	es_xdelayed 10 es_xdoblock gungame4/mapmanager/gg_welcomemessage
+}
+
+block gg_welcomemessage
+{
+	ifx true(gg_join_msg) do
+	{
+		// Welcome message
+		es_xformatv gg_menuline_format "This server is running GunGame %1\n_______________\n" eventscripts_gg
+		es_xset gg_tmp_counter 0
+		es_xset gg_exists 0
+		es_xexists gg_exists script gungame4/addons/gg_knife_pro
+		ifx true(gg_exists) do
+		{
+			es_xmath gg_tmp_counter + 1
+			es_xformatv gg_menuline_format "%1->%2. Knife Pro is ENABLED!!\n" gg_menuline_format gg_tmp_counter
+		}
+		es_xset gg_exists 0
+		es_xexists gg_exists script gungame4/addons/gg_turbo_mode
+		ifx true(gg_exists) do
+		{
+			es_xmath gg_tmp_counter + 1
+			es_xformatv gg_menuline_format "%1->%2. Turbo Mode is ENABLED!!\n" gg_menuline_format gg_tmp_counter
+		}
+		es_xset gg_exists 0
+		es_xexists gg_exists script gungame4/addons/gg_knife_elite
+		ifx true(gg_exists) do
+		{
+			es_xmath gg_tmp_counter + 1
+			es_xformatv gg_menuline_format "%1->%2. Knife Elite Mode is ENABLED!!\n" gg_menuline_format gg_tmp_counter
+		}
+		ifx true(gg_multikill) do
+		{
+			es_xmath gg_tmp_counter + 1
+			es_xformatv gg_menuline_format "%1->%2. Multikill Mode is ENABLED!! %3 kills required\n" gg_menuline_format gg_tmp_counter gg_multikill
+		}
+		es_xset gg_exists 0
+		es_xexists gg_exists script gungame4/addons/gg_deathmatch
+		ifx true(gg_exists) do
+		{
+			es_xmath gg_tmp_counter + 1
+			es_xformatv gg_menuline_format "%1->%2. Deathmatch Addon is ENABLED!!\n" gg_menuline_format gg_tmp_counter
+			ifx true(gg_dm_spawn_protect) do
+			{
+				es_xformatv gg_menuline_format "%1 - Spawn protection: %2 seconds\n" gg_menuline_format gg_dm_spawn_protect
+			}
+		}
+		es_xformatv gg_menuline_format "%1---------------\nType !rules for instructions on how to play and a list of commands\nType !level to get your level info and who is leading\nType !score to get a list of player scores\nType !rank to get a list of player ranks\n \n->0. Exit" gg_menuline_format
+		
+		// Create Playerlist
+		es_xexists gg_exists keygroup gg_mm_playerlist
+		ifx true(gg_exists) do
+		{
+			es_keygroupdelete gg_mm_playerlist
+		}
+		es_createplayerlist gg_mm_playerlist
+		es_xforeachkey gg_userid in gg_mm_playerlist "es_menu 0 server_var(gg_userid) server_var(gg_menuline_format)"
+	}
+}
+
+block gg_ggmaps
+{
+	// Send a Menu with a Full List of Map Names from Database
+	// Checks for keygroup and creates proper errors if can't be found
+	es_xgetcmduserid gg_userid
+	es_xexists gg_exists keygroup gungamemaps
+	ifx true(gg_exists) do
+	{
+		es_xset gg_keycount 0
+		es_foreachkey gg_temp in gungamemaps "es_math gg_keycount + 1"
+		ifx true(gg_keycount) do
+		{
+			keymenu exists gg_exists gg_mapslist
+			ifx true(gg_exists) do
+			{
+				keymenu delete gg_mapslist
+				keymenu create gg_mapslist gg_mapselect gungame4/mapmanager/gg_mapselect gungamemaps #key #key GG Map Manager Map List \nMaps Gun Game will Run On
+				es keymenu send gg_mapslist server_var(gg_userid)
+				echo [GG4 MapManager] GunGame Will Currently Load on the Following Maps:
+				es_xforeachkey gg_map in gungamemaps "es echo [GG4 MapManager] server_var(gg_map)"
+				echo [GG4 MapManager] End List
+			}
+			else do
+			{
+				keymenu create gg_mapslist gg_mapselect gungame4/mapmanager/gg_mapselect gungamemaps #key #key GG Map Manager Map List \nMaps Gun Game will Run On
+				es keymenu send gg_mapslist server_var(gg_userid)
+				echo [GG4 MapManager] GunGame Will Currently Load on the Following Maps:
+				es_xforeachkey gg_map in gungamemaps "es echo [GG4 MapManager] server_var(gg_map)"
+				echo [GG4 MapManager] End List
+			}
+		}
+		else do
+		{
+			es_tell server_var(gg_userid) #green There are no Maps for GunGame to be loaded on in the database!
+			es_tell server_var(gg_userid) #multi #green Say: #default !gg_addmap <mapname> #green to add a map for GunGame to load on.
+			echo [GG4 MapManager] There are no maps for gungame to be loaded on in the database.
+			echo [GG4 MapManager] Say !gg_addmap <mapname>   to add a map to the database.
+		}
+	}
+	else do
+	{
+		// Database wasn't found so lets see if we can load it.
+		// If not error will go to console from attempted load, lets add some errors of our own to the console as well.
+		es_xkeygroupload gungamemaps |gungame4/mapmanager
+		es_exists gg_exists keygroup gungamemaps
+		ifx true(gg_exists) do
+		{
+			keymenu exists gg_exists gg_mapslist
+			ifx true(gg_exists) do
+			{
+				es_xset gg_keycount 0
+				es_foreachkey gg_temp in gungamemaps "es_math gg_keycount + 1"
+				ifx true(gg_keycount) do
+				{
+					keymenu delete gg_mapslist
+					keymenu create gg_mapslist gg_mapselect gungame4/mapmanager/gg_mapselect gungamemaps #key #key GG Map Manager Map List /nMaps Gun Game will Run On
+					keymenu send gg_mapslist gg_userid
+					echo [GG4 MapManager] GunGame Will Currently Load on the Following Maps:
+					es_xforeachkey gg_map in gungamemaps "es echo [GG4 MapManager] server_var(gg_map)"
+					echo [GG4 MapManager] End List
+				}
+				else do
+				{
+					es_tell server_var(gg_userid) #green There are no Maps for GunGame to be loaded on in the database!
+					es_tell server_var(gg_userid) #multi #green Say: #default !gg_addmap <mapname> #green to add a map for GunGame to load on.
+					echo [GG4 MapManager] There are no maps for gungame to be loaded on in the database.
+					echo [GG4 MapManager] Say !gg_addmap <mapname>   to add a map to the database.
+				}
+			}
+			else do
+			{
+				keymenu create gg_mapslist gg_mapselect gungame4/mapmanager/gg_mapselect gungamemaps #key #key GG Map Manager Map List /nMaps Gun Game will Run On
+				keymenu send gg_mapslist gg_userid
+				echo [GG4 MapManager] GunGame Will Currently Load on the Following Maps:
+				es_xforeachkey gg_map in gungamemaps "es echo [GG4 MapManager] server_var(gg_map)"
+				echo [GG4 MapManager] End List
+			}
+		}
+		else do
+		{
+			es_tell server_var(gg_userid) #green There are no maps saved for GunGame to run on.
+			echo [GunGame] MapManager is unable to find map database on server.
+			echo [GunGame] No maps may have been added yet.
+			echo [GunGame] Use the command !gg_addmap to add maps to the list while in game.
+			echo [GunGame] or
+			echo [GunGame] Ensure that the following directories have proper read/write access (CHMOD 755 on linux):
+			echo [GunGame] cstrike/cfg/gungame/mapmanager
+			echo [GunGame] cstrike/addons/eventscripts/gungame4/mapmanager
+			echo [GunGame]
+			echo [GunGame] Visit www.CageMonkey.org for more support.
+		}
+	}
+}
+
+block gg_mapselect
+{
+	// Send popup to give option to remove map through !gg_maps
+	// Create popup for !gg_maps response.
+	es_xcopy gg_map gg_mapselect
+	popup create mapresponse
+	popup addlinef mapresponse "Would you like to remove the map %1" gg_map
+	popup addline mapresponse "from the Map Manager database?"
+	popup addline mapresponse " "
+	popup addline mapresponse "->1. Yes"
+	popup addline mapresponse " "
+	popup addline mapresponse "->2. No"
+	popup addline mapresponse "........."
+	popup addline mapresponse "0. Close"
+	popup cache mapresponse
+	popup select mapresponse 1 gungame4/mapmanager/gg_yes
+	popup menuselectfb mapresponse gungame4/mapmanager/gg_notyes
+	
+	// Delete the keymenu
+	keymenu delete gg_mapslist
+	
+	if (server_var(gg_map) == 0) do
+	{
+		es_xdoblock gungame4/mapmanager/gg_notyes
+	}
+	else do
+	{
+		// Send the Menu
+		es popup send mapresponse server_var(_popup_userid)
+	}
+}
+
+block gg_yes
+{
+	// Remove the map selected in !gg_maps
+	es gg_removemap server_var(gg_map)
+	es echo [GG4 MapManager] GunGame will no longer load on server_var(gg_map)
+}
+
+block gg_notyes
+{
+	es_tell server_var(_popup_userid) #multi #default server_var(gg_map) #green will not be removed from the database.
+}
+
+block unload
+{
+	es_xdbgmsg 0 [GG4 MapManager] Unloading...
+	es_xdbgmsg 0 [GG4 MapManager] Ensuring GunGame is unloaded
+	// Unload Gun Game if its loaded
+	es_exists gg_exists script gungame4
+	ifx true(gg_exists) do
+	{
+		es_xunload gungame4
+	}
+	es_xdbgmsg 0 [GG4 MapManager] Deleting Popups
+	// Delete any and all popups
+	popup unsendname mapresponse
+	popup delete mapresponse
+	keymenu exists gg_exists gg_mapslist
+	ifx true(gg_exists) do
+	{
+		keymenu delete gg_mapslist
+	}
+	// Just to be safe incase they reload it at a later time.
+	es_xset gg_load 0
+	es_xdbgmsg 0 [GG4 MapManager] Unloaded
+}
