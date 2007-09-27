@@ -29,13 +29,14 @@ block load
 	// "no" - Norwegian (Norsk)         norwegian
 	// "sv" - Swedish (Svenska)         swedish
 	//
-
 	es_xset gg_lang "en"
 	
-	// Nothing Else to be set here. Any other options for
-	// GunGame MapManager should be set in the file:
-	// cfg/gungame/mapmanager.cfg	
-	// DO NOT EDIT BELOW THIS POINT
+///////////////////////////////////////////////////////////////////
+	// Nothing Else to be set here. Any other options for   //
+	// GunGame MapManager should be set in the file:       //
+	// cfg/gungame/mapmanager.cfg			      //
+	// DO NOT EDIT BELOW THIS POINT			     //
+//////////////////////////////////////////////////////////////
 	
 	es_xdbgmsg 0 [GG4 MapManager] Loading...
 	es_xdbgmsg 0 [GG4 MapManager] Setting Variables
@@ -59,7 +60,7 @@ block load
 
 	es_xdbgmsg 0 [GG4 MapManager] Making Public		
 	// Let Her Be Known!
-	es_xset GG_MapManager "1.0"
+	es_xset GG_MapManager "1.01"
 	es_xmakepublic GG_MapManager
 	
 	// Load the GunGame config.
@@ -185,7 +186,9 @@ event es_map_start
 	ifx true(gg_exists) do
 	{
 		es_xunload gungame4
+		es exec server.cfg
 		es_xdbgmsg 0 [GunGame] gg_mapmanager is unloading gungame4
+		es_xdbgmsg 0 [GunGame] gg_mapmanager is reloading settings in server.cfg
 	}
 	// Check to see if Gun Game should be loaded
 	es_xdoblock gungame4/mapmanager/map_check
@@ -281,26 +284,17 @@ block gg_addmap
 				}
 				else do
 				{
-					ifx false(gg_load) do
-					{
-						es echo [GunGame] Map Manager is unable to load server_var(gg_map) into database
-						es echo [GunGame] server_var(gg_map) is not installed on your server
-						echo [GunGame] gg_addmap: Map from config is not on server.
-					}
-					else do
-					{
-						es_tell server_var(gg_userid) #multi #green No file for the map #lightgreen server_var(gg_map) #green is on the server!
-						echo [GunGame] gg_addmap: Map is not on server.
-					}
+					es echo [GunGame] Map Manager is unable to load server_var(gg_map) into database
+					es echo [GunGame] server_var(gg_map) is not installed on your server
+					echo [GunGame] gg_addmap: Map from config is not on server.
+					es_tell gg_userid #multi #green GunGame can not load on the map: #default server_var(gg_userid)
+					es_tell gg_userid #multi #default server_var(gg_map) #green is not installed on your server!
 				}
 			}
 			else do
 			{
-				ifx true(gg_load) do
-				{
-					es_tell server_var(gg_userid) #green server_var(gg_map) is already included in your GunGame Maplist!
-					echo [GunGame] gg_addmap: Map Already in Maplist
-				}
+				es_tell server_var(gg_userid) #green server_var(gg_map) is already included in your GunGame Maplist!
+				echo [GunGame] gg_addmap: Map Already in Maplist
 			}
 		}
 		else do
@@ -314,14 +308,6 @@ block gg_addmap
 	{
 		es_tell server_var(gg_userid) #multi #green gg_addmap: Incorrect Syntax Used: #default !gg_addmap <mapname>
 		echo [GunGame] gg_addmap: Incorrect syntax, gg_addmap <mapname>
-	}
-}
-	else do
-	{
-		es_tell gg_userid #green There are no maps set for GunGame to run on.
-		es_tell gg_userid #multi #green Say #lightgreen !gg_addmap <mapname> #green to add a map to the database.
-		echo [GG4 MapManager] There are no maps set for GunGame to run on.
-		echo [GG4 MapManager] Say: !gg_addmap <mapname>   to add a map to the database.
 	}
 }
 
@@ -347,14 +333,21 @@ block gg_removemap
 			}
 			else do
 			{
-				es_tell server_var(gg_userid) #multi #default server_var(gg_map) #green was not in the GunGame Maplist!
+				es_tell server_var(gg_userid) #multi #default server_var(gg_map) #green was not set to load GunGame.
 			}
 		}
 		else do
 		{
-			es_tell server_var(gg_userid) #green Map does not exist in the GunGame Maplist!
-			echo [GunGame] gg_removemap: No database present. Map not in list.
+			es_tell gg_userid #green There are no maps set for GunGame to run on.
+			es_tell gg_userid #multi #green Say #lightgreen !gg_addmap <mapname> #green to add a map to the database.
+			echo [GG4 MapManager] There are no maps set for GunGame to run on.
+			echo [GG4 MapManager] Say: !gg_addmap <mapname>   to add a map to the database.
 		}
+	}
+	else do
+	{
+		es_tell server_var(gg_userid) #multi #green gg_removemap: Incorrect Syntax Used: #default !gg_removemap <mapname>
+		echo [GunGame] gg_removemap: Incorrect syntax, gg_removemap <mapname>
 	}
 }
 
@@ -397,7 +390,7 @@ block gg_loaded
 	// Load GunGame and Restart the Game
 	es_xload gungame4
 	echo [GunGame] gg_mapmanager is loading GunGame v4
-	es_xdelayed 10 es_xdoblock gungame4/mapmanager/gg_welcomemessage
+	es_xdelayed 5 es_xdoblock gungame4/mapmanager/gg_welcomemessage
 }
 
 block gg_welcomemessage
